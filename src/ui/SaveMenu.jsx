@@ -73,10 +73,6 @@ export default function SaveMenu() {
 
   return (
     <>
-      <button onClick={() => setOpen(true)} title="Save and load"
-        className="pointer-events-auto fixed left-[calc(50%+4.75rem)] top-3 z-30 rounded-full border-[3px] border-ink bg-paper px-4 py-1 font-head text-sm tracking-wide text-ink shadow-[3px_4px_0_var(--color-ink)] transition-transform duration-150 hover:-translate-y-0.5 hover:rotate-[1.5deg] active:translate-y-0.5">
-        SAVE
-      </button>
       <AnimatePresence>
         {open && (
           <motion.div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"

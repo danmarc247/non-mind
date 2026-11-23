@@ -5,7 +5,8 @@
 // Chain (one EffectPass each, mergeMode="none" so every convolution sees the
 // previous stage's output):
 //   1. KuwaharaEffect   anisotropic generalized Kuwahara (4 sectors, structure tensor)
-//   2. ReliefEffect     impasto height + bristle LIC lighting, canvas weave, ink edges (reads depth)
+//   2. ReliefEffect     detachment soft focus -> impasto dabs + bristle LIC, canvas weave ->
+//                       detachment cut-out (ink + paper halo) and aerial perspective (reads depth)
 //   3. BloomEffect      library mipmap bloom, low; flash pumps it
 //   4. GradeEffect      filmic shoulder, saturation/vibrance, torn paper-white vignette
 //   5. OverwhelmEffect  wobble, chroma smear, tension streaks, posterise, splashes/drips, whiteout, flash
@@ -20,15 +21,16 @@ import { mixStagePalette, linearToSrgb, srgbToLinear } from './palettes/stages.j
 import commonGlsl from './glsl/post.common.glsl';
 import kuwaharaGlsl from './glsl/post.kuwahara.glsl';
 import reliefGlsl from './glsl/post.relief.glsl';
+import detachGlsl from './glsl/post.detach.glsl';
 import gradeGlsl from './glsl/post.grade.glsl';
 import overwhelmGlsl from './glsl/post.overwhelm.glsl';
 
 // Per-quality tap budgets.
 //   kuwahara taps = 4 sectors * RINGS * ANGLES + 1 centre (+8 or +16 tensor taps)
 export const PAINTER_QUALITY = {
-  low: { RINGS: 2, ANGLES: 2, WIDE_TENSOR: 0, LIC_TAPS: 2, SMEAR_TAPS: 3, bloomLevels: 4 },
-  med: { RINGS: 3, ANGLES: 3, WIDE_TENSOR: 0, LIC_TAPS: 4, SMEAR_TAPS: 5, bloomLevels: 5 },
-  high: { RINGS: 3, ANGLES: 4, WIDE_TENSOR: 1, LIC_TAPS: 6, SMEAR_TAPS: 7, bloomLevels: 6 },
+  low: { RINGS: 2, ANGLES: 2, WIDE_TENSOR: 0, LIC_TAPS: 2, SMEAR_TAPS: 3, FOCUS_TAPS: 4, HALO_TAPS: 4, bloomLevels: 4 },
+  med: { RINGS: 3, ANGLES: 3, WIDE_TENSOR: 0, LIC_TAPS: 4, SMEAR_TAPS: 5, FOCUS_TAPS: 6, HALO_TAPS: 8, bloomLevels: 5 },
+  high: { RINGS: 3, ANGLES: 4, WIDE_TENSOR: 1, LIC_TAPS: 6, SMEAR_TAPS: 7, FOCUS_TAPS: 8, HALO_TAPS: 8, bloomLevels: 6 },
 };
 
 // Colour space. The game Canvas is `linear legacy flat`: shaders write display
@@ -54,6 +56,8 @@ function stageLook(display) {
     display,
     stage: st,
     ground: fromLin(p.ground),
+    // aerial haze: stage ground with a faint cool (sky token) tint
+    haze: fromLin(mix(p.ground, PALETTE.sky.map(srgbToLinear), 0.16)),
     ink: fromLin(p.ink),
     magenta: fromTok(PALETTE.magenta),
     ultra: fromTok(PALETTE.ultra),
@@ -75,6 +79,12 @@ const DEFAULTS = {
   dab: 1, // palette-knife dab tone breakup (far/sky only)
   near: 50, // view distance below which painting is light (arena)
   far: 80, // view distance beyond which painting is full (sky)
+  // detachment stage (inside the relief pass)
+  aerial: 1, // distance -> stage ground, cooler, flatter
+  focus: 1, // tilt-shift + far soft focus (px radius ~3-4 at 720p)
+  focusNear: 55, // view distance where depth soft focus starts
+  focusFar: 140, // ... and is full
+  halo: 1, // paper halo behind near silhouettes
   ink: 0.7, // ink edge lines
   exposure: 1.05,
   saturation: 1.3,
@@ -110,13 +120,15 @@ class KuwaharaEffect extends Effect {
 
 class ReliefEffect extends Effect {
   constructor(q, params) {
-    super('PainterRelief', frag(reliefGlsl), {
+    super('PainterRelief', frag(`${detachGlsl}\n${reliefGlsl}`), {
       attributes: EffectAttribute.CONVOLUTION | EffectAttribute.DEPTH,
       blendFunction: BlendFunction.NORMAL,
-      defines: defs({ LIC_TAPS: q.LIC_TAPS }),
+      defines: defs({ LIC_TAPS: q.LIC_TAPS, FOCUS_TAPS: q.FOCUS_TAPS, HALO_TAPS: q.HALO_TAPS }),
       uniforms: unis({
         uRelief: 1, uBristle: 1, uCanvas: 1, uInk: 0.7, uDab: 1, uTime: 0,
         uInkColor: new Vector3(...PALETTE.ink), uNearFar: new Vector2(50, 80),
+        uFocus: 1, uAerial: 1, uHalo: 1, uFocusDist: new Vector2(55, 140),
+        uHaze: new Vector3(...PALETTE.paper), uHaloColor: new Vector3(...PALETTE.paper),
       }),
     });
     this.params = params;
@@ -129,6 +141,13 @@ class ReliefEffect extends Effect {
     u.get('uRelief').value = p.relief * (0.7 + 0.6 * look.density) * (1 + 0.3 * mood.tension);
     setV3(u.get('uInkColor'), look.ink);
     u.get('uNearFar').value.set(p.near, p.far);
+    setV3(u.get('uHaze'), look.haze);
+    setV3(u.get('uHaloColor'), look.ground);
+    u.get('uAerial').value = p.aerial;
+    // overwhelm takes over the frame; the calm separation fades with it
+    u.get('uFocus').value = p.focus * (1 - 0.5 * mood.overwhelm);
+    u.get('uHalo').value = p.halo * (1 - 0.7 * mood.overwhelm);
+    u.get('uFocusDist').value.set(p.focusNear, p.focusFar);
     u.get('uBristle').value = p.bristle;
     u.get('uCanvas').value = p.canvas;
     u.get('uDab').value = p.dab;
