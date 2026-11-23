@@ -72,6 +72,13 @@ function Arrow({ tone, done }) {
             initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.25, ease: 'easeOut' }} />
         ) : (
           <motion.g key="arrow">
+            {/* contrast on any background: a yolk glow, a paper-white casing, then the stroke itself in magenta */}
+            <motion.path d="M2 26 C 18 30, 34 14, 58 20 M48 12 L59 20 L47 27" fill="none" stroke="var(--color-yolk)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" opacity="0.55" style={{ filter: 'blur(4px)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: [0.35, 0.7, 0.35] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.path d="M2 26 C 18 30, 34 14, 58 20 M48 12 L59 20 L47 27" fill="none" stroke="var(--color-paper)" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} />
+            <motion.path d="M2 26 C 18 30, 34 14, 58 20 M48 12 L59 20 L47 27" fill="none" stroke="var(--color-ink)" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} />
             <motion.path d="M2 26 C 18 30, 34 14, 58 20" fill="none" stroke={`var(--color-${tone})`} strokeWidth="4" strokeLinecap="round"
               initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} exit={{ pathLength: 0, transition: { duration: 0.12 } }} transition={{ duration: 0.3, ease: 'easeOut' }} />
             <motion.path d="M48 12 L59 20 L47 27" fill="none" stroke={`var(--color-${tone})`} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
@@ -180,7 +187,7 @@ export default function Nudge({ blocked }) {
 
   const L = rect && layout(rect);
   const urgent = cur && cur.s.weight >= 90;
-  const tone = urgent ? 'magenta' : 'ink';
+  const tone = urgent ? 'blood' : 'magenta'; // the arrow is always a bright colour; its ink casing gives the edge
   // no target on screen: a centred caption under the top bar, no arrow
   const capStyle = L ? {
     left: Math.max(130, Math.min(window.innerWidth - 130, L.cap.left)), top: L.cap.top,
