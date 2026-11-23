@@ -1,14 +1,14 @@
 // HUD prose in one place (voice review is one grep). Every line is true to the mechanic it names.
 
-// unitStats: tol=hp, sal=damage, lat=seconds between strikes, reach=range, opa=% missed, lab=damage variance, rec=% double strike.
+// unitStats: tol=hp, sal=ease dealt, lat=seconds between answers, reach=range, opa=% missed, lab=ease variance, rec=% double answer.
 export const STAT_TEXT = {
   tol: 'How much may land on it before it leaves the circle.',
-  sal: 'How much of a stressor each strike takes away.',
+  sal: 'How much of a stressor each answer takes off.',
   lat: 'The breath between impulse and act. Smaller is louder.',
   reach: 'How far off a thing may be and still be its concern.',
-  opa: 'The share of blows that arrive to find no one there.',
-  lab: 'How far a strike may stray from its usual weight, as a hand trembles, either way.',
-  rec: 'The odds that one strike arrives as two, the second like an echo.',
+  opa: 'The share of what arrives that finds no one there.',
+  lab: 'How far an answer may stray from its usual weight, as a hand trembles, either way.',
+  rec: 'The odds that one answer arrives as two, the second like an echo.',
 };
 
 // One section per stage, in STAGES order.

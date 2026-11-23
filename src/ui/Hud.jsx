@@ -137,8 +137,8 @@ export default function Hud() {
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
   // when the band is short the log gives way, so the left list keeps a real scroll viewport
-  const showLog = !compact || bandH >= 330;
-  const logH = !showLog ? 0 : compact ? 96 : 120;
+  const showLog = true;
+  const logH = compact ? 132 : 212;
   const sideL = 12 + (compact ? 300 : 340) + 24;
 
   return (

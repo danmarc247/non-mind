@@ -44,19 +44,19 @@ export const LINKS = [
   { n: 12, name: 'Knowing The Ending', mult: 150, trait: 'end', text: 'It knows it is done, and is.' },
 ];
 
-// What each heritable trait does in battle (read by battle.js). Values scale with copies of the gene.
+// What each heritable trait does during a wave (read by battle.js). Values scale with copies of the gene.
 export const TRAITS = {
-  ache: { text: 'The closer it is to falling, the more each strike carries.' },
+  ache: { text: 'The nearer it is to spent, the more each answer carries.' },
   trust: { text: 'Starts each wave wrapped in a veil, a share of its tolerance.' },
-  glad: { text: 'Each strike leaves a little warmth, as affect.' },
-  rapture: { text: 'First strikes of a wave come much faster, as if eager.' },
+  glad: { text: 'Each answer leaves a little warmth, as affect.' },
+  rapture: { text: 'First answers of a wave come much faster, as if eager.' },
   calm: { text: 'Slows the latency of stressors nearby.' },
   ease: { text: 'Mends itself, softly and without pause.' },
-  gather: { text: 'Repeated strikes on one target grow, the way attention does.' },
+  gather: { text: 'Repeated answers on one target grow, the way attention does.' },
   see: { text: 'Ignores opacity and veils.' },
   tire: { text: 'Stressors nearby lose salience.' },
   fade: { text: 'Counts as every aspect.' },
-  release: { text: 'On falling, mends every ally, a last tenderness.' },
+  release: { text: 'On being spent, mends every ally, a last tenderness.' },
   end: { text: 'Dissolves into a permanent ending.' },
 };
 
@@ -66,7 +66,7 @@ export const ASPECTS = {
   cortical: { name: 'Cortical', tone: 'ultra', text: 'Charge fills %v% faster for all.', v: [20, 45, 90] },
   somatic: { name: 'Somatic', tone: 'tangerine', text: 'Members gain %v% tolerance.', v: [30, 70, 150] },
   shadow: { name: 'Shadow', tone: 'violet', text: 'Stressors lose %v% tolerance on arrival.', v: [8, 16, 30] },
-  relational: { name: 'Relational', tone: 'rose', text: 'Members share %v% of harm with neighbours.', v: [25, 40, 60] },
+  relational: { name: 'Relational', tone: 'rose', text: 'Members share %v% of the weight with neighbours.', v: [25, 40, 60] },
   void: { name: 'Void', tone: 'ink', text: 'Members gain %v% opacity.', v: [12, 25, 45] },
   mythic: { name: 'Mythic', tone: 'yolk', text: 'Affect from all sources +%v%.', v: [15, 40, 100] },
 };
@@ -75,8 +75,8 @@ export const ASPECT_THRESHOLDS = [2, 4, 6];
 
 // 10 families, one per gate. Naming pattern: every family is a "-tion/-al/-ance" regulation term;
 // every home field shares prefix/suffix; every witness shares a suffix.
-// Stats: tol(erance)=hp, sal(ience)=damage, lat(ency)=seconds between strikes, reach=range,
-// opa(city)=% to be missed, lab(ility)=damage variance, rec(ursion)=% to strike twice.
+// Stats: tol(erance)=hp, sal(ience)=ease dealt, lat(ency)=seconds between answers, reach=range,
+// opa(city)=% to be missed, lab(ility)=ease variance, rec(ursion)=% to answer twice.
 export const FAMILIES = [
   { id: 'reappraisal', name: 'Reappraisal', dir: 0, tier: 1, aspects: ['cortical', 'vagal'], field: 'Field of Glass Weather', witness: 'Clear Witness',
     stats: { tol: 520, sal: 44, lat: 1.0, reach: 2.2, opa: 5, lab: 0.2, rec: 0 }, ability: 'reframe', form: 'lens', colors: ['teal', 'sky'],
@@ -114,11 +114,11 @@ export const FAMILY = Object.fromEntries(FAMILIES.map((f) => [f.id, f]));
 // Abilities fire when charge is full. Kept as data; battle.js implements `kind`.
 export const ABILITIES = {
   reframe: { name: 'Reframe', kind: 'invert', power: 1.5, text: 'The strongest stressor is turned on its nearest kin, and stunned.' },
-  lid: { name: 'Lid', kind: 'store', power: 0.6, text: 'Keeps most of the harm it takes and hardens. Returns it to those near when it falls.' },
-  loop: { name: 'Loop', kind: 'flurry', power: 5, text: 'Strikes five times, and is worn thin by the circling.' },
-  withdraw: { name: 'Withdraw', kind: 'retreat', power: 3, text: 'Leaps to the far rim, unseen a moment, and strikes thrice from there.' },
+  lid: { name: 'Lid', kind: 'store', power: 0.6, text: 'Keeps most of the weight it takes and hardens. Returns it to those near when it is spent.' },
+  loop: { name: 'Loop', kind: 'flurry', power: 5, text: 'Answers five times, and is worn thin by the circling.' },
+  withdraw: { name: 'Withdraw', kind: 'retreat', power: 3, text: 'Leaps to the far rim, unseen a moment, and answers thrice from there.' },
   mend: { name: 'Mend', kind: 'heal', power: 2.5, text: 'Mends the ally who needs it most, as warmth finds the coldest hand.' },
-  cast_out: { name: 'Cast Out', kind: 'transfer', power: 2, text: 'Hands its own wounds to the nearest stressor, and is eased by it.' },
+  cast_out: { name: 'Cast Out', kind: 'transfer', power: 2, text: 'Hands its own weight to the nearest stressor, and is eased by it.' },
   vanish: { name: 'Vanish', kind: 'blink', power: 4, text: 'Is not here. Returns beside the stressor with most tolerance, heavily.' },
   transmute: { name: 'Transmute', kind: 'burst_affect', power: 2.2, text: 'Burns everything near. The ashes are affect.' },
   hold: { name: 'Hold', kind: 'taunt', power: 4, text: 'Everything nearby must attend to it. It hardens.' },
@@ -147,7 +147,7 @@ export const WAVE_ARC = [
   { id: 'same', name: 'Same, Different', text: 'They wear the forms of your own.', mod: { mirrorForms: true, salMul: 1.3 } },
   { id: 'observer', name: 'Equal In Number To Thoughts', text: 'Their number follows your attention.', mod: { byClicks: true } },
   { id: 'cancel', name: 'Who Is Able', text: 'Aspect bonds are silent.', mod: { noAspects: true } },
-  { id: 'return', name: 'Light Appears', text: 'A single strike, gently placed, may undo a great one.', mod: { boss: true, oneShot: 0.03 } },
+  { id: 'return', name: 'Light Appears', text: 'A single answer, gently placed, may settle a great one.', mod: { boss: true, oneShot: 0.03 } },
 ];
 
 // Habits: passive producers (10, one per gate). cost = base * 1.15^owned.
@@ -169,18 +169,18 @@ export const HABIT_GROWTH = 1.15;
 export const UPGRADES = [
   { id: 'noticing', name: 'Noticing', cost: 60, text: 'Attending yields +1% of affect per second.', stage: 2 },
   { id: 'counting_breaths', name: 'Counting Breaths', cost: 400, text: 'Habits yield more for each Breath kept close.', stage: 2 },
-  { id: 'old_wound', name: 'Old Wound', cost: 2500, text: 'Affect scales with composure you are missing, the way longing does.', stage: 5 },
+  { id: 'old_wound', name: 'Old Ache', cost: 2500, text: 'Affect scales with composure you are missing, the way longing does.', stage: 5 },
   { id: 'long_view', name: 'Long View', cost: 2e4, text: 'Affect scales with seconds spent in this run, slowly, as dusk gathers.', stage: 5 },
   { id: 'crowd', name: 'Inner Crowd', cost: 2.5e5, text: 'Salience of all regulators scales with complexity.', stage: 6 },
   { id: 'thrift', name: 'Thrift Of Attention', cost: 3e6, text: 'Interest cap doubles.', stage: 7 },
-  { id: 'second_arrow', name: 'Second Blow', cost: 5e7, text: 'Recursion +10 for everyone. So is harm taken, by 10%.', stage: 9 },
+  { id: 'second_arrow', name: 'Second Answer', cost: 5e7, text: 'Recursion +10 for everyone. So is weight taken, by 10%.', stage: 9 },
   { id: 'lending', name: 'Lending', cost: 8e8, text: 'Attendants attend twice as often.', stage: 10 },
 ];
 
 // Insight spells.
 export const SPELLS = [
   { id: 'exhale', name: 'Exhale', cost: 30, text: 'All regulators mend a third, on one long breath out.', stage: 5 },
-  { id: 'label', name: 'Name It', cost: 50, text: 'Stressors take double harm for 8 seconds.', stage: 5 },
+  { id: 'label', name: 'Name It', cost: 50, text: 'Stressors are eased twice as much for 8 seconds.', stage: 5 },
   { id: 'recollect', name: 'Recollect', cost: 80, text: '30 seconds of habit yield, at once.', stage: 5 },
 ];
 

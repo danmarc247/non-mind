@@ -35,7 +35,7 @@ There is one plain mutable object. It is written once per frame by `Loop` in `Sc
 | `time` | s | `+= dt * (1 + overwhelm*0.8)` | All animation. Never use `performance.now()` or `clock.elapsedTime`. |
 | `complexity` | 0..1 | eased `G.complexity / G.capacity`, rate 1.5 | Density, number of strokes, warp, saturation. |
 | `overwhelm` | 0..1 | eased `G.overwhelm`, rate 1.2 | Tearing, splashes, drips, wobble, whiteout. |
-| `tension` | 0..1 | fight intensity, rate 2 | Relief depth, saturation, streaks, wave height. |
+| `tension` | 0..1 | holding intensity, rate 2 | Relief depth, saturation, streaks, wave height. |
 | `stage` | 0..17 float | eased `G.stage`, rate 0.8 | `mixStagePalette(mood.stage)`. |
 | `depth` | int | prestige | Palette rotation. |
 | `flash` | 0..1 | set by events, decays at 4 | White pulse, bloom pump, exposure. |

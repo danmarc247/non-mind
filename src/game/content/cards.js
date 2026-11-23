@@ -37,7 +37,7 @@ export const CARDS = [
     symbol: 'gate', tone: 'rose', aspect: 'relational', boon: { kind: 'residue', pct: 3 } },
   { n: 7, id: 'forward_lean', name: 'Forward Lean',
     principle: 'Momentum is feeling given somewhere to go.',
-    quote: 'The reins hum like a struck string, and the road answers.', quoteSource: 'original',
+    quote: 'The reins hum like a plucked string, and the road answers.', quoteSource: 'original',
     symbol: 'triangle', tone: 'magenta', aspect: 'limbic', boon: { kind: 'affect', pct: 3 } },
   { n: 8, id: 'soft_courage', name: 'Soft Courage',
     principle: 'Courage that stays gentle can approach what force only frightens.',

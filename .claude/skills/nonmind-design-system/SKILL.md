@@ -102,7 +102,7 @@ There are three layers. Each one is pure data plus pure functions.
 **When you add a visual element**, colour it from one of these sources:
 1. the stage palette (for environmental things)
 2. the family/link (for units)
-3. aspect tones (for battle feedback)
+3. aspect tones (for wave feedback)
 4. fixed tokens (for UI chrome)
 
 It should also respond to at least one of `mood.complexity`, `mood.stage` or `mood.depth`. A static element is a boring element.

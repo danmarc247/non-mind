@@ -1,7 +1,7 @@
 // The log of arcane messages, with its arrival choreography. (Stage unlocks, resets and endings are
 // staged by the Ceremony overlay, so stage/reset/ending lines are never heralded large here.)
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { POP } from './shared.jsx';
@@ -90,7 +90,7 @@ export function Herald({ size = 30 }) {
               (an absolutely positioned stroke inside an inline span only covered part of multi-line text) */}
           <span
             style={{
-              backgroundImage: `linear-gradient(transparent 66%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 66%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 90%, transparent 90%)`,
+              backgroundImage: `linear-gradient(transparent 84%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 84%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 97%, transparent 97%)`,
               WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone', padding: '0 0.3em', borderRadius: '0.3em',
             }}
           >{herald.text}</span>
@@ -114,18 +114,73 @@ export function Log({ compact, mobile }) {
     if (pending.has(k)) return;
     folded.push({ ...l, key: k, n: 1 });
   });
-  const items = folded.slice(compact || mobile ? -2 : -3);
-  const fs = mobile ? 15 : compact ? 17 : 19;
+  const items = folded.slice(-3);
+  const maxFs = mobile ? 15 : 19;
+  const FLOOR = 13;
+  const baseW = compact ? 300 : 340;
+
+  // The newest three sentences are always shown whole. A hidden twin of the stack measures real rendered heights at
+  // each candidate size (maxFs down to FLOOR px); the largest that fits the log's height wins. If none fits, the
+  // stack widens a little, and only then does it drop to two entries (console.info once).
+  const rootRef = useRef(null);
+  const headRef = useRef(null);
+  const twinRef = useRef(null);
+  const warned = useRef(false);
+  const [fit, setFit] = useState({ fs: maxFs, w: baseW, n: items.length });
+  const sig = items.map((l) => `${l.key}:${l.n}`).join('|');
+  useLayoutEffect(() => {
+    const root = rootRef.current, twin = twinRef.current, head = headRef.current;
+    if (!root || !twin || !head) return undefined;
+    const run = () => {
+      const kids = [...twin.children];
+      if (mobile || !kids.length) { setFit((f) => (f.fs === maxFs && f.w === baseW && f.n === kids.length ? f : { fs: maxFs, w: baseW, n: kids.length })); return; }
+      const avail = root.clientHeight - head.offsetHeight - 4;
+      const total = (fs, w, n) => {
+        twin.style.width = `${w}px`;
+        kids.forEach((k, i) => { k.style.fontSize = `${fs}px`; k.style.display = i >= kids.length - n ? '' : 'none'; });
+        let t = 0, c = 0;
+        kids.forEach((k, i) => { if (i >= kids.length - n) { t += k.offsetHeight; c++; } });
+        return t + Math.max(0, c - 1) * 4;
+      };
+      const search = (w, n) => { for (let fs = maxFs; fs >= FLOOR; fs--) if (total(fs, w, n) <= avail - 1) return fs; return 0; };
+      let pick = null;
+      for (const w of [baseW, baseW + 12]) { const fs = search(w, kids.length); if (fs) { pick = { fs, w, n: kids.length }; break; } }
+      if (!pick && kids.length > 2) {
+        const fs = search(baseW + 12, 2) || FLOOR;
+        pick = { fs, w: baseW + 12, n: 2 };
+        if (!warned.current) { warned.current = true; console.info('[log] three sentences do not fit at 13px; showing two'); }
+      }
+      if (!pick) pick = { fs: FLOOR, w: baseW + 12, n: kids.length };
+      setFit((f) => {
+        // hysteresis: keep the current size while it still fits and the gain would be a single pixel
+        if (f.n === pick.n && f.w === pick.w && f.fs !== pick.fs && Math.abs(pick.fs - f.fs) <= 1 && total(f.fs, f.w, f.n) <= avail - 1) return f;
+        return f.fs === pick.fs && f.w === pick.w && f.n === pick.n ? f : pick;
+      });
+    };
+    run();
+    const ro = new ResizeObserver(run);
+    ro.observe(root);
+    return () => ro.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sig, mobile, compact]);
+  const shown = items.slice(-Math.max(1, fit.n));
+  const fs = fit.fs;
+  const lineCls = 'w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-[1.3] text-ink border-l-[5px]';
   return (
-    <div className={cn('pointer-events-none flex shrink-0 flex-col justify-end', mobile ? 'w-[min(300px,70vw)]' : compact ? 'w-[300px]' : 'w-[340px]')} style={{ height: mobile ? undefined : 'var(--log-h)' }}>
-      <div className="mb-1 flex items-center gap-1.5">
+    <div ref={rootRef} className={cn('pointer-events-none relative flex shrink-0 flex-col justify-end', mobile ? 'w-[min(300px,70vw)]' : '')} style={{ height: mobile ? undefined : 'var(--log-h)', width: mobile ? undefined : fit.w }}>
+      <div ref={twinRef} aria-hidden="true" className="invisible absolute inset-x-0 bottom-0 -z-10 flex flex-col gap-1">
+        {items.map((l) => (
+          <p key={l.key} className={lineCls} style={{ fontSize: fs }}>{l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[12px] not-italic">x{l.n}</span>}</p>
+        ))}
+      </div>
+      <div ref={headRef} className="mb-1 flex items-center gap-1.5">
         <span className="h-2 w-2 rotate-45 border-[1.5px] border-ink bg-violet" />
         <span className="font-head text-[13px] leading-none tracking-wider text-ink-2 uppercase">{LOG_HEAD}</span>
       </div>
-      {/* column-reverse + wrap: a line that no longer fits the height wraps into a column pushed out of view, so the stack never grows under the left panel */}
-      <div className="flex min-h-0 flex-1 flex-col-reverse flex-wrap content-start gap-1 overflow-hidden" style={{ columnGap: '100vw' }}>
-        {items.map((l, i) => {
-          const age = items.length - 1 - i;
+      <div className="flex flex-col gap-1">
+        <AnimatePresence initial={false}>
+        {shown.map((l, i) => {
+          const age = shown.length - 1 - i;
           return (
             <motion.p
               key={l.key}
@@ -133,17 +188,19 @@ export function Log({ compact, mobile }) {
               layout
               initial={{ opacity: 0 }}
               animate={{ opacity: Math.max(0.62, 1 - age * 0.19) }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
               transition={{ opacity: { duration: 0.3 }, layout: { type: 'spring', stiffness: 170, damping: 21, mass: 0.9 } }}
               className={cn(
-                'w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
+                lineCls,
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
-              style={{ fontSize: fs, borderLeftColor: `var(--color-${KIND_COLOR[l.kind] || 'ink-2'})` }}
+              style={{ fontSize: fs, transition: 'font-size 0.18s ease-out', borderLeftColor: `var(--color-${KIND_COLOR[l.kind] || 'ink-2'})` }}
             >
               {l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[12px] not-italic">x{l.n}</span>}
             </motion.p>
           );
-        }).reverse()}
+        })}
+        </AnimatePresence>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ description: Use when changing or reasoning about NON-MIND gameplay and data. Th
 
 # NON-MIND game structure
 
-**NON-MIND** is a very complex, abstract but detailed 3D auto-battler with auto-clicker and incremental layers, built with web technologies only. Its characters are named after emotional and affective regulation terms. The whole design is about **complexity**:
+**NON-MIND** is a very complex, abstract but detailed 3D game of seating and holding that plays itself, with auto-clicker and incremental layers, built with web technologies only. Its characters are named after emotional and affective regulation terms. The whole design is about **complexity**:
 - You start (and can reset to) a *simple* state.
 - You then get lost in incremental designs (splits, merges, repurposing, subtraction) until the complexity in 3D overwhelms you.
 - You let go ("non-mind"), and come back simple and deeper.
@@ -14,7 +14,7 @@ Unit stats are quirky and weird, and the explanations are more confusing than he
 
 The design remixes *systems* (never names, art or text) from four kinds of game:
 - **Card-table occultism with timed verbs**: verbs that take a card, decaying moods (Dread/Contentment/Fascination), seasons that demand something, and the cryptic, overwhelmed edge.
-- **Auto-battler drafting**: shop odds by level, tiers, merge-by-copies fusion (here, 2 of the same genome at the same link), aspect alliances at thresholds 2/4/6, interest, and streaks.
+- **Drafting in games of seating and holding**: shop odds by level, tiers, merge-by-copies fusion (here, 2 of the same genome at the same link), aspect alliances at thresholds 2/4/6, interest, and streaks.
 - **Idle/incremental layering**: habits with ×1.15 cost growth, odd upgrades scaling on run state, a prestige currency (`G.mu` in code, shown to the player as **residue**), and mirrors (deep multipliers).
 - **Slow-season pressure** with named fields and witnesses.
 
@@ -48,7 +48,7 @@ The skeleton is a formal ten-fold structure. Only its shape is used:
   | 7 | same/different | same | mirrorForms, sal ×1.3 |
   | 8 | observer-made | observer | count from clicks |
   | 9 | self-cancelling | cancel | noAspects |
-  | 10 | return to action | return | boss, oneShot 3% |
+  | 10 | return to action | return | great one, oneShot 3% |
 
 - **Simultaneity/mirroring**: the `mirror` purchase says "The same assembly, in every direction, under the same names". Each mirror gives ×2 affect, +2 unit cap, a third ring, +70 complexity and +20% stressor tolerance (`mirrorCost(G)` in game.js).
 - **"Small enters great"**: the stage 15 hint. Small (a leaf) enters great (a hybrid) through integrate; great enters small through split.
@@ -62,7 +62,7 @@ The skeleton is a formal ten-fold structure. Only its shape is used:
 |---|---|---|---|---|
 | 0 | appear | attend | (start) | core click |
 | 1 | explore | shop | clicks ≥ 5 | `buy`, TopBar attention |
-| 2 | grow | habits | wave ≥ 2 or kills ≥ 6 | `buyHabit`; upgrades from stage 2 |
+| 2 | grow | habits | wave ≥ 2 or settled ≥ 6 | `buyHabit`; upgrades from stage 2 |
 | 3 | combine | integrate | links ≥ 1 | `integrate` (free until insight exists) |
 | 4 | repurpose | repurpose | integrations ≥ 1 | `repurpose` |
 | 5 | increase | insight | habitsOwned ≥ 8 | insight regen, op costs, spells |
@@ -97,12 +97,12 @@ Each stage also:
   | stat | means |
   |---|---|
   | tol | tolerance, i.e. HP |
-  | sal | salience, i.e. damage |
-  | lat | latency, i.e. seconds between strikes |
+  | sal | salience, i.e. how much it eases |
+  | lat | latency, i.e. seconds between answers |
   | reach | range |
   | opa | opacity, i.e. % chance to be missed |
-  | lab | lability, i.e. damage variance |
-  | rec | recursion, i.e. % chance to strike twice |
+  | lab | lability, i.e. ease variance |
+  | rec | recursion, i.e. % chance to answer twice |
 
   How they combine:
   - `baseStats` is the weighted blend of the leaves' stats.
@@ -113,9 +113,9 @@ Each stage also:
   - A unit has its top 2 by weighted vote, or 3 if it has 4 or more leaves.
   - A tier activates at 2/4/6 *distinct head families* seated (`aspectTiers`).
   - A `fade` trait counts as every aspect.
-- **Families** (10, tiers 1-5): each has `aspects, field, witness, stats, ability, form, colors, text`. `ABILITIES` fire at charge 100. Charge comes from +14 per strike and from damage taken. The ability kinds are invert, store, flurry, retreat, heal, transfer, blink, burst_affect, taunt and equalize.
-- **Traits** (genes): one per link, stored in `u.traits`, max 10. They are inherited through `inheritTraits` (a union where a duplicate can double up with 35% chance) and counted as copies in battle (`tr`), so stacking genes scales them.
-- **Stressors** (enemies): intrusion, deadline, criticism, ambiguity, shame, and the abandonment boss on wave 10. They are scaled by `1.24^(gw-1) · (1 + 2·overwhelm) · (1 + 0.5·mirrors)`.
+- **Families** (10, tiers 1-5): each has `aspects, field, witness, stats, ability, form, colors, text`. `ABILITIES` fire at charge 100. Charge comes from +14 per answer and from weight taken. The ability kinds are invert, store, flurry, retreat, heal, transfer, blink, burst_affect, taunt and equalize.
+- **Traits** (genes): one per link, stored in `u.traits`, max 10. They are inherited through `inheritTraits` (a union where a duplicate can double up with 35% chance) and counted as copies during a wave (`tr`), so stacking genes scales them.
+- **Stressors**: intrusion, deadline, criticism, ambiguity, shame, and the abandonment great one on wave 10. They are scaled by `1.24^(gw-1) · (1 + 2·overwhelm) · (1 + 0.5·mirrors)`.
 
 ## 4. The 12-link ladder ("VERY genetic, be smart, evolve")
 
@@ -164,15 +164,15 @@ Details:
 ## 6. Economy layers
 
 - **Affect** (main incremental currency):
-  - Sources: clicks (`clickValue`), habits (`habitYield · affectMul` per second), kills (`value·3·1.18^(gw-1)`), wave wins (`20·1.35^(gw-1)`), and some traits and abilities.
+  - Sources: clicks (`clickValue`), habits (`habitYield · affectMul` per second), settled stressors (`value·3·1.18^(gw-1)`), held waves (`20·1.35^(gw-1)`), and some traits and abilities.
   - `affectMul` multiplies residue (`1 + 0.04·mu`), complexity (`1 + C/25`, so **complexity pays**), endings, `2^mirrors`, mythic tier, upgrades, fascination, and the away stance.
-- **Attention** (auto-battler gold):
+- **Attention** (gold of games of seating and holding):
   - It buys units (`TIER_COST [1..5]`), rerolls (2) and XP (5 for 4 XP).
-  - A win pays 7 + interest (1 per 10 held, capped at 5, or 10 with `thrift`) + a streak bonus (`min(3, floor(streak/3))`). A loss pays +3 and refills composure. A boss kill pays +2.
+  - A held wave pays 7 + interest (1 per 10 held, capped at 5, or 10 with `thrift`) + a streak bonus (`min(3, floor(streak/3))`). A wave not held pays +3 and refills composure. Settling a great one pays +2.
   - The shop leans toward the family you are climbing: from stage 3, each slot has a 30% chance (`SHOP_FOCUS`) to show the highest-link leaf unit's family.
   - **Mercy**: in prep, with the shop unlocked, nothing usable held and too little attention for the cheapest slot or a reroll, a tier-1 family appears in slot 0 and attention is lifted to 1. A mind is never left with nothing.
 - **Insight**: capped at 100. It regenerates at `1 + 0.15·level` per second and pays for ops and spells (`exhale`, `label`, `recollect`).
-- **Level/XP**: `XP_TO_LEVEL = [2, 3, 6, 10, 16, 26, 40, 60, 90]`, max 10; a win gives 2 xp, a loss 1. Unit cap is `min(30, level + 1 + 2·mirrors)`. Shop odds by level come from `SHOP_ODDS`.
+- **Level/XP**: `XP_TO_LEVEL = [2, 3, 6, 10, 16, 26, 40, 60, 90]`, max 10; a held wave gives 2 xp, one not held 1. Unit cap is `min(30, level + 1 + 2·mirrors)`. Shop odds by level come from `SHOP_ODDS`.
 - **Habits**: 10 of them (Breath to Identity), with cost `base·1.15^owned`.
 - **Upgrades**: odd scalers gated by stage: noticing, counting_breaths, old_wound, long_view, crowd, thrift, second_arrow, lending.
 - **Attendants**: auto-clickers at 0.5× click value and 0.25 clicks per second each.
@@ -203,8 +203,8 @@ capacity = 40·(1 + 0.3·stage)          (residue no longer widens it)
 overwhelm = clamp((C - capacity) / (capacity·0.12), 0, 1)
 ```
 - At overwhelm 1, composure drains 2% per second. Overwhelm also scales stressor tolerance by `1 + 1.2·overwhelm` (up to ×2.2) and speeds beats by ×0.7 above 0.5.
-- Stressor tolerance per global wave `gw`: `3.4 · 1.1^min(gw-1,18) · 1.04^clamp(gw-19,0,10) · 1.015^max(0,gw-29) · (1+1.2·overwhelm) · (1+0.2·mirrors) · 0.88^habituation` (habituation: +1 per loss on a wave, max 12, reset by a win). Salience `1.04^(gw-1)`.
-- Wave 10 of a cycle (arc `return`): each regulator strike has a 3% chance to deal the target's whole remaining tolerance (the one-strike rule).
+- Stressor tolerance per global wave `gw`: `3.4 · 1.1^min(gw-1,18) · 1.04^clamp(gw-19,0,10) · 1.015^max(0,gw-29) · (1+1.2·overwhelm) · (1+0.2·mirrors) · 0.88^habituation` (habituation: +1 per wave not held, max 12, reset by a held wave). Salience `1.04^(gw-1)`.
+- Wave 10 of a cycle (arc `return`): each regulator answer has a 3% chance to deal the target's whole remaining tolerance (the one-answer rule).
 - `mood.complexity = C/capacity` (eased) is what makes the visuals and the music richer.
 - **nonMind** (the reset): `muGain = floor((peak/8)^0.8 · (1 + stage/17) · (overwhelm ≥ 1 ? 2 : 1) · (1 + 0.15·depth))`, shown as **residue**. A new game keeps `mu, endings, depth+1, bestStage, totalT`; it starts with `3 + min(20, floor(√mu))` attention. Everything else becomes simple again. It emits a `reset` event, which triggers the audio collapse and a flash of 1.
 - `actions.nonMind` refuses below stage 1 (returns the same game); the UI gate is stricter.

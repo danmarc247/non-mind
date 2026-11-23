@@ -39,7 +39,7 @@ export default {
   forward_lean: {
     name: 'Vorwärtsneigung',
     principle: 'Schwung ist Gefühl, dem man einen Ort zum Hingehen gibt.',
-    quote: 'Die Zügel summen wie eine angeschlagene Saite, und der Weg antwortet.',
+    quote: 'Die Zügel summen wie eine gezupfte Saite, und der Weg antwortet.',
   },
   soft_courage: {
     name: 'Sanfter Mut',

@@ -174,7 +174,7 @@ function App() {
       </Canvas>
       {q.get('ui') !== '0' && <Panel />}
       <Book />
-      <CardToast />
+      <CardToast life={num('life', 4000)} />
     </div>
   );
 }

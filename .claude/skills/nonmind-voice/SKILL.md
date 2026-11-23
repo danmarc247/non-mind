@@ -12,7 +12,7 @@ Reference files: `src/game/data.js` (STAGES hints, LINKS, TRAITS, ASPECTS, FAMIL
 Text is **cryptic and oblique, more confusing than helpful, but it all works.** The player should not be able to read the number off the sentence, yet after playing, every sentence turns out to have been exactly true. Therefore:
 
 1. **Every sentence must be TRUE to the mechanic.** Before writing, state the mechanic in numbers (e.g. "heals the lowest-tolerance ally for 2.5x salience"). The line may hide it, but never contradict, exaggerate or invent it. If the mechanic changes, the text changes in the same commit.
-2. **Oblique, not wrong.** Use an image that is literally accurate (a lid keeps something in and releases it later = Lid stores harm and returns it).
+2. **Oblique, not wrong.** Use an image that is literally accurate (a lid keeps something in and releases it later = Lid stores weight and returns it).
 3. **Never jokey.** No puns, no winks, no "oops", no exclamation marks, no emoji, no second-person nagging. Dry understatement is allowed; punchlines are not. (Existing family texts such as "a career" are deadpan, not jokes; stay at that level or below.)
 4. **Short.** Hints and tooltips: under 12 words. Ambient lines: 10-18 words. Family text: one or two sentences.
 5. **Plain words, concrete nouns.** Lamp, tide, frost, door, knot, ledge. No jargon in flavour lines, no stat abbreviations.
@@ -46,19 +46,19 @@ For the last template, N must be a number the game could actually show (units se
 Mechanic first, then BAD (what to avoid) and GOOD.
 
 ### Unit text (family `text`)
-1. Reappraisal (inverts a target's strike): BAD "Haha, it flips the script!" GOOD "It turns the thing over until the thing has another side."
-2. Suppression (stores damage, returns it on death): BAD "A tough guy who holds it all in." GOOD "Nothing is happening. It will keep not happening, louder."
-3. Rumination (5 fast strikes, takes recoil): BAD "Overthinks everything LOL." GOOD "Again. And the again of again."
+1. Reappraisal (turns a stressor on its kin): BAD "Haha, it flips the script!" GOOD "It turns the thing over until the thing has another side."
+2. Suppression (stores weight, returns it when spent): BAD "A tough guy who holds it all in." GOOD "Nothing is happening. It will keep not happening, louder."
+3. Rumination (5 fast answers, takes recoil): BAD "Overthinks everything LOL." GOOD "Again. And the again of again."
 4. Avoidance (leaps to far rim): BAD "Runs away from problems." GOOD "It is excellent at being elsewhere."
-5. Containment (taunt + harden): BAD "The tank. Soaks hits." GOOD "It does not fix. It is a place where unfixed things may be."
+5. Containment (taunt + harden): BAD "The tank. Soaks it up." GOOD "It does not fix. It is a place where unfixed things may be."
 6. NEW Habituation (stressors lose salience the longer they stay): BAD "Gets used to things." GOOD "The same sound, a little less, each time it comes."
-7. NEW Catharsis (spends its tolerance to damage all near): BAD "Lets it all out!" GOOD "It empties itself and the room is not emptier."
+7. NEW Catharsis (spends its tolerance to ease all near): BAD "Lets it all out!" GOOD "It empties itself and the room is not emptier."
 
 ### Stat and trait explanations
-8. Tolerance: BAD "HP. How much damage before death." GOOD "How much can arrive before it stops being able to be here."
-9. Latency: BAD "Attack speed (lower is faster)." GOOD "The pause between a thing and its answer."
-10. Opacity: BAD "Dodge chance 30%." GOOD "The share of strikes that find only the place it was."
-11. Recursion: BAD "Chance to attack twice." GOOD "Sometimes it answers twice, once to itself."
+8. Tolerance: BAD "HP. How much it can take." GOOD "How much can arrive before it stops being able to be here."
+9. Latency: BAD "Speed (lower is faster)." GOOD "The pause between a thing and its answer."
+10. Opacity: BAD "Dodge chance 30%." GOOD "The share of what arrives that finds only the place it was."
+11. Recursion: BAD "Chance to act twice." GOOD "Sometimes it answers twice, once to itself."
 12. Trait `ease` (heals each second): BAD "Regenerates, nice." GOOD "Mends itself continuously."
 13. Trait `see` (ignores opacity and veils): BAD "True sight!" GOOD "It stops adding. Nothing hides from it."
 14. Aspect Vagal (members heal 2/5/10 per second): BAD "Healing vibes." GOOD "Members mend 5 of tolerance each second." (numbers allowed where exact)
@@ -74,8 +74,8 @@ Mechanic first, then BAD (what to avoid) and GOOD.
 ### Log and event lines (state what happened, obliquely, in past/present tense)
 21. Wave cleared: BAD "Wave 4 complete! +120 affect." GOOD "The wave is not gone; nor is it still here." (the +120 shows in the numeric HUD, not the prose)
 22. Unit fused to link 3: BAD "Merge success: Gladness unlocked." GOOD "A small yes, repeated."
-23. Unit fell: BAD "Your unit died." GOOD "It is no longer held. The place keeps its shape a moment."
-24. Boss arrives: BAD "Warning: boss incoming!!" GOOD "Something that was always coming has the shape of arriving."
+23. Unit fell: BAD "Your unit is gone." GOOD "It is no longer held. The place keeps its shape a moment."
+24. Boss arrives: BAD "Warning: great one incoming!!" GOOD "Something that was always coming has the shape of arriving."
 25. Overwhelm threshold: BAD "Overwhelm at 100%, careful." GOOD "Too many to count, equal in number to one's open hands."
 26. Cannot afford: BAD "Not enough affect." GOOD "Not yet enough has been felt for this." (still true: it costs affect)
 27. Seat taken: BAD "Slot occupied." GOOD "Something already stands there."
@@ -119,7 +119,7 @@ Two registers, keep them separate:
 ## Anti-patterns seen in drafts
 
 - Mood words with no mechanic ("feels heavy") on a unit that has no weight-related effect: false.
-- Plurals that lie: "Strikes five times" when `power: 5` is a damage multiplier; check `battle.js`, not the data label.
+- Plurals that lie: "Answers five times" when `power: 5` is a strength multiplier; check `battle.js`, not the data label.
 - Borrowed cadence: if a line sounds like something you have read, rewrite it from the mechanic outward.
 - Capitalised abstractions stacked three deep ("The Great Stillness of Being"): replace with one concrete noun.
 - Second-person commands in log lines ("You should attend"). The game observes; it does not instruct.
@@ -145,3 +145,32 @@ Before / after:
 4. Family Containment: "It does not fix. It is a place where unfixed things may be." -> "It does not fix. It is a warm place where unfixed things may stay the night."
 5. Ambient: "Just as dust settles by itself, so the mind settles by itself." -> "Just as dust settles by itself in the lamplight, so the mind settles by itself."
 6. Mutation Secure Base: "It leaves because it knows it may return." -> "It leaves because it knows the harbour light will be on."
+
+## No violent language
+
+Owner's rule, absolute and verbatim: "Do not use ANY violent language like 'battle' or 'fight' or 'aggression' in this game ever."
+
+This binds every player-visible string, the README (it is the in-game Manual), docs and skill prose, in English and German. Internal identifiers (`battle.js`, `stepBattle`, `harm()`, `kill()`, `enemies`, event names, ids, CSS) are not text and stay; never let them leak into a string.
+
+**Forbidden (all inflections, case-insensitive):** battle, battler, auto-battler, fight, fighting, combat, war, attack, strike (as hitting), hit (as hitting), blow, kill, slay, destroy, die, death, dead (as being defeated), enemy, foe, opponent, boss (as an enemy), damage, harm, hurt, wound, injure, weapon, aggression, aggressive, violent, assault, shoot, crush, smash, beat (as defeating), defeat, victory, win and lose (framing a conflict), conquer, raid, siege, army, soldier, victim. German: Kampf, kämpfen, Schlacht, Angriff, angreifen, Schlag, schlagen, Feind, Gegner, töten, Tod (as killing), Schaden, verletzen, Aggression, Waffe, Krieg, Sieg, Niederlage.
+
+**Glossary (use consistently):**
+
+| Instead of | Write |
+|---|---|
+| battle, fight, combat | the wave; holding; a wave is met, held, or passes |
+| auto-battler | a game of seating and holding that plays itself |
+| win / lose a wave | the wave is held / is not held |
+| attack, strike, hit (by a regulator) | answer, meet, reach, press back, ease |
+| attack (by a stressor) | press, weigh, lean on |
+| damage, harm | weight; tolerance is worn or spent |
+| salience (stat) | how much an answer eases or takes off |
+| kill, destroy, defeat (a stressor) | settle, dissolve, pass; "settled stressors" |
+| die, death, falls (a regulator) | is spent; rests until the next wave |
+| boss, enemy | the great one, the heavy one; stressor |
+| wound, hurt | ache, tender place; "to ache" |
+| tougher, hits harder | heavier, presses harder |
+
+The stance **Against** keeps its name (a psychological orientation); its text adds no force words. A wave "beat" stays only where it plainly means a pulse (ten beats to a wave).
+
+Review check: grep the diff for the forbidden list before handing back text.

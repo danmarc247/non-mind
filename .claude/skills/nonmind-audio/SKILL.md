@@ -51,12 +51,12 @@ Before `start()`, values snap, which keeps offline renders deterministic. A **de
 |---|---|
 | complexity 0 | **Ambient loops only**. 8 loops with incommensurate periods `17.3 … 33.7 s` (±3% jitter, × `periodScale`). Each holds 1-3 piano notes or 1-2 voice notes from `FAVOURED` degrees. Each orbits the listener on its own 45-135 s period, at radius 6-14. |
 | complexity ↑ | Ambient gain `1 - 0.5·smoothstep(.3,1,c) - .25·o` fades. Arpeggio bus `smoothstep(.05,.3,c)`. **Horns** enter at c > 0.06-0.28 on each chord start. **5 arpeggio voices** enter at thresholds `0.22, 0.36, 0.5, 0.64, 0.78`, with pattern lengths 6/8/5/7/9 (+0..3 additive process every M cycles), so they phase against each other. |
-| overwhelm | Tempo `30/(132+36·o)` s per eighth (132 to 168 bpm). Detune and doubled plucks. Filter cut `2400+5200·o`. Saturation mix `0.6·o²`. Two **extra 16th voices** (11 and 13 notes) at o > 0.22/0.5 when c > 0.4. **Shepard-Risset rise** (6 sines, gain `0.06·o^1.4`), killed after 4 s at o ≈ 0. The heartbeat speeds up. Horn cutoff and spread grow. |
+| overwhelm | Tempo `30/(132+36·o)` s per eighth (132 to 168 bpm). Detune and doubled plucks. Filter cut `2400+5200·o`. Saturation mix `0.6·o²`. Two **extra 16th voices** (11 and 13 notes) at o > 0.22/0.5 when c > 0.4. **Shepard-Risset rise** (6 sines, gain `0.06·o^1.4`), stopped after 4 s at o ≈ 0. The heartbeat speeds up. Horn cutoff and spread grow. |
 | tension | Drone (root + fifth, -1 oct) gain `0.045·ten`, LP `300+500·ten`. |
 | depth | `PALETTES[depth % 8]`: F dorian, Db lydian, Ab mixolydian, C aeolian, Eb ionian, G phrygian, E lydian, D aeolian. Each sets vowel, brightness, inharmonicity, pluck wave, 4-chord `prog` and `beats`. After 8 depths it transposes by fifths, gets brighter and more detuned. |
 | stance toward | Loops pulled to triad tones, "oh" vowel, darker high shelf, +lo shelf. |
 | stance away | Sparser (30% skip), more reverb, wider orbits, slower voice attack. |
-| stance against | Brighter (+4 dB high shelf), pulse waves, harder attack, less reverb. |
+| stance against | Brighter (+4 dB high shelf), pulse waves, firmer onset, less reverb. |
 | aspect vagal | 7 s breath noise swell |
 | aspect limbic | Piano sub-octave, +low shelf |
 | aspect cortical | Bell partial on plucks, brighter filters |
@@ -75,8 +75,8 @@ Before `start()`, values snap, which keeps offline renders deterministic. A **de
 
 Each instrument schedules at absolute time `t`, requests oscillators from the budget (and returns `false` when denied), and disconnects its nodes `onended`.
 - **piano** (felt): 2-op FM (ratio 1, decaying index), a slightly inharmonic 2nd partial, an optional sub (limbic), and a filtered-noise hammer.
-- **voice** (wordless): 3 detuned saws → 3 parallel formant bandpasses from `VOWELS` (a/o/u/e), a slow attack and fade-in vibrato.
-- **horn**: 2 saws at ±spread cents → a lowpass that sweeps 160 → cutoff → 180 Hz with the swell (attack 45% of dur), peak `0.13·vel`.
+- **voice** (wordless): 3 detuned saws → 3 parallel formant bandpasses from `VOWELS` (a/o/u/e), a slow onset and fade-in vibrato.
+- **horn**: 2 saws at ±spread cents → a lowpass that sweeps 160 → cutoff → 180 Hz with the swell (onset 45% of dur), peak `0.13·vel`.
 - **pluck**: triangle or soft `pulse` PeriodicWave (duty 0.3, rolled-off harmonics), with an optional detuned double and a ×4.01 bell partial.
 - **thump**: a sine falling f0 → f1. Used for the heartbeat.
 
@@ -158,7 +158,7 @@ Every call is wrapped in `try`, because sound must never break the game.
   - must end: tail RMS < 1e-3
   - duration ≤ 1.6 s (reset ≤ 8 s)
 - Soak: the live node count does not grow, and fewer than 20 nodes remain connected after `dispose()`.
-- Taste: SFX sit about 6 dB under the music in busy moments. Hits are short (≤ 0.4 s) and never harsh above 6 kHz for long. Nothing is a pure beep without an envelope (minimum attack 3-4 ms, setTargetAtTime decays).
+- Taste: SFX sit about 6 dB under the music in busy moments. Touch cues are short (≤ 0.4 s) and never harsh above 6 kHz for long. Nothing is a pure beep without an envelope (minimum onset 3-4 ms, setTargetAtTime decays).
 
 ## 8. Offline render workflow
 

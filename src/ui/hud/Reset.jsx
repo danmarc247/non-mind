@@ -28,9 +28,11 @@ export default function Reset({ compact, small }) {
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Residue remains, and makes the next time wider.'}>
-          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 76 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
-            <span className="font-title text-[12px] leading-none [text-shadow:none]">NON-MIND</span>
-            <span className={small ? 'mt-0.5 font-stat text-[12px] nm-tab [text-shadow:none]' : 'mt-1 font-stat text-[12px] nm-tab [text-shadow:none]'}>+{fmt(gain, { int: true })} residue</span>
+          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 84 : compact ? 100 : 116} onClick={() => setConfirm((c) => !c)} label="non-mind">
+            {/* two short lines in the heading face: large enough to read at a glance, and it fits inside the inner ring */}
+            {/* ink on a paper plate: the rings of the button never cross the letters */}
+            <span className={(small ? 'px-1.5 py-[3px] text-[15px]' : compact ? 'px-2 py-1 text-[18px]' : 'px-2 py-1 text-[21px]') + ' rounded-full border-2 border-ink bg-paper font-head font-black uppercase leading-none tracking-wide whitespace-nowrap text-ink [text-shadow:none]'}>non-mind</span>
+            <span className={(small ? 'mt-1 text-[12px]' : 'mt-1.5 text-[14px]') + ' rounded-full bg-ink/75 px-1.5 py-[2px] font-head leading-none tracking-wide whitespace-nowrap text-paper nm-tab [text-shadow:none]'}>+{fmt(gain, { int: true })} residue</span>
           </RingButton>
         </Tooltip>
       </motion.div>

@@ -9,12 +9,12 @@ Source of truth: `docs/TEAM.md` (org, lanes, contracts) and `docs/team-log.md` (
 
 ## Org
 
-- **Fable** is the genius boss and **mediator**. It owns architecture, contracts, integration, playtesting, and the hardest code itself (engine, genome-to-shader pipeline, arena). It is the only agent that runs `npm install`, edits `package.json`, `vite.config.js`, `vitest.config.js`, and the only one that touches git.
+- **Fable** is the genius lead and **mediator**. It owns architecture, contracts, integration, playtesting, and the hardest code itself (engine, genome-to-shader pipeline, arena). It is the only agent that runs `npm install`, edits `package.json`, `vite.config.js`, `vitest.config.js`, and the only one that touches git.
 - **Opus**: complex coding lanes (shaders, audio engine, HUD, UI kit).
 - **Sonnet**: smaller supportive tasks (tests, balance reports, content tables, mechanical ports).
 - **Haiku**: simple mini things (palettes, single sound effects, small data) and cheap checking agents (wiki re-reads).
 
-Agents can and should inform each other. The boss is the mediator, and that must be VISIBLE: every cross-lane need becomes a line in `docs/team-log.md`, and the mediator's routing is a line too. No agent edits another lane, no agent messages another lane in private.
+Agents can and should inform each other. The lead is the mediator, and that must be VISIBLE: every cross-lane need becomes a line in `docs/team-log.md`, and the mediator's routing is a line too. No agent edits another lane, no agent messages another lane in private.
 
 ## Working principles
 
@@ -29,7 +29,7 @@ Agents can and should inform each other. The boss is the mediator, and that must
 
 | Task | Model | Why |
 |---|---|---|
-| Game state shape, `actions`, `step`, battle engine, genome to shader pipeline | Fable (itself) | contract-defining, everything depends on it |
+| Game state shape, `actions`, `step`, wave engine (`battle.js`), genome to shader pipeline | Fable (itself) | contract-defining, everything depends on it |
 | Painter sky/post-process shaders (GLSL + lygia, ShaderMaterial) | Opus | multi-file, visual iteration |
 | Web Audio engine, adaptive music, offline-render harness | Opus | stateful, measured |
 | HUD (`src/ui/hud/**`), UI kit | Opus | many components, motion + layout |
@@ -37,7 +37,7 @@ Agents can and should inform each other. The boss is the mediator, and that must
 | Ambient line pools (`content/koans.js`), stage hints, unit text tables (with `nonmind-voice` loaded) | Sonnet | volume, rule-bound |
 | Port a React Bits component into `src/ui/bits/backgrounds/` | Sonnet | mechanical port |
 | 14 colour palettes, one sound effect (a blip, a bell), a small JSON table | Haiku | tiny, checkable |
-| "Does the public wiki of an auto-battler say X about economy?" re-read | Haiku | cheap, factual |
+| "Does the public wiki of a game of seating and holding that plays itself say X about economy?" re-read | Haiku | cheap, factual |
 | Deciding whether a stat needs a new contract field | Fable | arbitration |
 
 Rule of thumb: if wrong output would silently break other lanes, Fable or Opus. If a failing test or a glance catches it, Sonnet or Haiku.
@@ -104,7 +104,7 @@ The mediator verifies a claim by opening one screenshot or rerunning one command
 
 ## System re-reads (inspiration)
 
-When a system needs checking against how similar games work (auto-battler drafting, idle/incremental layering, card-table occultism with timed verbs), spawn a cheap Haiku checker. Plain page fetches of fan wikis are often blocked; the MediaWiki API with a browser User-Agent usually works. Instruct the checker: return a digest of SYSTEMS (numbers, loops, rules), no names, no flavour text, no quotes. The digest goes in the report, not in the repo, and the game's public text, code comments and docs never name the source games.
+When a system needs checking against how similar games work (drafting in games of seating and holding, idle/incremental layering, card-table occultism with timed verbs), spawn a cheap Haiku checker. Plain page fetches of fan wikis are often blocked; the MediaWiki API with a browser User-Agent usually works. Instruct the checker: return a digest of SYSTEMS (numbers, loops, rules), no names, no flavour text, no quotes. The digest goes in the report, not in the repo, and the game's public text, code comments and docs never name the source games.
 
 ## Commit / push rhythm (mediator only)
 

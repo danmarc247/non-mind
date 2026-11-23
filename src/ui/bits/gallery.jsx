@@ -158,7 +158,7 @@ function Gallery() {
           <div className="flex flex-wrap items-center gap-3">
             <StatChip label="Gold" value={42 + tick} tone="yolk" hint="Spend in the shop. +5 per round, +1 per 10 banked." />
             <StatChip label="Round" value="7/20" tone="ultra" />
-            <StatChip label="Lives" value={3} tone="blood" hint="Lose one each time the storm wins." />
+            <StatChip label="Lives" value={3} tone="blood" hint="Spent each time the storm is not held." />
             <StatChip label="Streak" value="+4" tone="leaf" />
           </div>
         </header>
@@ -181,7 +181,7 @@ function Gallery() {
             <Panel title="Actions" tone="yolk">
               <div className="flex flex-col gap-5 pt-1">
                 <div className="flex flex-wrap items-center gap-4">
-                  <InkButton tone="yolk" size="lg" hotkey="space">Fight</InkButton>
+                  <InkButton tone="yolk" size="lg" hotkey="space">Hold</InkButton>
                   <InkButton tone="magenta" hotkey="r">Reroll</InkButton>
                   <InkButton tone="teal" size="sm" hotkey="f">Lock</InkButton>
                 </div>
@@ -211,7 +211,7 @@ function Gallery() {
                   content={
                     <>
                       <div className="font-head text-base tracking-wide text-ink uppercase">Undertow</div>
-                      <div>Pulls the nearest enemy one tile closer. Synergy with <b className="text-ultra">Dread</b> at 3.</div>
+                      <div>Pulls the nearest stressor one tile closer. Synergy with <b className="text-ultra">Dread</b> at 3.</div>
                     </>
                   }
                 >
@@ -332,7 +332,7 @@ function Gallery() {
               <div className="flex flex-col gap-3 rounded-[18px] border-[3px] border-ink bg-paper p-4 shadow-[3px_4px_0_0_var(--color-ink)]">
                 <TextureButton variant="primary">Primary</TextureButton>
                 <TextureButton variant="accent" tone="teal">Accent · teal</TextureButton>
-                <TextureButton variant="destructive">Destructive</TextureButton>
+                <TextureButton variant="destructive">Warning</TextureButton>
                 <TextureButton variant="secondary">Secondary</TextureButton>
                 <TextureButton variant="minimal">Minimal</TextureButton>
               </div>
@@ -343,7 +343,7 @@ function Gallery() {
                   <Thumb a="ultra" b="yolk" />
                 </MinimalCardImage>
                 <MinimalCardTitle>Aspect: Dread</MinimalCardTitle>
-                <MinimalCardDescription>At 3: enemies start the round slowed.</MinimalCardDescription>
+                <MinimalCardDescription>At 3: stressors start the round slowed.</MinimalCardDescription>
               </MinimalCard>
             </Tile>
             <Tile title="neumorphbutton">

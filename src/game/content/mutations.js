@@ -29,8 +29,8 @@ const RAW = [
   ['mentalization', 'Other Minds', 'mentalization', 'It guesses the weather inside the other and guesses kindly.', 'of the Guessed Weather', 1, 'cortical', { reach: 1.2, sal: 0.95, lat: 1.05 }, F({ stretch: 0.2, rings: 0.2 })],
   ['projective_identification', 'Thrown Feeling', 'projective identification', 'It hands over the feeling, then watches the other begin to hold it.', 'of the Handed Fire', 1, 'shadow', { reach: 1.25, tol: 0.9 }, F({ spikes: 0.3 })],
   ['grounding', 'Feet Found', 'grounding', 'Five things seen. The floor, remembered.', 'of the Five Things', 1, 'somatic', { tol: 1.2, lat: 1.1 }, F({ stretch: 0.2 })],
-  ['intellectualization', 'Cold Diagram', 'intellectualization', 'It draws the wound to scale and stands behind the scale.', 'of the Cold Diagram', 1, 'cortical', { sal: 1.15, tol: 0.9 }, F({ hollow: 0.3 })],
-  ['humor_defense', 'Small Laugh', 'humor as defense', 'The joke lands on the wound and the wound is briefly lit.', 'of the Small Laugh', 1, 'mythic', { sal: 1.1, opa: 5, tol: 0.9 }, F({ noise: 0.2, twist: 0.2 })],
+  ['intellectualization', 'Cold Diagram', 'intellectualization', 'It draws the ache to scale and stands behind the scale.', 'of the Cold Diagram', 1, 'cortical', { sal: 1.15, tol: 0.9 }, F({ hollow: 0.3 })],
+  ['humor_defense', 'Small Laugh', 'humor as defense', 'The joke lands on the ache and the ache is briefly lit.', 'of the Small Laugh', 1, 'mythic', { sal: 1.1, opa: 5, tol: 0.9 }, F({ noise: 0.2, twist: 0.2 })],
 
   // ---- rarity 2
   ['vagal_brake', 'Soft Brake', 'vagal brake', 'A hand laid on the wheel so lightly the wheel does not notice.', 'of the Soft Brake', 2, 'vagal', { lat: 0.75, sal: 0.95, tol: 0.9 }, F({ rings: 0.5 })],
@@ -52,7 +52,7 @@ const RAW = [
   ['kindling', 'Kindled', 'kindling hypothesis', 'Each episode needs less to begin.', 'of the Lowered Spark', 2, 'limbic', { rec: 15, tol: 0.85 }, F({ spikes: 0.5, twist: 0.2 })],
   ['safety_behaviors', 'Small Charms', 'safety behaviors', 'The ritual works, and so the fear is never tested.', 'of the Small Charm', 2, 'void', { opa: 12, sal: 0.85, tol: 1.1 }, F({ rings: 0.3, hollow: 0.3 })],
   ['attentional_bias', 'Narrow Beam', 'attentional bias', 'Of all the room, it sees only the one thing that confirms.', 'of the Narrow Beam', 2, 'limbic', { reach: 1.4, lab: 0.6, sal: 1.1, tol: 0.85 }, F({ stretch: 0.4 })],
-  ['sensitization', 'Raw Nerve', 'sensitization', 'Each touch teaches it to hurt sooner.', 'of the Raw Nerve', 2, 'limbic', { sal: 1.35, lat: 0.9, tol: 0.75 }, F({ spikes: 0.5 })],
+  ['sensitization', 'Raw Nerve', 'sensitization', 'Each touch teaches it to ache sooner.', 'of the Raw Nerve', 2, 'limbic', { sal: 1.35, lat: 0.9, tol: 0.75 }, F({ spikes: 0.5 })],
   ['self_soothing', 'Own Lullaby', 'self-soothing', 'It hums the thing its first holder hummed.', 'of the Borrowed Hum', 2, 'vagal', { tol: 1.3, sal: 0.85, rec: 5 }, F({ rings: 0.4 })],
   ['emotional_inertia', 'Slow Weather', 'emotional inertia', 'Yesterday\'s mood is the climate of today, lingering at the window.', 'of the Slow Weather', 2, 'somatic', { lat: 1.3, tol: 1.4, sal: 1.1 }, F({ twist: 0.2, rings: 0.3 })],
 
@@ -65,11 +65,11 @@ const RAW = [
   ['hyperarousal', 'Ready Wire', 'hyperarousal', 'The alarm is the only thing awake in the house.', 'of the Ready Wire', 3, 'limbic', { lat: 0.6, sal: 1.2, tol: 0.65 }, F({ spikes: 0.6, noise: 0.4 })],
   ['shadow_integration', 'The Rejected Guest', 'shadow integration (Jung)', 'It sets a place for what it refused. The meal is awkward and complete.', 'of the Rejected Guest', 3, 'shadow', { sal: 1.5, tol: 1.2, lab: 1.5, opa: -5 }, F({ hollow: 0.4, twist: 0.4 })],
   ['self_compassion', 'Own Friend', 'self-compassion', 'It speaks to itself as it would to the one it loves.', 'of the Kind Voice', 3, 'vagal', { tol: 1.6, sal: 0.85, lat: 1.1 }, F({ rings: 0.5, hollow: 0.3 })],
-  ['return_of_the_repressed', 'Return', 'return of the repressed', 'It was buried upright. It climbed out the same way.', 'of the Climbing Dead', 3, 'shadow', { sal: 1.6, rec: 15, tol: 0.7 }, F({ twist: 0.5, spikes: 0.4 })],
+  ['return_of_the_repressed', 'Return', 'return of the repressed', 'It was buried upright. It climbed out the same way.', 'of the Upright Burial', 3, 'shadow', { sal: 1.6, rec: 15, tol: 0.7 }, F({ twist: 0.5, spikes: 0.4 })],
   ['metacognition', 'Watcher Above', 'metacognitive awareness', 'The thought and the one who has it, in separate chairs.', 'of the Second Chair', 3, 'cortical', { lat: 0.8, reach: 1.3, tol: 0.8 }, F({ stretch: 0.5, hollow: 0.3 })],
   ['secure_attachment', 'First Trust', 'secure attachment', 'It was held early. It stands as if held still.', 'of the Early Hold', 3, 'relational', { tol: 1.5, reach: 1.2, sal: 0.9, lat: 1.15 }, F({ rings: 0.5 })],
   ['somatic_marker', 'Gut Ledger', 'somatic marker hypothesis', 'The body already signed. The mind reads the receipt.', 'of the Gut Ledger', 3, 'somatic', { sal: 1.4, reach: 1.2, lat: 1.2 }, F({ stretch: 0.3, noise: 0.4 })],
-  ['trauma_bond', 'Tight Knot', 'trauma bonding', 'The harm and the holding arrive in the same hand.', 'of the Tight Knot', 3, 'relational', { tol: 1.7, sal: 1.2, reach: 0.7, lat: 1.3 }, F({ twist: 0.5, rings: 0.3 })],
+  ['trauma_bond', 'Tight Knot', 'trauma bonding', 'The ache and the holding arrive in the same hand.', 'of the Tight Knot', 3, 'relational', { tol: 1.7, sal: 1.2, reach: 0.7, lat: 1.3 }, F({ twist: 0.5, rings: 0.3 })],
   ['depersonalization', 'Behind Glass', 'depersonalization', 'It moves its own hand and watches it, politely, from very far.', 'of the Far Lit Window', 3, 'void', { opa: 30, tol: 0.8, lat: 1.2 }, F({ hollow: 0.7 })],
   ['trigger_generalization', 'Everything Rhymes', 'stimulus generalization', 'One song, once, in a room at night. Now every song is that song.', 'of the Wide Echo', 3, 'limbic', { reach: 1.6, lab: 1.6, tol: 0.8 }, F({ spikes: 0.5, noise: 0.3 })],
   ['working_through', 'Slow Digestion', 'working through (Freud)', 'Again, but this time it stays until the end of the sentence.', 'of the Finished Sentence', 3, 'mythic', { tol: 1.4, rec: 12, lat: 1.4 }, F({ twist: 0.4, rings: 0.3 })],
@@ -77,7 +77,7 @@ const RAW = [
   // ---- rarity 4
   ['corrective_experience', 'Different Ending', 'corrective emotional experience', 'The old scene, replayed with a different hand on the door.', 'of the Gentler Ending', 4, 'mythic', { tol: 1.8, sal: 1.4, lat: 1.3 }, F({ rings: 0.6, hollow: 0.3 })],
   ['radical_acceptance', 'Total Yes', 'radical acceptance', 'It has stopped arguing with the weather. The weather, unobserved, thins.', 'of the Total Yes', 4, 'vagal', { tol: 1.5, sal: 1.2, opa: 15, lat: 1.2 }, F({ hollow: 0.5, rings: 0.4 })],
-  ['reconsolidation', 'Reopened', 'memory reconsolidation', 'To change a memory, first it must be allowed to hurt again.', 'of the Opened Wound', 4, 'cortical', { sal: 1.8, lat: 0.8, tol: 0.7 }, F({ twist: 0.6, noise: 0.3 })],
+  ['reconsolidation', 'Reopened', 'memory reconsolidation', 'To change a memory, first it must be allowed to ache again.', 'of the Opened Ache', 4, 'cortical', { sal: 1.8, lat: 0.8, tol: 0.7 }, F({ twist: 0.6, noise: 0.3 })],
   ['dorsal_shutdown', 'Dorsal Dark', 'dorsal vagal shutdown', 'The oldest brake. It does not slow the car. It removes the road.', 'of the Old Brake', 4, 'void', { opa: 40, tol: 1.5, sal: 0.6, lat: 1.6 }, F({ hollow: 0.8 })],
   ['ego_dissolution', 'No Edge', 'ego dissolution', 'The one who suffers cannot be found. The suffering is not told.', 'of the Missing Edge', 4, 'void', { opa: 25, sal: 2.0, tol: 0.6, reach: 1.4 }, F({ hollow: 0.6, noise: 0.5 })],
   ['oceanic_feeling', 'Oceanic', 'oceanic feeling', 'No boundary, no shore, and no one drowning, only the long tide.', 'of the Shoreless Sea', 4, 'mythic', { tol: 2.0, reach: 1.6, sal: 0.8, lat: 1.5 }, F({ rings: 0.8, stretch: 0.3 })],

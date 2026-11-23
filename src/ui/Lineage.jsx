@@ -48,7 +48,7 @@ function Map2D() {
   return (
     <div ref={host} className="absolute inset-0 overflow-hidden">
       {failed && <p className="absolute inset-0 m-auto h-fit w-fit font-body italic text-ink-2">{TX.empty}</p>}
-      {empty && !failed && <p className="pointer-events-none absolute inset-x-0 bottom-24 text-center font-body text-sm italic text-ink-2">{TX.empty}</p>}
+      {empty && !failed && <p className="pointer-events-none absolute inset-x-0 bottom-40 px-4 text-center sm:bottom-24 font-body text-sm italic text-ink-2">{TX.empty}</p>}
       <AnimatePresence>
         {tip && (
           <motion.div key="tip" initial={{ opacity: 0, scale: 0.94, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.12 } }}
@@ -105,7 +105,7 @@ export default function Lineage({ initialOpen = false } = {}) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div key="lineage" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
+        <motion.div key="lineage" aria-modal="true" role="dialog" data-modal="lineage" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
           <motion.div onClick={(e) => e.stopPropagation()}
             className="relative h-[min(88dvh,900px)] max-h-[calc(100dvh-32px)] w-[min(1180px,100%)] overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"

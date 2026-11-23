@@ -89,7 +89,7 @@ export function Gauges({ G, compact }) {
           format={() => <span className="nm-tab">{fmt(G.complexity, { int: true })}/{fmt(G.capacity, { int: true })}</span>}
         />
       </Tooltip>
-      <Tooltip side="bottom" content="Composure. What reaches the centre takes it away. When it is gone, the wave is lost.">
+      <Tooltip side="bottom" content="Composure. What reaches the centre takes it away. When it is gone, the wave is not held.">
         <Meter className="w-full" label={<Scr k={4}>composure</Scr>} value={G.composure / G.composureMax} tone="teal" danger={G.composure / G.composureMax < 0.25} />
       </Tooltip>
     </div>

@@ -178,7 +178,7 @@ export const actions = {
     G.units.splice(G.units.indexOf(u), 1); G.attention += Math.max(1, Math.round(tierOf(u.g) * u.link * 0.75 * Math.sqrt(leafCount(u.g))));
     G.events.push({ type: 'unitGone', id, why: 'sell' }); G.events.push({ type: 'sfx', name: 'sell' }); return true;
   },
-  // seat = {ring, dir} or null for bench. Swaps if occupied. Allowed any time; applies next wave if fighting.
+  // seat = {ring, dir} or null for bench. Swaps if occupied. Allowed any time; applies next wave if one is being held.
   place(G, id, seat) {
     const u = unitById(G, id); if (!u || u.busy) return false;
     if (seat) {

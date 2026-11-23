@@ -11,7 +11,7 @@ import CardMark from './CardMark.jsx';
 const LIFE_MS = 4000;
 const POP = { type: 'spring', stiffness: 520, damping: 26, mass: 0.7 };
 
-export default function CardToast({ className = 'bottom-[10.5rem]' }) {
+export default function CardToast({ className = 'bottom-[10.5rem]', life = LIFE_MS }) {
   const [shown, setShown] = useState(null);   // { id, key }
   const timer = useRef(0);
   useEffect(() => {
@@ -19,13 +19,13 @@ export default function CardToast({ className = 'bottom-[10.5rem]' }) {
       if (!cardById[id]) return;
       clearTimeout(timer.current);
       setShown({ id, key: Date.now() });
-      timer.current = setTimeout(() => setShown(null), LIFE_MS);
+      timer.current = setTimeout(() => setShown(null), life);
     };
     const off = onEvent((e) => { if (e.type === 'cardCollect') show(e.id); });
     const win = (e) => show(e.detail?.id);
     window.addEventListener('nonmind:cardtoast', win);
     return () => { off(); window.removeEventListener('nonmind:cardtoast', win); clearTimeout(timer.current); };
-  }, []);
+  }, [life]);
   const card = shown && cardById[shown.id];
   return (
     <div className={`pointer-events-none fixed inset-x-0 z-[45] flex justify-center px-4 ${className}`}>

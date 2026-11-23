@@ -1,6 +1,6 @@
 // Ceremony: the big moments, staged as short GSAP timelines over everything (pointer-events none).
 // stage unlock, a link of 5+, an ending, the wave's arc, the reset. One timeline at a time:
-// a new ceremony of equal or higher weight kills the running one; a lighter one waits its turn by being dropped.
+// a new ceremony of equal or higher weight ends the running one; a lighter one waits its turn by being dropped.
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { STAGES, LINKS, WAVE_ARC } from '../game/data.js';

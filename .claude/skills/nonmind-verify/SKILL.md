@@ -27,7 +27,7 @@ NM_CACHE_DIR=/tmp/nm-cache-sky npx vite --port 5181 --strictPort > /tmp/nm-sky.l
 sleep 4; curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5181/sky-gallery.html   # expect 200
 ```
 
-`--strictPort` makes a collision fail loudly instead of silently moving to 5182. Pick a port from the lane's brief. Kill your server when done: `kill %1` or `pkill -f 'port 5181'`.
+`--strictPort` makes a collision fail loudly instead of silently moving to 5182. Pick a port from the lane's brief. Stop your server when done: `kill %1` or `pkill -f 'port 5181'`.
 
 ## 2. Screenshot script (copy-paste)
 

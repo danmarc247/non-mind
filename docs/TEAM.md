@@ -2,7 +2,7 @@
 
 ## Org
 
-- **Fable (boss, mediator)**: architecture, contracts, the hardest code (engine, genome-to-shader pipeline, arena), integration, playtesting.
+- **Fable (lead, mediator)**: architecture, contracts, the hardest code (engine, genome-to-shader pipeline, arena), integration, playtesting.
 - **Opus**: complex coding lanes (shaders, audio engine, HUD, UI kit).
 - **Sonnet**: supportive tasks (tests, balance reports, content tables, mechanical ports).
 - **Haiku**: mini things (palettes, single sound effects, small data).
