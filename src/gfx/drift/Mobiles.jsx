@@ -111,7 +111,7 @@ export function Mobiles({ count = 14, scale = 1, clearCone = true, instant = fal
     const dt = Math.min(dtRaw, 0.1), s = st.current;
     const O = mood.overwhelm, t = mood.time;
     // reset flash: a rising edge above 0.8 throws everything outward; it drifts back over ~3 s
-    if (mood.flash > 0.8 && s.lastFlash <= 0.8) s.scatter = 1;
+    if (mood.flash > 0.6 && mood.flash - s.lastFlash > 0.3) s.scatter = 1;
     s.lastFlash = mood.flash;
     s.scatter = ease(s.scatter, 0, dt, 0.7);
     const target = controls?.target || driftState.cameraTarget;

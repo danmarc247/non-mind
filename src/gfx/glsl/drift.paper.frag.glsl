@@ -44,10 +44,7 @@ void main() {
   float t = uTime * 0.6 + uSeed * 7.0;
   vec3 col; float height = 0.0;
 
-  if (!front) {
-    // bare paper back with the interior faintly showing through
-    col = mix(uPaper, uD, 0.12) * (0.9 + 0.05 * dr_noise(p * 40.0));
-  } else if (uPattern < 0.5) {
+  if (uPattern < 0.5) {
     // ring field
     float cells = 3.0 + 3.0 * uDetail;
     vec2 g = p * cells;
@@ -104,6 +101,8 @@ void main() {
     height = m * (0.4 + 0.6 * f);
   }
 
+  // the back is bare paper with the interior bleeding through
+  if (!front) { col = mix(uPaper, col, 0.3) * (0.92 + 0.06 * dr_noise(p * 40.0)); height *= 0.3; }
   // impasto relief from derivatives
   vec2 slope = clamp(vec2(dFdx(height), dFdy(height)) * 2.2, -0.6, 0.6);
   vec3 nrm = normalize(vec3(-slope, 1.0));

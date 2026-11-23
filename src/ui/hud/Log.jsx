@@ -88,10 +88,14 @@ export function Herald({ size = 30 }) {
           className="relative max-w-[min(620px,100%)] text-center font-body italic leading-[1.2] text-ink"
           style={{ fontSize: size, textShadow: '0 0 6px var(--color-paper), 0 0 14px var(--color-paper), 0 0 24px var(--color-paper)' }}
         >
-          <span className="relative">
-            <Underline tone={KIND_COLOR[herald.kind] || 'ink-2'} />
-            <span className="relative">{herald.text}</span>
-          </span>
+          {/* the brush underline is painted as a per-line background so it spans every wrapped line fully
+              (an absolutely positioned stroke inside an inline span only covered part of multi-line text) */}
+          <span
+            style={{
+              backgroundImage: `linear-gradient(transparent 66%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 66%, color-mix(in srgb, var(--color-${KIND_COLOR[herald.kind] || 'ink-2'}) 50%, transparent) 90%, transparent 90%)`,
+              WebkitBoxDecorationBreak: 'clone', boxDecorationBreak: 'clone', padding: '0 0.3em', borderRadius: '0.3em',
+            }}
+          >{herald.text}</span>
         </motion.p>
       )}
     </div>

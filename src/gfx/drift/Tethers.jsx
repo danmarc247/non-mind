@@ -62,7 +62,7 @@ export function Tethers({ width = 1.4, instant = false }) {
     const dt = Math.min(dtRaw, 0.1), u = mat.uniforms, t = mood.time, O = mood.overwhelm;
     u.uRes.value.set(size.width * viewport.dpr * 0.5, size.height * viewport.dpr * 0.5);
     u.uWidth.value = width * viewport.dpr;
-    if (mood.flash > 0.8 && st.last <= 0.8) st.snap = 1;
+    if (mood.flash > 0.6 && mood.flash - st.last > 0.3) st.snap = 1;
     st.last = mood.flash; st.snap = ease(st.snap, 0, dt, 0.8);
     const M = driftState.mobiles;
     TETHER_DEFS.forEach((d, i) => {

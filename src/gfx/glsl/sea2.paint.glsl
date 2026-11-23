@@ -54,16 +54,17 @@ vec4 mv_marble(SeaCtx c) {
   float n1 = snoise(vec3(q, c.t * 0.04));
   q += vec2(-c.N.y, c.N.x) * n1 * 0.45 + c.N * n1 * 0.2;
   float n2 = snoise(vec3(q * 1.8 + 3.1, c.t * 0.05));
-  float v = (n1 * 1.3 + n2 * 0.6 + c.fn * 0.5) * 2.2 + c.r * 0.06;
+  float v = (n1 * 1.3 + n2 * 0.6 + c.fn * 0.5) * 1.15 + c.r * 0.05;
   float f = fract(v), id = floor(v);
   vec3 col = mix(sp_pal(id), sp_pal(id + 1.0), smoothstep(0.82, 0.93, f));
-  float w = fwidth(v) * 1.2 + 0.01;
-  float vein = sp_aa(abs(f - 0.5) - 0.47, w);                            // paper vein at each band seam
+  float w = fwidth(v) + 0.004;
+  float fade = smoothstep(0.12, 0.04, w);                                 // lines fade before they alias
+  float vein = sp_aa(0.465 - abs(f - 0.5), w) * fade;                            // paper vein at each band seam
   float across = dot(c.p, c.N);
   float br = sp_vn(across * 26.0) * 0.6 + sp_vn(across * 71.0) * 0.4;
   col *= 0.9 + 0.2 * br;
   col = mix(col, uPaper, vein * 0.9);
-  float inkv = sp_aa(abs(fract(v * 0.5 + 0.25) - 0.5) - 0.485, w);       // every other seam carries ink
+  float inkv = sp_aa(0.482 - abs(fract(v * 0.5 + 0.25) - 0.5), w * 0.5) * fade;       // every other seam carries ink
   col = mix(col, uInk, inkv * 0.6);
   return vec4(col, 0.25 * br + 0.35 * vein + 0.2 * smoothstep(0.0, 0.9, f));
 }
@@ -80,8 +81,8 @@ vec4 mv_kaleido(SeaCtx c) {
   vec3 col = sp_pal(ri * 2.0 + pi);
   col = mix(col, uGround, 0.25 * step(0.5, fract((ri + pi) * 0.5)));
   float wr = fwidth(rings) + 0.01, wp = fwidth(petal) + 0.01;
-  float lr = sp_aa(abs(fract(rings) - 0.5) - 0.46, wr);
-  float lp = sp_aa(abs(fract(petal) - 0.5) - 0.46, wp);
+  float lr = sp_aa(0.47 - abs(fract(rings) - 0.5), wr) * smoothstep(0.15, 0.05, wr);
+  float lp = sp_aa(0.47 - abs(fract(petal) - 0.5), wp) * smoothstep(0.15, 0.05, wp);
   col = mix(col, uInk, max(lr, lp) * 0.85);
   float spoke = sp_aa(am * c.r - 0.05 - 0.02 * c.r * 0.1, 0.03) * smoothstep(1.6, 3.0, c.r);
   col = mix(col, uPaper, spoke);
@@ -121,22 +122,27 @@ vec4 mv_colonies(SeaCtx c) {
   return vec4(col, 0.6 * outline + 0.2 * sp_aa(d, w) + 0.3 * pip);
 }
 
-// (e) reaction-diffusion look: band-limited noise thresholded; spots near the core, labyrinths outward
+// (e) reaction-diffusion look: contour stripes of a slow noise give uniform-width worms (labyrinth);
+// multiplying two crossed stripe fields gives spots. Spots near the core, labyrinths outward.
 vec4 mv_reaction(SeaCtx c) {
-  vec2 q = c.p * 0.62 + c.g * 0.25;
-  float n = snoise(vec3(q, c.t * 0.02)) * 0.7 + snoise(vec3(q * 2.05 + 7.3, c.t * 0.03)) * 0.3;
-  float thr = mix(0.42, 0.0, smoothstep(2.5, 9.5, c.r + 1.6 * sin(c.t * 0.05 + c.a * 2.0)));
-  float f = n - thr;
-  float w = fwidth(f) + 0.006;
-  float m = sp_aa(-f, w);
-  float rim = sp_aa(abs(f) - 0.035, w);
-  float core = sp_aa(-(f - 0.16), w);
-  vec3 col = mix(uPal[2], uGround, 0.15);
+  vec2 q = c.p * 0.2 + c.g * 0.18;
+  float n1 = snoise(vec3(q, c.t * 0.015));
+  float n2 = snoise(vec3(q * 1.3 + 7.3, c.t * 0.02));
+  float k = 7.5;
+  float s1 = sin(n1 * k * 2.0 + c.t * 0.1), s2 = sin(n2 * k * 2.0 - c.t * 0.08);
+  float lab = s1;
+  float spot = min(s1, s2) * 1.2 + 0.35;                   // islands where both stripe fields agree
+  float mixr = smoothstep(2.5, 8.0, c.r + 1.5 * sin(c.t * 0.05 + c.a * 2.0));
+  float f = mix(spot, lab, mixr);
+  float w = fwidth(f) + 0.02;
+  float m = sp_aa(-f, w);                                 // inside the pattern
+  float rim = sp_aa(abs(f) - 0.12, w);
+  float core = sp_aa(-(f - 0.6), w);
+  vec3 col = mix(uPal[4], uGround, 0.35);
   col = mix(col, uPal[0], m);
-  col = mix(col, uPal[3], core * 0.8);
+  col = mix(col, uPal[2], core * 0.85);
   col = mix(col, uPaper, rim);
-  col = mix(col, uInk, sp_aa(abs(f + 0.12) - 0.01, w) * 0.45);           // ghost contour outside
-  return vec4(col, 0.35 * m + 0.4 * rim + 0.15 * core);
+  return vec4(col, 0.35 * m + 0.45 * rim + 0.2 * core);
 }
 
 // (f) folded interference: iterative domain folding, orbit-trap colouring, thin paper interference lines

@@ -20,7 +20,7 @@ Gallery: `/drift-gallery.html?stage=&cx=&ow=&flash=1&az=<deg>&pol=&dist=&rot=0&p
 
 | component | props (defaults) | reads |
 |---|---|---|
-| `<Mobiles />` | `count=14` (first N of `MOBILE_DEFS`), `scale=1` (positions and sizes), `clearCone=true`, `instant=false` (gallery: skips the appear easing) | stage (unlock, intricacy, paleness at stage 0-4), complexity (intricacy), overwhelm (crowd inward, tear, torn twins, faster drift), flash (a rising edge above 0.8, which is a reset, scatters the bodies outward and fades them; they drift back over about 3 s), audio.low (breath), the live camera and the `controls.target` |
+| `<Mobiles />` | `count=14` (first N of `MOBILE_DEFS`), `scale=1` (positions and sizes), `clearCone=true`, `instant=false` (gallery: skips the appear easing) | stage (unlock, intricacy, paleness at stage 0-4), complexity (intricacy), overwhelm (crowd inward, tear, torn twins, faster drift), flash (a jump to above 0.6, which only a reset (flash 1) produces, scatters the bodies outward and fades them; they drift back over about 3 s), audio.low (breath), the live camera and the `controls.target` |
 | `<Strata />` | `count=5`, `scale=1`, `instant=false` | stage (2 sheets at stage 0, 3 at 5, 4 at 9, 5 at 13), complexity (pattern density), overwhelm (spin, separation), flash, audio.low |
 | `<Motes />` | `max=420`, `yMin=-32`, `yMax=24`, `rMin=15`, `rMax=62`, `size=0.32`, `instant=false` | complexity and stage (count, from 18% to 100%), flash (flare and scatter), audio.high (shimmer and size), overwhelm (speed) |
 | `<Tethers />` | `width=1.4` (px, scaled by dpr), `instant=false` | the Mobiles registry (`driftState.mobiles`), `gatePos`, stage (unlock), overwhelm (wider gaps, fray), flash (the gaps snap open) |
