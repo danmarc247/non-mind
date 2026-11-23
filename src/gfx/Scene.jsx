@@ -11,6 +11,7 @@ import PainterSkyDefault, * as SkyMod from './PainterSky.jsx';
 import PainterPostDefault, * as PostMod from './PainterPost.jsx';
 import { game, tick, act, choose, onEvent, notify } from '../game/store.js';
 import { ARENA, seatPos, gatePos, ringsOpen, FAMILIES, aspectsOf, leaves, ANY_STRESSOR } from '../game/index.js';
+import { GatePortals, SeatRings, GlassVessel, CoreAura, SeaCaustics } from './arena/index.js';
 import Director, { director } from './Director.jsx';
 import seaFrag from './glsl/sea.frag.glsl';
 import seaVert from './glsl/sea.vert.glsl';
@@ -49,12 +50,6 @@ function Sea() {
         <shaderMaterial vertexShader={seaVert} fragmentShader={seaFrag} uniforms={sideU} />
       </mesh>
       <mesh position-y={SEA_Y - 5} rotation-x={Math.PI / 2}><circleGeometry args={[SEA_R * 0.96, 96]} /><meshBasicMaterial color={col(PALETTE.ink)} /></mesh>
-      {/* glass: rim and wall */}
-      <mesh position-y={SEA_Y + 0.55} rotation-x={Math.PI / 2}><torusGeometry args={[SEA_R + 0.12, 0.09, 12, 128]} /><meshBasicMaterial color={col(PALETTE.paper)} /></mesh>
-      <mesh position-y={SEA_Y - 2.2}>
-        <cylinderGeometry args={[SEA_R + 0.12, SEA_R * 0.96 + 0.12, 5.6, 96, 1, true]} />
-        <meshBasicMaterial color={col(PALETTE.paper)} transparent opacity={0.13} depthWrite={false} side={THREE.DoubleSide} />
-      </mesh>
     </group>
   );
 }
@@ -258,11 +253,14 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Director />
       <PainterSky />
       <Sea />
-      <Gates />
-      <Seats />
+      <SeaCaustics />
+      <GatePortals />
+      <SeatRings />
       <Core />
+      <CoreAura />
       <Bodies />
       <Fx />
+      <GlassVessel />
       <OrbitControls makeDefault enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}
     </Canvas>
