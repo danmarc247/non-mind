@@ -15,7 +15,7 @@ const dread = (G) => G.moods.filter((m) => m.kind === 'dread').length;
 //          habit:<id> | upgrade:<id> | spell:<id> | verb:<id>:<unitId> | stance | mirror | attendant | reset | lineage | codex
 const RULES = [
   (G) => G.overwhelm >= 1 && { id: 'reset-now', target: 'reset', weight: 100, text: 'It is too much. It was always this much.', plain: `Let go: NON-MIND returns you to simple and keeps ${muGain(G)} residue.` },
-  (G) => G.overwhelm > 0.6 && G.overwhelm < 1 && { id: 'reset-soon', target: 'reset', weight: 40, text: 'The vessel is nearly full of what you made.', plain: 'Complexity is close to capacity. Resetting is a reward, not a loss.' },
+  (G) => G.overwhelm > 0.6 && G.overwhelm < 1 && { id: 'reset-soon', target: 'reset', weight: 40, text: 'The vessel is nearly full of what you made, and humming.', plain: 'Complexity is close to capacity. Resetting is a reward, not a loss.' },
   (G) => {
     if (!unlocked(G, 'shop')) return null;
     // a twin in the shop that would fuse with something you hold is the best buy there is
@@ -28,7 +28,7 @@ const RULES = [
   (G) => {
     const b = bench(G);
     if (!b.length || seated(G).length >= unitCap(G)) return null;
-    return { id: 'seat', target: `unit:${b[0].id}`, weight: 65, text: `${nameOf(b[0].g)} is waiting to be somewhere.`, plain: 'Select it, then click an empty ring on the sea to seat it.' };
+    return { id: 'seat', target: `unit:${b[0].id}`, weight: 65, text: `${nameOf(b[0].g)} is waiting by the door to be somewhere.`, plain: 'Select it, then click an empty ring on the sea to seat it.' };
   },
   (G) => !seated(G).length && unlocked(G, 'shop') && G.shop.some((id) => id && G.attention >= TIER_COST[FAMILY[id].tier - 1]) && { id: 'first-buy', target: `shop:${G.shop.findIndex((id) => id && G.attention >= TIER_COST[FAMILY[id].tier - 1])}`, weight: 80, text: 'Nothing is seated. The gates will not wait for that.', plain: 'Buy an arrival: it takes a seat by itself.' },
   (G) => {
@@ -38,7 +38,7 @@ const RULES = [
     return room && i >= 0 && G.attention >= 4 && { id: 'buy', target: `shop:${i}`, weight: 30, text: 'Attention unspent is attention unheld.', plain: `You can afford ${FAMILY[G.shop[i]].name}.` };
   },
   (G) => unlocked(G, 'shop') && G.level < 10 && G.attention >= COSTS.xp + 10 && seated(G).length >= unitCap(G) && { id: 'grow', target: 'xp', weight: 45, text: 'Every seat is taken. There could be more seats.', plain: 'GROW raises your level: one more regulator can be held, and rarer ones arrive.' },
-  (G) => unlocked(G, 'shop') && G.attention >= COSTS.reroll + 6 && !G.shop.some((id) => id && G.units.some((u) => key(u.g) === id)) && { id: 'look', target: 'reroll', weight: 18, text: 'What arrives is not all that could arrive.', plain: 'LOOK shows five other arrivals.' },
+  (G) => unlocked(G, 'shop') && G.attention >= COSTS.reroll + 6 && !G.shop.some((id) => id && G.units.some((u) => key(u.g) === id)) && { id: 'look', target: 'reroll', weight: 18, text: 'What arrives is not all that could arrive; others wait further down the shore.', plain: 'LOOK shows five other arrivals.' },
   (G) => {
     if (!unlocked(G, 'habits')) return null;
     const h = HABITS.filter((x) => G.affect >= habitCost(G, x)).sort((a, b) => b.prod / habitCost(G, b) - a.prod / habitCost(G, a))[0];
@@ -49,10 +49,10 @@ const RULES = [
     if (!unlocked(G, 'integrate')) return null;
     const b = bench(G);
     const ok = !unlocked(G, 'insight') || G.insight >= COSTS.integrate;
-    return b.length >= 2 && ok && { id: 'integrate', target: `op:integrate:${b[0].id}`, weight: 42, text: 'Two that agree are not two.', plain: `Select ${nameOf(b[0].g)}, choose Integrate, then pick ${nameOf(b[1].g)}: one new body, both natures.` };
+    return b.length >= 2 && ok && { id: 'integrate', target: `op:integrate:${b[0].id}`, weight: 42, text: 'Two that lean together are not two.', plain: `Select ${nameOf(b[0].g)}, choose Integrate, then pick ${nameOf(b[1].g)}: one new body, both natures.` };
   },
-  (G) => { const h = G.units.find((u) => u.g.t === 'node' && !u.busy); return unlocked(G, 'split') && h && G.stats.splits < 1 && G.insight >= COSTS.split && { id: 'split', target: `op:split:${h.id}`, weight: 28, text: 'What was joined remembers its seam.', plain: `Select ${nameOf(h.g)} and Split it back into its two parts.` }; },
-  (G) => { const b = bench(G); return unlocked(G, 'subtract') && b.length >= 2 && G.stats.subtractions < 1 && G.insight >= COSTS.subtract && { id: 'subtract', target: `op:subtract:${b[0].id}`, weight: 28, text: 'To take in is to be shaped by the taken.', plain: 'Select one, choose Subtract, pick another: the second is carved out of the first.' }; },
+  (G) => { const h = G.units.find((u) => u.g.t === 'node' && !u.busy); return unlocked(G, 'split') && h && G.stats.splits < 1 && G.insight >= COSTS.split && { id: 'split', target: `op:split:${h.id}`, weight: 28, text: 'What was joined remembers the warmth of its seam.', plain: `Select ${nameOf(h.g)} and Split it back into its two parts.` }; },
+  (G) => { const b = bench(G); return unlocked(G, 'subtract') && b.length >= 2 && G.stats.subtractions < 1 && G.insight >= COSTS.subtract && { id: 'subtract', target: `op:subtract:${b[0].id}`, weight: 28, text: 'To take in is to be shaped, gently, by the taken.', plain: 'Select one, choose Subtract, pick another: the second is carved out of the first.' }; },
   (G) => { const b = bench(G); return unlocked(G, 'repurpose') && b.length >= BENCH - 2 && { id: 'repurpose', target: `op:repurpose:${b[b.length - 1].id}`, weight: 38, text: 'A function is a habit of a form.', plain: 'The waiting row is nearly full. Repurpose one: it becomes habits that yield forever.' }; },
   (G) => { const s = SPELLS.find((x) => G.insight >= x.cost); return unlocked(G, 'insight') && G.insight >= G.insightMax * 0.95 && s && G.phase === 'fight' && { id: 'spell', target: `spell:${s.id}`, weight: 33, text: 'Insight held is insight not had.', plain: `Insight is full. ${s.name}: ${s.text}` }; },
   (G) => {
@@ -66,12 +66,12 @@ const RULES = [
     }
     return null;
   },
-  (G) => unlocked(G, 'stance') && !G.stance && { id: 'stance', target: 'stance', weight: 60, text: 'A stance is a house you wear.', plain: 'Choose Toward, Away or Against. Each bends every regulator.' },
+  (G) => unlocked(G, 'stance') && !G.stance && { id: 'stance', target: 'stance', weight: 60, text: 'A stance is a house worn close, like a coat in the cold.', plain: 'Choose Toward, Away or Against. Each bends every regulator.' },
   (G) => unlocked(G, 'mirror') && G.affect >= mirrorCost(G) && { id: 'mirror', target: 'mirror', weight: 48, text: 'The same assembly, in every direction.', plain: 'A mirror doubles yield and adds seats. The gates widen too.' },
   (G) => unlocked(G, 'attendants') && G.affect >= attendantCost(G) && { id: 'attendant', target: 'attendant', weight: 32, text: 'Attention can be lent.', plain: 'An attendant attends for you, forever.' },
   (G) => (G.habituation || 0) >= 3 && { id: 'stuck', target: unlocked(G, 'integrate') && bench(G).length >= 2 ? `op:integrate:${bench(G)[0].id}` : 'xp', weight: 52, text: 'The same wave, again. It is softer each time. So could you be different.', plain: 'Losing softens the wave by itself. Fusing, integrating or growing changes you.' },
-  (G) => G.stats.links + G.stats.integrations >= 3 && { id: 'lineage', target: 'lineage', weight: 8, text: 'Everything here came from something here.', plain: 'The Lineage map shows what you have grown and what it grew from.' },
-  (G) => G.stage >= 2 && { id: 'codex', target: 'codex', weight: 6, text: 'Some of this is written down.', plain: 'The Codex opens a little more with every stage.' },
+  (G) => G.stats.links + G.stats.integrations >= 3 && { id: 'lineage', target: 'lineage', weight: 8, text: 'Everything here came from something here, and was once held.', plain: 'The Lineage map shows what you have grown and what it grew from.' },
+  (G) => G.stage >= 2 && { id: 'codex', target: 'codex', weight: 6, text: 'Some of this is written down, for whoever comes later.', plain: 'The Codex opens a little more with every stage.' },
   (G) => ({ id: 'attend', target: 'attend', weight: 10, text: 'Something is here. Attend to it.', plain: 'Click the core or press Space: attention is where affect comes from.' }),
 ];
 

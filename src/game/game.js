@@ -116,7 +116,7 @@ function fuse(G, u) {
     say(G, `${nameOf(keep.g)}: ${LINKS[keep.link - 1].name}. ${LINKS[keep.link - 1].text}`, 'link');
     if (keep.link >= 12) {
       G.units.splice(G.units.indexOf(keep), 1); G.endings++;
-      G.events.push({ type: 'ending', id: keep.id }); say(G, 'An ending is known. It stays known.', 'ending'); koan(G, 'ending', 'ending');
+      G.events.push({ type: 'ending', id: keep.id }); say(G, 'An ending is known. It stays known, like a name once spoken.', 'ending'); koan(G, 'ending', 'ending');
       return;
     }
     u = keep;
@@ -246,7 +246,7 @@ export const actions = {
   mirror(G) {
     const cost = mirrorCost(G);
     if (!unlocked(G, 'mirror') || G.affect < cost) return fail(G);
-    G.affect -= cost; G.mirrors++; G.events.push({ type: 'mirror', n: G.mirrors }); say(G, 'The same assembly, in every direction, under the same names.', 'op'); return true;
+    G.affect -= cost; G.mirrors++; G.events.push({ type: 'mirror', n: G.mirrors }); say(G, 'The same assembly, in every direction, under the same names, as in a glass at night.', 'op'); return true;
   },
   ready(G) { if (G.phase === 'prep') G.phaseT = 99; },
   setAuto(G, on) { G.auto = !!on; },
@@ -262,7 +262,7 @@ export const actions = {
   },
 };
 export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth));
-export const mirrorCost = (G) => 1.5e11 * Math.pow(60, G.mirrors);
+export const mirrorCost = (G) => 2e11 * Math.pow(40, G.mirrors);
 export const attendantCost = (G) => 300 * Math.pow(2.2, G.attendants);
 
 const firstFamily = (u) => { let g = u.g; while (g.t === 'node') g = g.a; return g.f; };
@@ -285,7 +285,7 @@ function combine(G, aId, bId, op) {
   mutate(G, u, 0.8);
   G.stats[op === 'blend' ? 'integrations' : 'subtractions']++;
   G.events.push({ type: what, a: aId, b: bId, id: u.id });
-  say(G, op === 'blend' ? `${nameOf(g)}. It was two.` : `${nameOf(g)}. Something is missing from it, usefully.`, 'op');
+  say(G, op === 'blend' ? `${nameOf(g)}. It was two.` : `${nameOf(g)}. Something is missing from it, usefully, and it carries the gap gently.`, 'op');
   koan(G, what, 'op');
   return u;
 }
@@ -306,7 +306,7 @@ export function step(G, dt) {
   if (G.moods.some((m) => m.t <= 0)) { G.moods = G.moods.filter((m) => m.t > 0); G.events.push({ type: 'sfx', name: 'decay' }); }
   for (const id of Object.keys(G.verbs)) { const v = G.verbs[id]; if (!v) continue; v.t -= dt; if (v.t <= 0) finishVerb(G, id); }
   // seasons: something is always asked for
-  if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three.', 'season'); } else addMood(G, 'dread'); } }
+  if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three, as evening takes the light.', 'season'); } else addMood(G, 'dread'); } }
   // complexity and overwhelm
   let C = 0; for (const u of G.units) C += complexityOf(u);
   C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 60 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
@@ -330,7 +330,7 @@ export function step(G, dt) {
       const prices = G.shop.filter(Boolean).map((id) => TIER_COST[FAMILY[id].tier - 1]);
       if (G.attention < Math.min(COSTS.reroll, ...(prices.length ? prices : [Infinity]))) {
         const t1 = FAMILIES.filter((f) => f.tier === 1); G.shop[0] = t1[Math.floor(G.rng() * t1.length)].id; G.attention = Math.max(G.attention, TIER_COST[0]);
-        say(G, 'Nothing was held, so something came.', 'koan');
+        say(G, 'Nothing was held, so something came to keep it company.', 'koan');
       }
     }
     if (seated(G).length && (G.phaseT > (G.auto ? 5 : 1e9) || G.phaseT >= 99)) { G.clicksThisWave = 0; startWave(G); }
@@ -352,7 +352,7 @@ function endWave(G, won) {
     G.gain(20 * Math.pow(1.35, G.cycle * 10 + G.wave - 1), 'wave');
     G.composure = Math.min(G.composureMax, G.composure + G.composureMax * 0.25);
     G.events.push({ type: 'waveWin', pay, interest }); koan(G, 'waveWin');
-    G.wave++; if (G.wave > WAVES_PER_CYCLE) { G.wave = 1; G.cycle++; say(G, 'The ten have spoken. The ten begin.', 'stage'); }
+    G.wave++; if (G.wave > WAVES_PER_CYCLE) { G.wave = 1; G.cycle++; say(G, 'The ten have spoken. The ten begin, like a tide turning.', 'stage'); }
     rollShop(G, true);
   } else {
     G.streak = 0; G.composure = G.composureMax; G.habituation = Math.min(12, (G.habituation || 0) + 1); G.attention += 3; addXp(G, 1);
@@ -374,7 +374,7 @@ function finishVerb(G, id) {
     const f = pool[Math.floor(G.rng() * pool.length)] || FAMILIES[0];
     G.units.splice(G.units.indexOf(u), 1);
     const n = addUnit(G, leaf(f.id), u.link, u.traits, null, 0, u.muts || []); mutate(G, n, 1);
-    say(G, `It slept as ${nameOf(u.g)}. ${nameOf(n.g)} woke.`, 'verb');
+    say(G, `It slept as ${nameOf(u.g)}. ${nameOf(n.g)} woke, warm from the dream.`, 'verb');
   }
   if (id === 'ruminate') { G.insight = Math.min(G.insightMax, G.insight + 45); addMood(G, G.rng() < 0.3 ? 'fascination' : 'dread'); }
   if (id === 'rest') { const i = G.moods.findIndex((m) => m.kind === 'dread'); if (i >= 0) G.moods.splice(i, 1); G.composure = G.composureMax; }

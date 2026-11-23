@@ -46,7 +46,7 @@ export default function Title() {
           NON-MIND
         </motion.h1>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25, delay: 0.25 }} className="max-w-[560px] text-xl">
-          <Cryptic text="Nothing is wrong here. Something is happening anyway." tone="ultra" />
+          <Cryptic text="Nothing is wrong here. Something is happening anyway, softly." tone="ultra" />
         </motion.div>
         <motion.div
           className="mt-4 flex items-center gap-5"

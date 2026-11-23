@@ -15,6 +15,7 @@ export const TOOLS = [
   { id: 'lineage', label: 'lineage', tone: 'rose', key: 'l', event: 'nonmind:lineage' },
   { id: 'again', label: 'again', tone: 'tangerine', key: null, event: 'nonmind:restart' },
   { id: 'sound', label: 'sound', tone: 'teal', key: null, event: 'nonmind:mute' },
+  { id: 'locale', label: 'en / de', tone: 'violet', key: null, event: 'nonmind:locale' },
 ];
 
 export default function Tools({ size = 56, layout = 'grid', hotkeys = true, className }) {

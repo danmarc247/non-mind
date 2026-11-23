@@ -31,14 +31,18 @@ const ADJ = {
   reappraisal: 'Reappraised', suppression: 'Suppressed', rumination: 'Ruminative', avoidance: 'Avoidant', attunement: 'Attuned',
   projection: 'Projected', dissociation: 'Dissociated', sublimation: 'Sublimated', containment: 'Contained', equanimity: 'Equanimous',
 };
-const poleName = (l) => (l.pole > 0 ? 'Idealized ' : l.pole < 0 ? 'Devalued ' : '') + FAMILY[l.f].name;
+// Naming is locale-aware: src/i18n swaps this table. `inflect(stem, familyId)` lets a language decline
+// its adjectives to the head noun (German: strong endings by gender); English returns the word unchanged.
+export const NAMING = { adj: ADJ, idealized: 'Idealized', devalued: 'Devalued', hollowed: 'Hollowed', inflect: (w) => w };
+export const NAMING_EN = { ...NAMING };
+const poleName = (l) => (l.pole > 0 ? `${NAMING.inflect(NAMING.idealized, l.f)} ` : l.pole < 0 ? `${NAMING.inflect(NAMING.devalued, l.f)} ` : '') + FAMILY[l.f].name;
 
 export function nameOf(g) {
   if (g.t === 'leaf') return poleName(g);
   const ws = weights(g).sort((x, y) => y[1] - x[1]);
   const head = ws[0][0];
-  const mods = [...new Set(ws.slice(1).map(([l]) => ADJ[l.f]).filter((a) => a !== ADJ[head.f]))].slice(0, 2);
-  const joiner = g.op === 'carve' ? 'Hollowed ' : '';
+  const mods = [...new Set(ws.slice(1).map(([l]) => l.f).filter((f) => f !== head.f))].slice(0, 2).map((f) => NAMING.inflect(NAMING.adj[f], head.f));
+  const joiner = g.op === 'carve' ? `${NAMING.inflect(NAMING.hollowed, head.f)} ` : '';
   return `${mods.join(' ')} ${joiner}${poleName(head)}`.trim();
 }
 

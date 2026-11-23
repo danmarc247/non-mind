@@ -124,3 +124,24 @@ Two registers, keep them separate:
 - Capitalised abstractions stacked three deep ("The Great Stillness of Being"): replace with one concrete noun.
 - Second-person commands in log lines ("You should attend"). The game observes; it does not instruct.
 - Summaries of the number ("You gained 120"). The HUD shows numbers; prose shows meaning.
+
+## Romantic touch
+
+Owner request: the voice stays cryptic and true, with a gentle lyrical warmth and longing laid over it. Tenderness toward the thing described, never toward the player.
+
+Rules:
+- Images are night, tide, distance, breath, light, hands, thresholds, what is almost said. One image per line, concrete.
+- Same length limits and same templates. Add a clause or swap a noun; do not add a sentence.
+- Still TRUE: the warmth decorates the mechanic and never replaces it. Read the code before touching a mechanic line.
+- Never kitsch or purple: no hearts, no "love" as a headline noun, no stacked adjectives, no exclamation marks, no em dashes, no religious vocabulary.
+- No new second person. Names of stats, resources, families and concepts stay sober.
+- `plain` lines (advisor and tutorial instructions) stay plain and exact. Only the oblique `text` carries the romance.
+- Leave a line alone if it already carries it ("What repeats, remains.").
+
+Before / after:
+1. Link 3: "A small yes, repeated." -> "A small yes, repeated, like a light left on."
+2. Ability Mend: "Mends the ally who needs it most." -> "Mends the ally who needs it most, as warmth finds the coldest hand."
+3. Hint (split): "What was joined remembers its seam." -> "What was joined remembers the warmth of its seam."
+4. Family Containment: "It does not fix. It is a place where unfixed things may be." -> "It does not fix. It is a warm place where unfixed things may stay the night."
+5. Ambient: "Just as dust settles by itself, so the mind settles by itself." -> "Just as dust settles by itself in the lamplight, so the mind settles by itself."
+6. Mutation Secure Base: "It leaves because it knows it may return." -> "It leaves because it knows the harbour light will be on."
