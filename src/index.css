@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+@import '@fontsource/kablammo/latin-400.css';
+@import '@fontsource/londrina-solid/latin-400.css';
+@import '@fontsource/londrina-solid/latin-900.css';
+@import '@fontsource/londrina-outline/latin-400.css';
+@import '@fontsource/fraunces/latin-400.css';
+@import '@fontsource/fraunces/latin-400-italic.css';
+@import '@fontsource/fraunces/latin-600.css';
+
+@font-face {
+  font-family: 'Hypermonosaturation';
+  src: url('./assets/fonts/Hypermonosaturation.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* NON-MIND palette: taken from the three reference paintings.
+   Paper-white ground, ink outlines, saturated acrylic accents. */
+@theme {
+  --color-paper: #fbf6ec;
+  --color-paper-2: #f3ead9;
+  --color-ink: #1b1030;
+  --color-ink-2: #3a2a5c;
+  --color-magenta: #ff2d7a;
+  --color-ultra: #2a2bff;
+  --color-yolk: #ffd21f;
+  --color-tangerine: #ff7a1a;
+  --color-teal: #17b5a6;
+  --color-violet: #8a3ffc;
+  --color-blood: #e3262f;
+  --color-leaf: #2fbf4a;
+  --color-rose: #ff9ecf;
+  --color-sky: #8fd3ff;
+
+  --font-title: 'Kablammo', 'Londrina Solid', system-ui, sans-serif;
+  --font-head: 'Londrina Solid', system-ui, sans-serif;
+  --font-outline: 'Londrina Outline', 'Londrina Solid', system-ui, sans-serif;
+  --font-stat: 'Hypermonosaturation', 'Londrina Solid', ui-monospace, monospace;
+  --font-body: 'Fraunces', Georgia, serif;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* Hypermonosaturation has no uppercase glyphs: force lowercase wherever it is used. */
+.font-stat { text-transform: lowercase; letter-spacing: 0.02em; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-ink) 35%, transparent); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
