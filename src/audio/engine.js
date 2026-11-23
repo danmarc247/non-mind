@@ -38,6 +38,11 @@ export function createAudioEngine(ctx, opts = {}) {
   const isOfflineCtx = typeof OfflineAudioContext !== 'undefined' && ctx instanceof OfflineAudioContext;
   const offline = opts.offline ?? isOfflineCtx;
   const seed = (opts.seed ?? 1) >>> 0;
+  // 'high': HRTF for every music voice and positioned SFX (up to 12 at once).
+  // 'low' : equal-power panning for music voices, at most 4 positioned SFX
+  //         (equal-power); auto-picked on machines with <= 4 cores.
+  const cores = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 8 : 8;
+  const quality = opts.quality === 'low' || opts.quality === 'high' ? opts.quality : cores <= 4 ? 'low' : 'high';
   const rng = mulberry32(seed);
   const budget = new VoiceBudget(48);
   const kit = createKit(ctx, budget, seed);
@@ -156,7 +161,7 @@ export function createAudioEngine(ctx, opts = {}) {
   sfxSum.connect(sfxGain).connect(userMaster);
 
   const E = {
-    ctx, kit, rng, budget, seed, offline, S, target,
+    ctx, kit, rng, budget, seed, offline, S, target, quality,
     scale: makeScale(0),
     listener: { pos: [0, 0, 0], fwd: [0, 0, -1], up: [0, 1, 0] },
     bus: { airDry, airRev, floeDry, floeRev, musicDry, reverbIn, delaySend, sfxDry, sfxRev: sfxRevIn },
@@ -244,22 +249,35 @@ export function createAudioEngine(ctx, opts = {}) {
   const setSfx = (v) => setP(sfxGain.gain, clamp(+v || 0, 0, 1.5));
   const setMuted = (m) => setP(mute.gain, m ? 0 : 1, 0.08);
 
+  // The camera calls this every frame (including soft zooms). Each AudioParam
+  // glides toward the new value with a 35 ms time constant, so position and
+  // orientation changes never step (no zipper noise). setTargetAtTime starts
+  // from the current value, so per-frame calls chain smoothly.
+  const LISTENER_TAU = 0.035;
+  let listenerInit = false;
+  function setL(param, v, now) {
+    if (!Number.isFinite(v)) return;
+    if (!listenerInit) param.setValueAtTime(v, now);
+    else param.setTargetAtTime(v, now, LISTENER_TAU);
+  }
   function setListener(l = {}) {
     const L = ctx.listener;
+    const now = ctx.currentTime;
     const { position: p, forward: f, up: u } = l;
     if (p) {
       E.listener.pos = [p[0], p[1], p[2]];
-      if (L.positionX) { L.positionX.value = p[0]; L.positionY.value = p[1]; L.positionZ.value = p[2]; }
+      if (L.positionX) { setL(L.positionX, p[0], now); setL(L.positionY, p[1], now); setL(L.positionZ, p[2], now); }
       else if (L.setPosition) L.setPosition(p[0], p[1], p[2]);
     }
     if (f || u) {
       const F = f || E.listener.fwd, U = u || E.listener.up;
       E.listener.fwd = F; E.listener.up = U;
       if (L.forwardX) {
-        L.forwardX.value = F[0]; L.forwardY.value = F[1]; L.forwardZ.value = F[2];
-        L.upX.value = U[0]; L.upY.value = U[1]; L.upZ.value = U[2];
+        setL(L.forwardX, F[0], now); setL(L.forwardY, F[1], now); setL(L.forwardZ, F[2], now);
+        setL(L.upX, U[0], now); setL(L.upY, U[1], now); setL(L.upZ, U[2], now);
       } else if (L.setOrientation) L.setOrientation(F[0], F[1], F[2], U[0], U[1], U[2]);
     }
+    if (p || f || u) listenerInit = true;
   }
 
   function setMood(m = {}) {
@@ -272,7 +290,11 @@ export function createAudioEngine(ctx, opts = {}) {
     }
     if (typeof m.depth === 'number') {
       const d = Math.max(0, Math.floor(m.depth));
-      if (d !== target.depth) { target.depth = d; E.scale = makeScale(d); }
+      if (d !== target.depth) {
+        target.depth = d;
+        E.scale = makeScale(d);
+        if (started) music.keyChange(ctx.currentTime); // fade old-key notes, no clash
+      }
     }
     if (!started) snap(); // before start(): apply immediately (deterministic offline renders)
   }
@@ -351,9 +373,10 @@ export function createAudioEngine(ctx, opts = {}) {
     analyser, dispose, at,
     _E: E, // internals, for tests/diagnostics only
     get started() { return started; },
+    get quality() { return quality; },
     get ctx() { return ctx; },
     /** Debug snapshot (smoothed mood, scale name, live oscillator count). */
-    debug: () => ({ ...S, asp: { ...S.asp }, scale: E.scale.name, osc: budget.countAt(ctx.currentTime) + budget.persistent, notes: E.stats.notes }),
+    debug: () => ({ ...S, asp: { ...S.asp }, scale: E.scale.name, quality, osc: budget.countAt(ctx.currentTime) + budget.persistent, notes: E.stats.notes }),
   };
 }
 

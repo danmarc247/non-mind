@@ -28,7 +28,7 @@ function archCurve() {
   return new THREE.CatmullRomCurve3(pts, false, 'centripetal');
 }
 
-export function GatePortals({ radiusScale = 1.08, y = SEA_Y - 0.05, scale = 1 }) {
+export function GatePortals({ radiusScale = 1.08, y = SEA_Y - 0.05, scale = 1.3 }) {
   const groups = useRef([]);
   const { plane, tube, portalBase, frameBase } = useMemo(() => {
     const plane = new THREE.PlaneGeometry(W, H, 1, 1); plane.translate(0, H / 2, 0);

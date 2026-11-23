@@ -148,7 +148,7 @@ export function piano(kit, dest, t, freq, o = {}) {
   lp.connect(out).connect(dest);
   for (const s of srcs) { s.start(t); s.stop(end); }
   kit.cleanup(car, nodes);
-  return true;
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -173,11 +173,11 @@ export function voice(kit, dest, t, freq, o = {}) {
   out.gain.setValueAtTime(peak, t + dur - rel);
   out.gain.setTargetAtTime(0, t + dur - rel, rel / 4);
 
-  const lfo = kit.osc('sine', 4.8 + kit.rng() * 0.9, t);
+  const lfo = kit.osc('sine', 4.4 + kit.rng() * 0.6, t);
   const lg = kit.gain(0);
   lg.gain.setValueAtTime(0, t);
   lg.gain.linearRampToValueAtTime(0, t + attack * 0.7);
-  lg.gain.linearRampToValueAtTime(o.vibrato ?? 9, t + attack + 1.6);
+  lg.gain.linearRampToValueAtTime(o.vibrato ?? 4.5, t + attack + 2.2);
   lfo.connect(lg);
 
   const nodes = [mix, pre, out, lfo, lg];
@@ -191,17 +191,17 @@ export function voice(kit, dest, t, freq, o = {}) {
     nodes.push(s);
     srcs.push(s);
   }
-  const fg = [1.0, 0.55, 0.22], fq = [4.5, 6, 7];
+  const fg = [1.0, 0.55, 0.22], fq = [3, 4, 5]; // low Q: vibrato barely modulates level
   formants.forEach((f, i) => {
     const bp = kit.filter('bandpass', f, fq[i]);
-    const g = kit.gain(fg[i] * 2.2);
+    const g = kit.gain(fg[i] * 1.9);
     pre.connect(bp).connect(g).connect(out);
     nodes.push(bp, g);
   });
   out.connect(dest);
   for (const s of srcs) { s.start(t); s.stop(end); }
   kit.cleanup(lfo, nodes);
-  return true;
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -230,7 +230,7 @@ export function horn(kit, dest, t, freq, o = {}) {
   lp.connect(out).connect(dest);
   a.start(t); b.start(t); a.stop(end); b.stop(end);
   kit.cleanup(a, [a, b, lp, out]);
-  return true;
+  return out;
 }
 
 // ---------------------------------------------------------------------------

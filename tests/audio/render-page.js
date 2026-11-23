@@ -150,7 +150,7 @@ function toWavB64(buf, from, to) {
 async function renderMusic(cfg) {
   const dur = cfg.dur ?? 40;
   const ctx = new OfflineAudioContext(2, SR * dur, SR);
-  const eng = createAudioEngine(ctx, { seed: cfg.seed ?? 7, offline: true });
+  const eng = createAudioEngine(ctx, { seed: cfg.seed ?? 7, offline: true, quality: cfg.quality || 'high' });
   eng._E && (eng._E.stats.log = []);
   eng.setMood(cfg.mood || {});
   eng.start();
@@ -161,6 +161,7 @@ async function renderMusic(cfg) {
       if (ev.reset) eng.reset();
       if (ev.mood) eng.setMood(ev.mood);
       if (ev.sfx) eng.sfx(ev.sfx, ev.opts || {});
+      if (ev.listener) eng.setListener(ev.listener);
     });
   }
   const t0 = performance.now();
@@ -175,7 +176,7 @@ async function renderMusic(cfg) {
 async function renderSfx(name, opts = {}) {
   const dur = name === 'reset' ? 9 : 3.5;
   const ctx = new OfflineAudioContext(2, SR * dur, SR);
-  const eng = createAudioEngine(ctx, { seed: 3, offline: true });
+  const eng = createAudioEngine(ctx, { seed: 3, offline: true, quality: opts.quality || 'high' });
   eng.setMood({ depth: opts.depth ?? 0 });
   eng.sfx(name, { position: [1.5, 0, -2], intensity: 0.8, ...opts });
   const buf = await ctx.startRendering();
@@ -201,7 +202,7 @@ async function soak(dur = 300) {
   }
   const origDisc = AudioNode.prototype.disconnect;
   AudioNode.prototype.disconnect = function (...a) { if (a.length === 0) live.delete(this); return origDisc.apply(this, a); };
-  const eng = createAudioEngine(ctx, { seed: 11, offline: true });
+  const eng = createAudioEngine(ctx, { seed: 11, offline: true, quality: 'high' });
   eng.start();
   const samples = [];
   let maxOsc = 0;
@@ -211,7 +212,9 @@ async function soak(dur = 300) {
       const ph = (t % 90) / 90; // complexity ramps up over 90 s, then reset
       eng.setMood({ complexity: Math.min(1, ph * 1.3), overwhelm: Math.max(0, ph * 3 - 2), tension: ph, stance: ['toward', 'away', 'against', null][Math.floor(t / 23) % 4], aspects: { mythic: ph, cortical: 1 - ph, somatic: ph > 0.5 ? 1 : 0 }, depth: Math.floor(t / 90) });
       if (t % 90 === 89) eng.reset();
-      for (let k = 0; k < 4; k++) eng.sfx(SFX_NAMES[(t * 4 + k) % (SFX_NAMES.length - 1)], { position: [Math.sin(t) * 5, 0, Math.cos(t) * 5], aspect: ASPECTS[t % 8] });
+      for (let k = 0; k < 4; k++) eng.sfx(SFX_NAMES[(t * 4 + k) % (SFX_NAMES.length - 1)], { position: [Math.sin(t) * 5, 0, Math.cos(t) * 5], aspect: ASPECTS[t % 8], gate: t % 10 });
+      // camera soft-zoom: listener moves every 100 ms
+      for (let q = 0; q < 10; q++) eng.at(t + q * 0.1, () => eng.setListener({ position: [0, 4 + Math.sin(t + q * 0.1) * 2, 8 + Math.cos(t * 0.3) * 3], forward: [0, -0.4, -0.9], up: [0, 1, 0] }));
       maxOsc = Math.max(maxOsc, eng.debug().osc);
       if (t % 30 === 0) samples.push([t, live.size]);
     });
@@ -253,4 +256,29 @@ async function realtime(ms = 6000) {
   return res;
 }
 
-window.__audioTest = { renderMusic, renderSfx, soak, realtime, SFX_NAMES, ASPECTS, ready: true };
+/**
+ * Vibrato flutter of the wordless voice: one sustained note rendered dry;
+ * returns the peak-to-peak swing (dB) of its 20 ms RMS envelope in the
+ * sustain (3.5-5.5 s), i.e. how much the level wobbles.
+ */
+async function voiceFlutter() {
+  const { createKit, voice } = await import('/src/audio/instruments.js');
+  const { VoiceBudget, VOWELS, degHz, makeScale } = await import('/src/audio/util.js');
+  const out = [];
+  for (const [vk, deg, oct] of [['a', 0, 0], ['o', 4, 0], ['u', 2, 1]]) {
+    const ctx = new OfflineAudioContext(1, SR * 7, SR);
+    const kit = createKit(ctx, new VoiceBudget(48), 3);
+    voice(kit, ctx.destination, 0.05, degHz(makeScale(0), deg, oct), { dur: 6.5, vowel: VOWELS[vk], spread: 3.5 });
+    const d = (await ctx.startRendering()).getChannelData(0);
+    const w = SR / 50, env = [];
+    for (let s = Math.floor(3.5 * SR); s + w <= 5.5 * SR; s += w / 2) {
+      let e = 0;
+      for (let i = 0; i < w; i++) e += d[s + i] * d[s + i];
+      env.push(10 * Math.log10(e / w + 1e-12));
+    }
+    out.push(Math.round((Math.max(...env) - Math.min(...env)) * 10) / 10);
+  }
+  return out;
+}
+
+window.__audioTest = { voiceFlutter, renderMusic, renderSfx, soak, realtime, SFX_NAMES, ASPECTS, ready: true };

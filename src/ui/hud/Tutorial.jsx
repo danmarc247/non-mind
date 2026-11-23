@@ -8,6 +8,7 @@ import { cn } from '../../lib/cn';
 import { emitHud, onHud } from './bus.js';
 import { CORE, activeStep, loadTut, saveTut } from './tutorial.js';
 import { POP } from './shared.jsx';
+import { mood } from '../../gfx/mood.js';
 
 const CARD_W = 310;
 const PAD = 10;
@@ -15,7 +16,13 @@ const PAD = 10;
 /** Where is the anchor on screen? 'core' is the centre of the arena (the 3D scene keeps it centred). */
 function anchorRect(anchor) {
   const vw = window.innerWidth, vh = window.innerHeight;
-  if (anchor === 'core') { const r = Math.min(vw, vh) * 0.085; return { left: vw / 2 - r, top: vh / 2 - r, width: 2 * r, height: 2 * r, round: true }; }
+  if (anchor === 'core') {
+    // gfx may publish the projected core (mood.coreScreen = {x, y, r} in css px); otherwise use the
+    // home camera: eye (0,21,29) on target (0,-3.2,0), fov 44, core at y 1.7 -> 36.6% of the height
+    const c = mood.coreScreen;
+    const x = c?.x ?? vw / 2, y = c?.y ?? vh * 0.366, r = c?.r ?? vh * 0.075;
+    return { left: x - r, top: y - r, width: 2 * r, height: 2 * r, round: true };
+  }
   if (!anchor) return null;
   const el = document.querySelector(`[data-tut="${anchor}"]`);
   if (!el) return null;
@@ -25,12 +32,12 @@ function anchorRect(anchor) {
 }
 const same = (a, b) => (!a && !b) || (a && b && Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
-function placeCard(t, ch) {
+function placeCard(t, ch, prefer) {
   const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = 56;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   if (!t) return { left: (vw - CARD_W) / 2, top: vh * 0.24 };
   const cx = t.left + t.width / 2, cy = t.top + t.height / 2;
-  const opts = [];
+  const opts = prefer ? [prefer] : [];
   if (cy > vh * 0.55) opts.push('above'); else opts.push('below');
   if (cx < vw * 0.4) opts.push('right'); else if (cx > vw * 0.6) opts.push('left');
   opts.push('above', 'below', 'right', 'left');
@@ -94,7 +101,7 @@ function Spot({ t, extra }) {
           <g filter="url(#nm-tut-soft)">{rs.map(hole)}</g>
         </mask>
       </defs>
-      <rect width={vw} height={vh} fill="var(--color-ink)" opacity={rs.length ? 0.26 : 0.12} mask="url(#nm-tut-mask)" />
+      <rect width={vw} height={vh} fill="var(--color-ink)" opacity={rs.length ? 0.2 : 0.1} mask="url(#nm-tut-mask)" />
       {rs.map(ring)}
     </>
   );
@@ -143,7 +150,7 @@ export default function Tutorial() {
   const cardRef = useRef(null);
   const [ch, setCh] = useState(170);
   useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - ch) > 1) setCh(h); });
-  const pos = step ? placeCard(rect, ch) : null;
+  const pos = step ? placeCard(rect, ch, step.side) : null;
   const card = pos && { left: pos.left, top: pos.top, width: CARD_W, height: ch };
   const coreIdx = step ? CORE.findIndex((s) => s.id === step.id) : -1;
   const plain = step && (typeof step.plain === 'function' ? step.plain(G) : step.plain);

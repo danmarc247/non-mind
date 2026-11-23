@@ -233,7 +233,7 @@ export function RingButton({ tone = 'magenta', size = 96, children, onClick, hot
           <span className="absolute inset-[22%] rounded-full border-2 border-paper/45" />
           <span className="absolute top-[12%] left-[20%] h-[16%] w-[30%] -rotate-[24deg] rounded-full bg-paper/30" />
         </span>
-        <span className={cn('relative flex flex-col items-center leading-none transition-transform duration-150 group-active:translate-x-[2px] group-active:translate-y-[3px]', inkText ? 'text-ink' : 'text-paper')}>
+        <span className={cn('relative flex flex-col items-center leading-none transition-transform duration-150 group-active:translate-x-[2px] group-active:translate-y-[3px]', inkText ? 'text-ink' : 'text-paper [text-shadow:1px_2px_0_var(--color-ink)]')}>
           {children}
         </span>
       </motion.button>

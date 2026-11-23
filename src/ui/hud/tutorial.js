@@ -9,7 +9,7 @@ const isSfx = (name) => (e) => e.type === 'sfx' && e.name === name;
 
 export const CORE = [
   {
-    id: 'attend', anchor: 'attend', also: 'core',
+    id: 'attend', anchor: 'attend', also: 'core', side: 'left',
     voice: 'Something is here. It wants to be looked at.',
     plain: (G) => `Click ATTEND, click the glowing core, or press SPACE.${G.stats.clicks > 0 ? ` ${Math.max(0, 5 - G.stats.clicks)} more.` : ''}`,
     done: (G) => unlocked(G, 'shop'),

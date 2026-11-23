@@ -11,7 +11,7 @@ import { ease, hex3, tok, setPaletteSlots } from './shared.js';
 import litVert from '../glsl/arena.lit.vert.glsl';
 import auraFrag from '../glsl/arena.aura.frag.glsl';
 
-export function CoreAura({ position = [0, 1.7, 0], radius = 4.5, inner = 1.25, steps = 22 }) {
+export function CoreAura({ position = [0, 1.7, 0], radius = 4.5, inner = 1.25, steps = 12 }) {
   const st = useMemo(() => ({ pulse: 99, flash: 0 }), []);
   const { geo, mat } = useMemo(() => {
     const geo = new THREE.SphereGeometry(radius, 40, 24);
@@ -26,7 +26,7 @@ export function CoreAura({ position = [0, 1.7, 0], radius = 4.5, inner = 1.25, s
         uTime: { value: 0 }, uStage: { value: 0 }, uComplexity: { value: 0 }, uOverwhelm: { value: 0 }, uTension: { value: 0 },
         uPulse: { value: 99 }, uFlash: { value: 0 }, uBound: { value: radius }, uInner: { value: inner },
         uCenter: { value: new THREE.Vector3(...position) },
-        uPaper: { value: tok('paper') }, uBlood: { value: tok('blood') }, uMagenta: { value: tok('magenta') }, uYolk: { value: tok('yolk') },
+        uPaper: { value: tok('paper') }, uInk: { value: tok('ink') }, uBlood: { value: tok('blood') }, uMagenta: { value: tok('magenta') }, uYolk: { value: tok('yolk') },
         uP0: { value: new THREE.Vector3() }, uP1: { value: new THREE.Vector3() }, uP2: { value: new THREE.Vector3() }, uP3: { value: new THREE.Vector3() },
         uFam: { value: fam },
       },

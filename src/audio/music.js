@@ -31,7 +31,7 @@ export function createMusic(E) {
   function makePanner(dest, revDest) {
     const input = kit.gain(1);
     const p = ctx.createPanner();
-    p.panningModel = 'HRTF';
+    p.panningModel = E.quality === 'low' ? 'equalpower' : 'HRTF'; // HRTF is costly on mobile
     p.distanceModel = 'inverse';
     p.refDistance = 6;
     p.maxDistance = 200;
@@ -85,6 +85,11 @@ export function createMusic(E) {
     };
   });
 
+  // Sustained notes still sounding (piano / voice / horn output gains). On a key
+  // change (depth) they are faded out, so the new key never sounds under old notes.
+  let live = [];
+  const track = (out, t, dur) => { if (out && out.gain) live.push({ g: out.gain, end: t + dur + 0.5 }); };
+
   function playLoopNote(L, ev, t) {
     const S = E.S, sc = E.scale, A = S.asp;
     if (rng() < 0.3 * S.away + 0.2 * A.void) return; // sparser / distant stances
@@ -99,21 +104,21 @@ export function createMusic(E) {
     E.stats.notes++;
     if (E.stats.log && E.stats.log.length < 4000) E.stats.log.push([+t.toFixed(2), L.inst]);
     if (L.inst === 'piano') {
-      piano(kit, L.pan.input, t, f, {
+      track(piano(kit, L.pan.input, t, f, {
         vel: ev.vel, dur: ev.dur, bright: sc.bright * (1 + 0.3 * S.against), inharm: sc.inharm,
         sub: A.limbic, limit: lim,
-      });
+      }), t, ev.dur);
     } else {
       const vowel = VOWELS[S.toward > 0.5 ? 'o' : sc.vowel];
-      voice(kit, L.pan.input, t, f, {
+      track(voice(kit, L.pan.input, t, f, {
         vel: ev.vel * 0.9, dur: ev.dur, attack: 1.5 + 0.8 * S.away, vowel,
         spread: 3.5 + sc.detuneExtra + 6 * S.o, limit: lim,
-      });
+      }), t, ev.dur);
       // mythic: a choir companion a fifth above
       if (A.mythic > 0.05 && rng() < A.mythic * 0.8) {
-        voice(kit, L.pan.input, t + 0.7, degHz(sc, deg + 4, L.oct), {
+        track(voice(kit, L.pan.input, t + 0.7, degHz(sc, deg + 4, L.oct), {
           vel: ev.vel * 0.45, dur: ev.dur * 0.9, attack: 2, vowel: VOWELS.u, limit: lim - 4,
-        });
+        }), t + 0.7, ev.dur);
       }
     }
   }
@@ -178,7 +183,7 @@ export function createMusic(E) {
     const o = S.o;
     E.stats.notes++;
     pluck(kit, v.filt, t, f, {
-      vel: lvl * (first ? 1 : 0.72) * (v.extra ? 0.7 : 1),
+      vel: lvl * (first ? 1 : 0.72) * (v.extra ? 0.7 : 1.15),
       decay: (v.extra ? 0.06 : 0.1) + 0.05 * (1 - o),
       wave: v.extra || S.against > 0.5 ? 'pulse' : sc.pluck,
       cents: (rng() - 0.5) * (o * 30 + sc.detuneExtra),
@@ -195,15 +200,16 @@ export function createMusic(E) {
     const chordDur = F.chordLen * F.stepDur;
     const dur = clamp(chordDur * 1.15, 4, 8);
     const d = sc.prog[F.chordIdx];
-    const notes = [[d, -1], [d + 4, -1], [d + 2, 0]];
-    if (S.asp.mythic > 0.3) notes.push([d + 7, 0]);
+    // mid register (root/fifth at octave 0, third above) so the Floe brightens the mix
+    const notes = [[d, 0], [d + 4, 0], [d + 2, 1]];
+    if (S.asp.mythic > 0.3) notes.push([d + 7, 1]);
     const o = S.o;
     notes.forEach(([deg, oct], i) => {
-      horn(kit, hornPans[(F.hornN + i) % 2].input, t + i * 0.12, degHz(sc, deg, oct), {
-        vel: hl * (0.8 + 0.4 * o) * (i === 2 ? 0.8 : 1), dur,
-        cutoff: 650 + 1900 * o + 600 * S.against + 300 * sc.bright,
+      track(horn(kit, hornPans[(F.hornN + i) % 2].input, t + i * 0.12, degHz(sc, deg, oct), {
+        vel: hl * (0.65 + 0.35 * o) * (i === 2 ? 0.75 : 1), dur,
+        cutoff: 900 + 1400 * S.c + 1900 * o + 600 * S.against + 300 * sc.bright,
         spread: 6 + 18 * o + sc.detuneExtra, limit: MUSIC_LIMIT,
-      });
+      }), t + i * 0.12, dur);
     });
     F.hornN++;
     E.stats.notes++;
@@ -256,6 +262,7 @@ export function createMusic(E) {
   breathG.connect(bus.reverbIn);
   breathG.connect(bus.musicDry);
 
+  let droneScale = E.scale, keyAt = -1e9;
   let shep = null;
   let shepPhase = 0, shepQuiet = 0;
   function makeShepard(T) {
@@ -302,6 +309,7 @@ export function createMusic(E) {
 
   function schedule(tEnd, now) {
     const sc = E.scale, S = E.S;
+    if (live.length > 64) live = live.filter((n) => n.end > now);
     for (const L of loops) {
       const per = L.period * sc.periodScale;
       while (L.cycle + per < now - 10) L.cycle += per; // after a long stall
@@ -372,10 +380,16 @@ export function createMusic(E) {
     moveTo(hornPans[1], P[0] + 7 * Math.cos(0.6 - ha), P[1], P[2] - 7 * Math.sin(0.6 - ha), T);
 
     // drone: tension + shadow (shadow bends the fifth to a tritone)
-    const dl = 0.045 * S.ten + 0.045 * A.shadow;
+    let dl = 0.045 * S.ten + 0.045 * A.shadow;
+    if (T < keyAt + 1.2) dl = 0; // fading out for a key change
+    else if (droneScale !== sc) { // silent now: retune to the new key, then fade back in
+      droneScale = sc;
+      d1.frequency.setValueAtTime(degHz(sc, 0, -1), T - 0.05);
+    }
     droneOut.gain.linearRampToValueAtTime(dl, T);
-    d1.frequency.linearRampToValueAtTime(degHz(sc, 0, -1), T);
-    d2.frequency.linearRampToValueAtTime(degHz(sc, 0, -1) * Math.pow(2, (7 - A.shadow) / 12), T);
+    const dr = degHz(droneScale, 0, -1);
+    d1.frequency.linearRampToValueAtTime(dr, T);
+    d2.frequency.linearRampToValueAtTime(dr * Math.pow(2, (7 - A.shadow) / 12), T);
     droneLP.frequency.linearRampToValueAtTime(300 + 500 * S.ten - 150 * A.shadow, T);
     // vagal breath: slow 7 s swell
     const br = 0.5 + 0.5 * Math.sin((TAU * T) / 7);
@@ -399,6 +413,24 @@ export function createMusic(E) {
       shepQuiet = o < 0.005 ? shepQuiet + dt : 0;
       if (shepQuiet > 4) killShepard(T);
     }
+  }
+
+  /**
+   * Depth changed (E.scale already replaced): fade every sustained note of the
+   * old key over ~1 s; everything scheduled from now on uses the new key. The
+   * Floe restarts its chord cycle so horns re-swell in the new key.
+   */
+  function keyChange(now) {
+    keyAt = now;
+    live = live.filter((n) => n.end > now);
+    for (const n of live) {
+      if (n.g.cancelAndHoldAtTime) n.g.cancelAndHoldAtTime(now);
+      else { n.g.cancelScheduledValues(now); n.g.setValueAtTime(n.g.value, now); }
+      n.g.setTargetAtTime(0, now, 0.3);
+    }
+    live = [];
+    F.inChord = 1e9;
+    F.chordIdx = -1;
   }
 
   /** Non-mind collapse: silence the Floe, regrow Airports from one loop. */
@@ -425,5 +457,5 @@ export function createMusic(E) {
     setTimeoutSafe(() => all.forEach((n) => { try { n.disconnect(); } catch (e) { /* */ } }), 200);
   }
 
-  return { schedule, control, reset, restart, dispose, loops, fVoices };
+  return { schedule, control, reset, restart, dispose, keyChange, loops, fVoices };
 }

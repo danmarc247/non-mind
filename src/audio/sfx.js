@@ -9,7 +9,8 @@ export const SFX_NAMES = [
   'attend', 'buy', 'sell', 'reroll', 'pickup', 'place', 'merge', 'integrate',
   'subtract', 'split', 'repurpose', 'hit', 'cast', 'death', 'enemyDeath',
   'waveStart', 'waveWin', 'waveLose', 'upgrade', 'verbStart', 'verbDone',
-  'decay', 'unlock', 'error', 'hover', 'overwhelmPulse', 'stanceChoose', 'reset',
+  'decay', 'unlock', 'error', 'hover', 'overwhelmPulse', 'stanceChoose',
+  'mutation', 'miss', 'coreHit', 'gate', 'reset',
 ];
 
 const SFX_LIMIT = 48;
@@ -18,17 +19,23 @@ export function createSfx(E) {
   const { ctx, kit, bus } = E;
   const rng = mulberry32((E.seed ^ 0xa11ce) >>> 0);
   const attend = { step: 0, last: -10 };
+  // positioned-SFX panner cap (HRTF on 'high', equal-power on 'low')
+  const PAN_CAP = E.quality === 'low' ? 4 : 12;
+  let pansLive = 0;
 
   /** Per-call context: output (gain -> optional panner -> dry + reverb). */
   function begin(o = {}) {
     const t = ctx.currentTime + 0.012;
+    const X0 = { panned: false };
     const I = clamp(o.intensity ?? 0.6);
     const out = kit.gain(0.35 + 0.65 * I);
     const nodes = [out];
     let tail = out;
-    if (o.position) {
+    if (o.position && pansLive < PAN_CAP) { // over the cap: play centred instead
+      pansLive++;
+      X0.panned = true;
       const p = ctx.createPanner();
-      p.panningModel = 'HRTF';
+      p.panningModel = E.quality === 'low' ? 'equalpower' : 'HRTF';
       p.distanceModel = 'inverse';
       p.refDistance = 4;
       p.rolloffFactor = 0.8;
@@ -100,13 +107,14 @@ export function createSfx(E) {
         return { s, g, b };
       },
       finish() {
+        const done = () => {
+          if (X0.panned) { pansLive--; X0.panned = false; }
+          for (const n of nodes) { try { n.disconnect(); } catch (e) { /* */ } }
+        };
         if (X.last) {
           const prev = X.last.onended;
-          X.last.onended = () => {
-            if (prev) prev();
-            for (const n of nodes) { try { n.disconnect(); } catch (e) { /* */ } }
-          };
-        } else for (const n of nodes) { try { n.disconnect(); } catch (e) { /* */ } }
+          X.last.onended = () => { if (prev) prev(); done(); };
+        } else done();
       },
     };
     return X;
@@ -319,6 +327,39 @@ export function createSfx(E) {
       X.noise(t, 0.6, { type: 'lowpass', f: 300, f2: 3000, ft: 0.45, Q: 1, peak: 0.1, a: 0.42, tau: 0.03 });
       X.tone(58, t + 0.42, 0.75, { peak: 0.6, a: 0.008, tau: 0.13, glide: [[34, 0.4]] });
       X.tone(X.hz(0, -1), t + 0.42, 0.5, { type: 'triangle', peak: 0.1, tau: 0.08 });
+    },
+    // a unit's genome mutates: brief glassy shimmer (detuned high partials, fast tremolo)
+    mutation(X) {
+      const t = X.t, f = X.hz(4, 2);
+      [[1, 0], [1.5, 0.03], [2.01, 0.06], [2.98, 0.09]].forEach(([r, d], i) => {
+        X.tone(f * r, t + d, 0.6 - d, { peak: 0.07 / (1 + i * 0.4), a: 0.006, tau: 0.09, detune: (i % 2 ? 1 : -1) * 12 });
+      });
+      X.noise(t, 0.35, { type: 'highpass', f: 5000, f2: 9000, ft: 0.25, peak: 0.04, a: 0.01, tau: 0.06 });
+      X.revGain.gain.value = 0.4;
+    },
+    // an attack misses: dry, quiet, hollow tick
+    miss(X) {
+      const t = X.t;
+      X.noise(t, 0.04, { f: 1800, Q: 2.5, peak: 0.14, tau: 0.006 });
+      X.tone(X.hz(4, 1), t, 0.06, { type: 'triangle', peak: 0.05, tau: 0.01 });
+      X.revGain.gain.value = 0.03;
+    },
+    // the core takes damage: soft low thud, felt more than heard
+    coreHit(X) {
+      const t = X.t, f = X.hz(0, -1);
+      X.tone(f * 1.5, t, 0.45, { peak: 0.45, a: 0.005, tau: 0.08, glide: [[f * 0.75, 0.18]] });
+      X.tone(f, t, 0.4, { type: 'triangle', peak: 0.08, a: 0.01, tau: 0.08, filter: ['lowpass', 500] });
+      X.noise(t, 0.12, { type: 'lowpass', f: 700, peak: 0.1, tau: 0.02 });
+      X.revGain.gain.value = 0.15;
+    },
+    // a beat passes a gate: very quiet wooden knock, pitched up the mode by gate index 0..9
+    gate(X, o) {
+      const t = X.t, i = Math.max(0, Math.min(9, Math.round(o.gate ?? o.index ?? 0)));
+      const f = X.hz(i, 0);
+      X.tone(f, t, 0.18, { type: 'triangle', peak: 0.07, a: 0.003, tau: 0.03, filter: ['bandpass', f * 2, 1.2] });
+      X.tone(f * 2.76, t, 0.06, { peak: 0.015, tau: 0.01 });
+      X.noise(t, 0.025, { f: f * 3, Q: 2, peak: 0.02, tau: 0.004 });
+      X.revGain.gain.value = 0.12;
     },
     stanceChoose(X) {
       const t = X.t, st = E.target.stance;
