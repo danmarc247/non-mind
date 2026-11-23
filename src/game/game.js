@@ -12,6 +12,10 @@ import { CARDS } from './content/cards.js';
 // The 22 cards: found now and then, kept forever (they survive every reset). Each grants a small boon.
 export const cardBoon = (G, kind, field = 'pct') => (G.cards || []).reduce((n, id) => { const c = CARDS.find((x) => x.id === id); return n + (c && c.boon.kind === kind ? c.boon[field] || 0 : 0); }, 0);
 export const CARD_LIFETIME = 35;
+// A card that left unkept makes the next one stay longer (35, 49, 69, 96, then 105 s at most); keeping one clears it.
+export const cardLifetime = (G) => Math.min(CARD_LIFETIME * 3, Math.round(CARD_LIFETIME * Math.pow(1.4, Math.min(12, G.cardMisses || 0))));
+const CARD_ARRIVES = ['Something has drifted in over the water. It was not sent.', 'A small thing floats in above the sea, and waits a little.', 'Something is here that was not here. It will not stay long.', 'Over the water, something has come that asks to be kept.'];
+const CARD_GATHERED = 'It would have gone. A lent attention kept it for you.';
 
 // Surprises: now and then an extra action appears beside Attend for a short while. Each does something
 // generous with what is already there; none can cost anything. Long, irregular pauses between them.
@@ -47,7 +51,7 @@ function mulberry(seed) {
 export function createGame(seed = 1, meta = {}) {
   const G = {
     v: 1, seed, t: 0,
-    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], ...meta,
+    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], cardMisses: 0, ...meta,
     cardOffer: null, cardT: 70,
     gift: null, giftT: 150,
     affect: 0, attention: 3 + Math.min(20, Math.floor(Math.sqrt(meta.mu || 0))), insight: 0, insightMax: 100,
@@ -67,6 +71,17 @@ export function createGame(seed = 1, meta = {}) {
   return G;
 }
 
+// Keep the card on offer. `by` is set when an attendant gathered it at the last moment.
+function keepCard(G, by) {
+  const o = G.cardOffer; if (!o) return false;
+  const c = CARDS.find((x) => x.id === o.id); G.cardOffer = null;
+  if (!c || (G.cards || []).includes(c.id)) return false;
+  (G.cards ||= []).push(c.id);
+  G.cardMisses = 0;
+  G.events.push({ type: 'cardCollect', id: c.id, n: c.n, x: o.x, z: o.z, count: G.cards.length, ...(by ? { by } : {}) });
+  say(G, `${by ? `${CARD_GATHERED} ` : ''}${c.name}. ${c.quote}`, 'card');
+  return c;
+}
 const say = (G, text, kind = 'koan') => { G.log.push({ t: G.t, text, kind }); if (G.log.length > 40) G.log.shift(); G.events.push({ type: 'say', text, kind }); };
 export const unlocked = (G, what) => STAGES.findIndex((s) => s.unlock === what) <= G.stage;
 export const capacityOf = (G) => 40 * (1 + 0.3 * G.stage) * (1 + cardBoon(G, 'capacity') / 100);
@@ -297,22 +312,14 @@ export const actions = {
     say(G, `${GIFTS[g.kind].name}. ${GIFTS[g.kind].text} ${note}`.trim(), 'gift');
     return g.kind;
   },
-  collectCard(G) {
-    const o = G.cardOffer; if (!o) return false;
-    const c = CARDS.find((x) => x.id === o.id); G.cardOffer = null;
-    if (!c || (G.cards || []).includes(c.id)) return false;
-    (G.cards ||= []).push(c.id);
-    G.events.push({ type: 'cardCollect', id: c.id, n: c.n, x: o.x, z: o.z, count: G.cards.length });
-    say(G, `${c.name}. ${c.quote}`, 'card');
-    return c;
-  },
+  collectCard(G) { return keepCard(G); },
   ready(G) { if (G.phase === 'prep') G.phaseT = 99; },
   setAuto(G, on) { G.auto = !!on; },
   // The reset. Returns the new game.
   nonMind(G) {
     if (G.stage < 1) return G;
     const gain = muGain(G);
-    const meta = { cards: (G.cards || []).slice(), mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
+    const meta = { cards: (G.cards || []).slice(), cardMisses: G.cardMisses || 0, mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
     const N = createGame(G.seed, meta);
     N.events.push({ type: 'reset', gain, depth: N.depth });
     say(N, 'Simple again.', 'reset'); koan(N, 'reset', 'reset');
@@ -367,13 +374,22 @@ export function step(G, dt) {
   if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three, as evening takes the light.', 'season'); } else addMood(G, 'dread'); } }
   // a card drifts in now and then; unfound ones are favoured, so the set can be completed
   if (G.stage >= 1) {
-    if (G.cardOffer) { G.cardOffer.t -= dt; if (G.cardOffer.t <= 0) { G.events.push({ type: 'cardGone', id: G.cardOffer.id }); G.cardOffer = null; } }
+    if (G.cardOffer) {
+      G.cardOffer.t -= dt;
+      if (G.cardOffer.t <= 0) {
+        // an attendant gathers what would otherwise leave; without one it goes, and the next will stay longer
+        if (G.attendants > 0 && keepCard(G, 'attendant')) { /* kept */ }
+        else { if (G.cardOffer) G.events.push({ type: 'cardGone', id: G.cardOffer.id }); G.cardOffer = null; G.cardMisses = (G.cardMisses || 0) + 1; }
+      }
+    }
     else if ((G.cardT -= dt) <= 0) {
       G.cardT = 80 + G.rng() * 90;
       const have = new Set(G.cards || []), missing = CARDS.filter((c) => !have.has(c.id));
       if (missing.length && G.rng() < 0.6) {
         const c = missing[Math.floor(G.rng() * missing.length)], a = G.rng() * 6.283, r = 4 + G.rng() * 5;
-        G.cardOffer = { id: c.id, t: CARD_LIFETIME, x: Math.cos(a) * r, z: Math.sin(a) * r };
+        const life = cardLifetime(G);
+        G.cardOffer = { id: c.id, t: life, life, x: Math.cos(a) * r, z: Math.sin(a) * r };
+        say(G, CARD_ARRIVES[((G.cards || []).length + (G.cardMisses || 0)) % CARD_ARRIVES.length], 'card');
         G.events.push({ type: 'cardAppear', id: c.id, x: G.cardOffer.x, z: G.cardOffer.z });
       }
     }

@@ -112,7 +112,8 @@ describe('endless (1): a long unbroken run far past stage 17', () => {
     const G = createGame(2);
     let t = 0;
     for (; t < 3000; t += DT) { extendedBot(G, t); step(G, DT); G.events.length = 0; }
-    while (G.phase !== 'prep' || G.battle) { extendedBot(G, t); step(G, DT); G.events.length = 0; t += DT; } // saves restore in prep
+    // saves restore at the start of prep (serialize writes phaseT 0), so save exactly there, not part-way through a prep
+    while (G.phase !== 'prep' || G.battle || G.phaseT !== 0) { extendedBot(G, t); step(G, DT); G.events.length = 0; t += DT; }
     expect(G.stage).toBe(STAGES.length - 1);
     const H = deserialize(serialize(G));
     expect(snapshot(H)).toBe(snapshot(G));

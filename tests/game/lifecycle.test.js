@@ -10,7 +10,8 @@ import { extendedBot, resettingBot } from './bots.js';
 // ---------------------------------------------------------------- helpers
 function prng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const STAT_KEYS = Object.keys(createGame(1).stats);
-const META_KEYS = ['mu', 'endings', 'depth', 'bestStage', 'totalT', 'cards'];
+// cardMisses joined the kept fields when a missed card began to make the next one stay longer
+const META_KEYS = ['mu', 'endings', 'depth', 'bestStage', 'totalT', 'cards', 'cardMisses'];
 
 /** Bot play with fixed dt; events are cleared each step as the UI does. Returns the game (which may be replaced). */
 function play(G, seconds, { dt = 0.1, bot = extendedBot, t0 = 0 } = {}) {
@@ -36,7 +37,7 @@ function health(D) {
 function resetAndCheck(G) {
   const before = serialize(G), gain = muGain(G);
   expect(Number.isFinite(gain) && gain >= 0).toBe(true);
-  const meta = { mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t, cards: (G.cards || []).slice() };
+  const meta = { mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t, cards: (G.cards || []).slice(), cardMisses: G.cardMisses || 0 };
   const N = actions.nonMind(G);
   expect(N).not.toBe(G);
   expect(serialize(G)).toBe(before);
@@ -184,7 +185,7 @@ describe('reset: fifty consecutive resets with resettingBot play between', () =>
       const prev = G;
       const N = resettingBot(G, t, 600);
       if (N !== prev) {
-        runs.push({ fresh: JSON.parse(serialize(N)), freshRef: JSON.parse(serialize(createGame(prev.seed, { mu: N.mu, endings: N.endings, depth: N.depth, bestStage: N.bestStage, totalT: N.totalT, cards: N.cards }))), old: prev, size: serialize(prev).length, stage: prev.stage, s6, N, gain: muGain(prev), oldMeta: Object.fromEntries(META_KEYS.map((k) => [k, prev[k]])), t: prev.t });
+        runs.push({ fresh: JSON.parse(serialize(N)), freshRef: JSON.parse(serialize(createGame(prev.seed, { mu: N.mu, endings: N.endings, depth: N.depth, bestStage: N.bestStage, totalT: N.totalT, cards: N.cards, cardMisses: N.cardMisses }))), old: prev, size: serialize(prev).length, stage: prev.stage, s6, N, gain: muGain(prev), oldMeta: Object.fromEntries(META_KEYS.map((k) => [k, prev[k]])), t: prev.t });
         G = N; t = 0; s6 = null;
       }
       step(G, 0.25); t += 0.25; G.events.length = 0;

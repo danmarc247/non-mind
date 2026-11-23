@@ -27,7 +27,7 @@ import { getAudio } from './lib/audio.js';
 import { startTitleAmbience, stopTitleAmbience } from './lib/titleAmbience.js';
 
 // game event -> spatial sound. y is fixed at unit height; x/z come from the sim.
-const SFX = { attend: 'attend', waveStart: 'waveStart', waveWin: 'waveWin', waveLose: 'waveLose', link: 'merge', integrate: 'integrate', subtract: 'subtract', split: 'split', repurpose: 'repurpose', death: 'death', enemyDeath: 'enemyDeath', cast: 'cast', stage: 'unlock', level: 'upgrade', verbStart: 'verbStart', verbDone: 'verbDone', mood: 'decay', stance: 'stanceChoose', ending: 'unlock', mirror: 'unlock', spell: 'cast', mutation: 'mutation', miss: 'miss', coreHit: 'coreHit' };
+const SFX = { attend: 'attend', waveStart: 'waveStart', waveWin: 'waveWin', waveLose: 'waveLose', link: 'merge', integrate: 'integrate', subtract: 'subtract', split: 'split', repurpose: 'repurpose', death: 'death', enemyDeath: 'enemyDeath', cast: 'cast', stage: 'unlock', level: 'upgrade', verbStart: 'verbStart', verbDone: 'verbDone', mood: 'decay', stance: 'stanceChoose', ending: 'unlock', mirror: 'unlock', spell: 'cast', mutation: 'mutation', miss: 'miss', coreHit: 'coreHit', cardAppear: 'verbDone', cardCollect: 'unlock', gift: 'pickup', giftTake: 'upgrade' };
 
 // A slow breath of filtered noise when the game begins.
 function whoosh() {
