@@ -17,7 +17,7 @@ import Mobile from './hud/Mobile.jsx';
 import Tools from './hud/Tools.jsx';
 import Nudge from './hud/Nudge.jsx';
 import Ask from './hud/Ask.jsx';
-import { ArcaneProvider, Herald, Log, StageFlash } from './hud/Log.jsx';
+import { ArcaneProvider, Herald, Log } from './hud/Log.jsx';
 import { attend, emitHud } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
 
@@ -148,7 +148,6 @@ export default function Hud() {
         {started && mobile && (
           <ArcaneProvider>
             <Mobile w={w} h={h} />
-            <StageFlash />
             <Nudge blocked={codex} />
             <Tutorial />
           </ArcaneProvider>
@@ -183,7 +182,6 @@ export default function Hud() {
 
             <div className="absolute left-1/2 -translate-x-1/2" style={{ top: bandTop }}><PendingBanner /></div>
             <div className="pointer-events-none absolute" style={{ top: bandTop + 64, left: sideL, right: sideL }}><Herald size={compact ? 26 : 32} /></div>
-            <StageFlash />
             <Nudge blocked={codex} />
             <Tutorial />
 

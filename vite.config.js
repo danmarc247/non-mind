@@ -10,7 +10,7 @@ const vendorGroups = [
   { name: 'vendor-react', test: nm(['react', 'react-dom', 'scheduler']), priority: 50 },
   { name: 'vendor-shader-park', test: nm(['shader-park-core']), priority: 40 },
   { name: 'vendor-r3f', test: nm(['@react-three', 'postprocessing', 'three-stdlib', 'camera-controls', 'maath', 'react-reconciler', 'its-fine', 'suspend-react', 'troika-[^\\\\/]+', 'meshline', 'stats-gl', 'detect-gpu', 'tunnel-rat', 'n8ao']), priority: 30 },
-  { name: 'vendor-three', test: nm(['three']), priority: 20 },
+  { name: 'vendor-three', test: nm(['three']), priority: 35 },
   { name: 'vendor-motion', test: nm(['motion', 'framer-motion', 'motion-dom', 'motion-utils']), priority: 10 },
 ];
 

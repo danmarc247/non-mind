@@ -1,9 +1,8 @@
-// The log of arcane messages (with its arrival choreography) + centre-screen stage flash.
+// The log of arcane messages, with its arrival choreography. (Stage unlocks, resets and endings are
+// staged by the Ceremony overlay, so stage/reset/ending lines are never heralded large here.)
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
-import { KoanFlash } from '../type/KoanFlash.jsx';
-import { STAGES } from '../../game/index.js';
-import { onEvent, useGame } from '../../game/store.js';
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { POP } from './shared.jsx';
 
@@ -40,7 +39,7 @@ export function ArcaneProvider({ children }) {
       if (seen.current.keys.has(k)) return;
       seen.current.keys.add(k);
       const prev = items[i - 1];
-      if (l.kind === 'stage' || reduced || (prev && prev.text === l.text)) return; // staged elsewhere, or a repeat that folds
+      if (['stage', 'reset', 'ending'].includes(l.kind) || reduced || (prev && prev.text === l.text)) return; // staged by the Ceremony, or a repeat that folds
       fresh.push({ key: k, text: l.text, kind: l.kind });
     });
     if (fresh.length) setSt((s) => ({ ...s, queue: [...s.queue, ...fresh].slice(-QUEUE) }));
@@ -148,58 +147,6 @@ export function Log({ compact, mobile }) {
           );
         })}
       </div>
-    </div>
-  );
-}
-
-export function StageFlash() {
-  const [flash, setFlash] = useState(null);
-  useEffect(() => {
-    let timer = 0;
-    const off = onEvent((e) => {
-      let text = null, hint = null, tone = 'magenta';
-      if (e.type === 'stage') { text = STAGES[e.stage]?.id.toUpperCase(); hint = STAGES[e.stage]?.hint; }
-      if (e.type === 'reset') { text = 'SIMPLE AGAIN'; tone = 'violet'; }
-      if (e.type === 'ending') { text = 'AN ENDING'; tone = 'leaf'; }
-      if (!text) return;
-      clearTimeout(timer);
-      setFlash({ text, hint, tone, key: performance.now() });
-      timer = setTimeout(() => setFlash(null), 1600);
-    });
-    return () => { off(); clearTimeout(timer); };
-  }, []);
-  return (
-    <div className="pointer-events-none absolute inset-x-0 top-[38%] flex justify-center">
-      <AnimatePresence>
-        {flash && (
-          <motion.div
-            key={flash.key}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.08, transition: { duration: 0.2 } }}
-            transition={POP}
-            className="w-[min(80vw,900px)]"
-          >
-            <KoanFlash
-              text={flash.text}
-              wpm={60}
-              trail="rgb_split"
-              tone={flash.tone}
-              className="h-[120px] font-title text-[88px] text-ink [text-shadow:4px_5px_0_var(--color-paper)]"
-            />
-            {flash.hint && (
-              <motion.p
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...POP, delay: 0.15 }}
-                className="mx-auto mt-1 w-fit rounded-[10px] bg-paper/85 px-3 py-1 text-center font-body text-[18px] italic text-ink-2"
-              >
-                {flash.hint}
-              </motion.p>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

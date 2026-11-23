@@ -2,8 +2,8 @@
 import '../../index.css';
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { CanvasRevealEffect } from './CanvasRevealEffect';
 import {
-  CanvasRevealEffect,
   CardSpotlight,
   Cryptic,
   EncryptedText,

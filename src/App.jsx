@@ -3,6 +3,9 @@ import { lazyOnOpen } from './lib/lazyOnOpen.jsx';
 // The 3D scene (three, R3F, postprocessing, shader-park) loads behind the title: fetching starts at boot, not on Begin.
 const sceneModule = import('./gfx/Scene.jsx');
 const Scene = lazy(() => sceneModule);
+// The GSAP ceremony overlay: its own chunk (with gsap), fetched right after boot so it is ready before Begin; renders nothing until loaded.
+const ceremonyModule = import('./ui/Ceremony.jsx').catch(() => ({ default: () => null }));
+const Ceremony = lazy(() => ceremonyModule);
 const hudMod = Object.values(import.meta.glob('./ui/Hud.jsx', { eager: true }))[0];
 import { start, useVersion, game } from './game/store.js';
 function Fallback() { useVersion(); return game.started ? null : <button className="fixed inset-0 m-auto h-24 w-72 rounded-full border-4 border-ink bg-yolk font-title text-4xl text-ink" onClick={() => { try { getAudio().unlock(); } catch { /* optional */ } start(); }}>NON-MIND</button>; }
@@ -116,6 +119,7 @@ export default function App() {
     <div className="fixed inset-0 bg-paper">
       <Suspense fallback={null}><Scene audioRef={audioRef} /></Suspense>
       <Hud />
+      <Suspense fallback={null}><Ceremony /></Suspense>
       <Manual />
       <Restart />
       <Veil />

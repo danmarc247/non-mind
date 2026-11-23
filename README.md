@@ -39,13 +39,13 @@ Three moments from the live build.
 The game is the trace of a few questions, asked one after another. Each answer below is what the code does now.
 
 **What if complexity itself were the thing you collect, and also the thing that ends you?**
-Complexity multiplies affect income (`x (1 + C/25)`) and feeds the strength of every regulator. Past capacity (`40 x (1 + 0.3 x stage)`) it turns into overwhelm: stressors grow tougher, beats come faster, composure drains. The same number is both the reward and the pressure.
+Complexity multiplies affect income (`x (1 + C/25)`) and feeds the strength of every regulator. Past capacity (`40 x (1 + 0.3 x stage)`) it turns into overwhelm: stressors grow tougher (up to 2.2 times), beats come faster, composure drains. The same number is both the reward and the pressure.
 
 **What if a unit's body were grown from its ancestry, so that every joining and every parting made a shape no one had seen?**
 A regulator is a binary tree of family genes joined by `blend` (integrate) or `carve` (subtract). The one tree sets its stats, its name, its aspects and its look. `sculpt.js` writes a Shader Park program from the tree, compiles it to GLSL at runtime and raymarches it, so a hybrid is the literal constructive solid geometry of its parents. Splitting writes the tree back into two bodies.
 
 **What if getting better meant becoming simpler, until the best thing a unit can do is leave?**
-Two identical genomes at the same link fuse into the next of twelve. The stat multiplier climbs from x1 to x150, and each link adds a heritable trait. Low links are knotted and muddy, high links are pale, luminous and plain, and link 12 dissolves the unit into a permanent ending.
+Two identical genomes at the same link fuse into the next of twelve (from link 4 a copy one link away will do, so the climb turns from doubling to something closer to Fibonacci). The stat multiplier climbs from x1 to x150, and each link adds a heritable trait. Low links are knotted and muddy, high links are pale, luminous and plain, and link 12 dissolves the unit into a permanent ending. Each family has three forms along the way, raw, grown and refined, and every unit is a slightly different sibling of the others.
 
 **What if each thing learned were a door, and the game began as one button?**
 Eighteen stages, each unlocking one system: the shop, habits, integrate, repurpose, insight, split, a second ring, subtract, attendants, verbs, exchange, echo, stance, seasons, mirror, a wildcard, and finally non-mind. The conditions are things the player does, such as fusing, splitting and subtracting.
@@ -57,10 +57,13 @@ One centre, ten gates, ten families, ten waves of ten beats, and a ten-step arc 
 At low complexity there are eight ambient loops with incommensurate periods of about 17 to 34 seconds, played by felt piano and wordless voice, each circling the listener in HRTF space. As complexity rises, interlocking arpeggio ostinati of different lengths enter and phase against each other. Under overwhelm the pulse speeds from 132 to 168 bpm, detunes and saturates. Everything is synthesized in the Web Audio API, and the mode changes with each prestige depth.
 
 **What if the whole picture were wet paint that never dries?**
-Sky, sea and a five-pass post chain render as acrylic: anisotropic Kuwahara strokes, impasto relief, canvas weave, ink edges. Eighteen stage palettes morph into one another, the sky switches on one more painted motif at every stage, and overwhelm lets the paint run.
+Sky, sea and a five-pass post chain render as acrylic: anisotropic Kuwahara strokes, impasto relief, canvas weave, ink edges. Eighteen stage palettes morph into one another. The sky switches on one more painted motif at every stage and wears one of ten compositions as the waves pass. The sea moves through seven movements (canvas, marbling, kaleidoscope, colonies, reaction, fold, flood) as the stages rise, and every game event drops paint on it. Overwhelm lets the paint run.
+
+**What if the picture held more than the game needs?**
+Around the vessel, bodies hang in the air and touch nothing: slow mobiles, paint slices below the glass, rising motes, and lines that almost connect them. The whole stage turns, faster with every stage, and a joining or a parting gives it a push that settles. The sculptures reflect a painted sky, and they lean toward whatever you point at.
 
 **What if starting over were the reward?**
-Non-mind turns peak complexity into permanent `mu`: more affect, stronger regulators, more starting attention. It is the exit that overwhelm was always pointing at.
+Non-mind turns peak complexity into permanent **residue**: more affect, stronger regulators, more starting attention. It is the exit that overwhelm was always pointing at.
 
 ---
 
@@ -74,21 +77,22 @@ The first minutes are small on purpose. One thing is on the screen, and it can b
 |---|---|---|
 | 1 | Press the title button | Audio unlocks, the sea appears, the core pulses. |
 | 2 | Click the **core** (or press `Space`) | Affect rises. Five clicks unlock the shop (stage 1). |
-| 3 | Buy a regulator from the shop (cost equals its tier in attention) | It arrives and takes the first free seat, as long as there is room. |
+| 3 | Buy a regulator from the shop (cost equals its tier in attention) | It arrives and takes the first free seat, as long as there is room. If you hold nothing and cannot afford anything, something simple arrives on its own. |
 | 4 | Move it if you prefer: click it, then click a **seat** ring | Swaps if occupied. With auto on, a wave starts about 5 seconds into prep. |
 | 5 | Watch the wave | Stressors enter through gates and walk toward the core. Kills pay affect. A win pays attention and refreshes the shop. |
 | 6 | Buy a second copy of the same family | The two **fuse** into link 2. This is the ladder, and the next stage opens integrate. |
-| 7 | Keep going | Each stage hint in the log points at what to try next. |
+| 7 | Keep going | Each stage hint in the log points at what to try next. If you go still for about 25 seconds, a quiet arrow and a line of text suggest one thing that can be done right now. |
 
-A loss is not a wall. Each loss on a wave softens its stressors by 12 percent (`x0.88`, up to 12 stacks) until the wave is won.
+A loss is not a wall. It pays 3 attention, refills composure, and each loss on a wave softens its stressors by 12 percent (`x0.88`, up to 12 stacks) until the wave is won.
 
-Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. The director leans on the camera and lets go. It never takes it away.
+Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. The director leans on the camera and lets go. It never takes it away. The camera also turns slowly by itself, faster at every stage, and a fuse, integrate, subtract, split, new stage or reset gives the turning a push that settles.
 
 ### Controls
 
 | Input | Action |
 |---|---|
 | Click the core, or `Space` | Attend |
+| Hover a unit or a seat | It brightens and swells a little, so you can see what a click will take |
 | Click a unit | Select it; the inspector shows genome, mutations, traits and operations |
 | Click a seat | Place the selected unit (swaps if occupied) |
 | Integrate / Subtract | Select a unit, press the operation, then click the second unit |
@@ -96,29 +100,49 @@ Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) a
 | `R` | Reroll the shop (2 attention) |
 | `X` | Buy experience (5 attention for 4 xp) |
 | `C` | Open or close the codex |
-| `Esc` | Close the codex, cancel a pending operation, or deselect |
-| Drag, scroll | Orbit and zoom (distance 12 to 34, panning off) |
+| `M` | Open or close this manual |
+| `L` | Open or close the Lineage map |
+| `?` or `H`, or the `?` ring | Ask for a hint: the next suggestion appears at once |
+| `Esc` | Close the open panel, cancel a pending operation, or deselect |
+| Drag, scroll | Orbit and zoom (distance 5 to 70, panning off) |
 
-The shop keys work once the shop is unlocked. The game saves to `localStorage` every 10 seconds.
+The shop keys work once the shop is unlocked. Typing in a box and open panels silence the game's hotkeys, and `Space` never presses a button that happens to have focus.
+
+The ring of tools holds the codex, the manual, **save**, **lineage**, **again** (a confirmed wipe of everything, including residue) and **sound** (on or off, remembered). The save menu keeps the game now, copies it as a line of text, downloads it as a `.txt` file, or puts such a line back (a rejected code changes nothing). Apart from that the game saves to `localStorage` every 10 seconds.
+
+The **Lineage** map is a paper folio drawn with PixiJS: every body you have grown this run, and what it grew from. It loads only while open.
+
+On a phone the HUD becomes a slim top strip, the arena, and a bottom dock of tabs; there are no hotkeys or hover there.
 
 ---
 
 ## Mechanics reference
 
-The rules, as the code currently states them. Constants live in `src/game/data.js`, `game.js` and `battle.js`.
+The rules, as the code currently states them. Constants live in `src/game/data.js`, `game.js` and `battle.js`. Some numbers are tuned often, so when this page and the code disagree, the code is right.
 
 ### Resources
 
 | Resource | Source | Spent on |
 |---|---|---|
 | **Affect** | Attending, habits, kills, wave wins, `glad` and `transmute` | Habits, upgrades, attendants, mirrors |
-| **Attention** | Wave wins (4 + interest + streak bonus), selling, exchange. Starts at 3, plus up to 20 from `mu` | Shop units (cost = tier), reroll, xp |
+| **Attention** | Wave wins (7 + interest + streak bonus up to 3), losses (3), selling, exchange. Starts at 3, plus up to 20 from residue (its square root) | Shop units (cost = tier), reroll (2), xp (5 for 4 xp) |
 | **Insight** | Regenerates `1 + 0.15 x level` per second, capped at 100 once unlocked | Integrate (20), subtract (35), split (10), spells |
-| **Composure** | Core health, 100. Refills 25% per win | Lost to stressors reaching the core; zero loses the wave |
-| **mu** | Non-mind resets | Multiplies affect (`1 + 0.04 mu`), strengthens regulators, adds starting attention |
+| **Composure** | Core health, 100. Refills 25% per win, fully after a loss | Lost to stressors reaching the core; zero loses the wave |
+| **Residue** | Non-mind resets | Multiplies affect (`1 + 0.04 x residue`), strengthens regulators (`1 + 0.05 x residue^0.7` on tolerance and salience), adds starting attention |
 | **Endings** | Link 12 dissolutions | +10% affect and +10% salience each, kept through resets |
 
-Interest on attention is `floor(attention / 10)`, capped at 5 (10 with Thrift Of Attention).
+Interest on attention is `floor(attention / 10)`, capped at 5 (10 with Thrift Of Attention). A won wave also pays 2 xp, a lost one 1 xp.
+
+### Shop, levels and seats
+
+The shop shows 5 slots, rolled again after every wave and on every reroll. Your level sets the odds of each tier, and the unit cap grows with it.
+
+| Level | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| xp to reach the next | 2 | 3 | 6 | 10 | 16 | 26 | 40 | 60 | 90 | max |
+| Tier 1 / 2 / 3 / 4 / 5 odds (%) | 100 / 0 / 0 / 0 / 0 | 80 / 20 / 0 / 0 / 0 | 65 / 30 / 5 / 0 / 0 | 50 / 35 / 15 / 0 / 0 | 38 / 35 / 24 / 3 / 0 | 28 / 33 / 30 / 8 / 1 | 20 / 28 / 34 / 15 / 3 | 15 / 22 / 33 / 24 / 6 | 12 / 18 / 28 / 30 / 12 | 8 / 14 / 24 / 34 / 20 |
+
+From stage 3 the shop leans toward the family you are already climbing: each slot has a 30 percent chance to show the family of your highest-link regulator, so the ladder reads as a path and not a lottery. If you hold nothing, cannot afford the cheapest slot and cannot afford a reroll, a tier 1 family arrives in the first slot and you are given the attention for it.
 
 ### The 18 stages
 
@@ -130,20 +154,20 @@ Interest on attention is `floor(attention / 10)`, capped at 5 (10 with Thrift Of
 | 3 | combine | integrate | Fuse one link |
 | 4 | repurpose | repurpose | Integrate once |
 | 5 | increase | insight, spells | Own 8 habits |
-| 6 | regroup | split | Reach wave 5 |
-| 7 | expand | second ring | Level 5 |
+| 6 | regroup | split | Reach wave 4 |
+| 7 | expand | second ring | Level 4 |
 | 8 | ingest | subtract | Split once |
 | 9 | support | attendants | Subtract once |
 | 10 | evoke | verbs | Finish a cycle, or reach wave 9 |
 | 11 | interchange | exchange | Complete 2 verbs |
-| 12 | evoke | echo | 3 exchanges |
-| 13 | inhabit | stance | 5 echoes |
+| 12 | evoke | echo | 3 exchanges (stage 10 and stage 12 share a name on purpose) |
+| 13 | inhabit | stance | 10 echoes |
 | 14 | sustain | seasons | Choose a stance |
-| 15 | penetrate | mirror | Survive 3 seasons |
+| 15 | penetrate | mirror | Survive 5 seasons |
 | 16 | embrace | wildcard aspect | Own a mirror |
 | 17 | overwhelm | non-mind at full strength | Overwhelm reaches 1 |
 
-Non-mind itself is available from stage 1; being fully overwhelmed (which unlocks stage 17) doubles the mu you get.
+Non-mind itself is available from stage 1; being fully overwhelmed (which unlocks stage 17) doubles the residue you get.
 
 ### The 10 families
 
@@ -160,22 +184,22 @@ One per gate. Tier sets shop rarity and cost.
 | Dissociation | 3 | void, shadow | Vanish | It watches itself from the ceiling. The view is fine. |
 | Sublimation | 4 | mythic, limbic | Transmute | It sets fire to the thing and calls the light a career. |
 | Containment | 4 | somatic, relational | Hold | It does not fix. It is a place where unfixed things may be. |
-| Equanimity | 5 | mythic, void | Level | Praise and blame arrive. It offers them both the same chair. |
+| Equanimity | 5 | mythic, void | Level | Applause and accusation arrive. It offers them both the same chair. |
 
-Abilities fire when **charge** reaches 100. Charge fills 14 per strike (scaled by cortical and wave modifiers) and by damage taken. From stage 12 a unit also fires its second-heaviest gene's ability at half power (**echo**).
+Abilities fire when **charge** reaches 100. Charge fills 14 per strike (scaled by cortical and wave modifiers) and by damage taken. From stage 12 a unit also fires its second-heaviest gene's ability at half power (**echo**), if that gene is a different family.
 
 | Ability | Effect |
 |---|---|
-| Reframe | The target strikes its own kind once |
-| Lid | Stores harm taken, returns all of it when the unit falls |
-| Loop | Strikes five times, and feels each |
-| Withdraw | Leaps to the far rim, strikes thrice |
-| Mend | Heals the ally who needs it most |
-| Cast Out | Hands its wounds to the nearest stressor |
-| Vanish | Blinks behind the strongest, hits hard |
-| Transmute | Burns everything near; ashes become affect |
-| Hold | Taunts and hardens |
-| Level | Pulls stressors toward the weakest's tolerance |
+| Reframe | The strongest stressor is turned on its nearest kin, and stunned |
+| Lid | Keeps most of the harm it takes and hardens; returns it to those near when the unit falls |
+| Loop | Strikes five times, and is worn by it |
+| Withdraw | Leaps to the far rim, unseen a moment, and strikes thrice from there |
+| Mend | Mends the ally who needs it most |
+| Cast Out | Hands its own wounds to the nearest stressor, and is eased by it |
+| Vanish | Returns beside the stressor with the most tolerance, heavily |
+| Transmute | Burns everything near; the ashes are affect |
+| Hold | Everything nearby must attend to it; it hardens |
+| Level | Draws every stressor down toward the weakest; the greatest are drawn less |
 
 Base stats per family live in `src/game/data.js` (for example Containment 2100 tolerance, Equanimity 260 salience and reach 6).
 
@@ -210,22 +234,22 @@ Each unit votes its genes' aspects (weighted by tree position) and keeps the top
 
 ### The ladder: 12 links
 
-Two units of the same genome at the same link fuse into the next. Each link multiplies tolerance and salience and grants one heritable trait.
+Two units of the same genome at the same link fuse into the next. From link 4 a unit also fuses with a copy one link away (that copy must be link 3 or more), and the result is one above the higher. Each link multiplies tolerance and salience and grants one heritable trait.
 
 | Link | Name | x | Trait | Effect |
 |---|---|---|---|---|
-| 1 | unsatisfactoriness | 1 | ache | Deals more the less tolerance it has left |
-| 2 | confidence | 1.7 | trust | Starts each wave with a veil worth a share of tolerance |
-| 3 | gladness | 2.8 | glad | Each strike yields a little affect |
-| 4 | rapture | 4.5 | rapture | First strikes of a wave come much faster |
-| 5 | tranquillity | 7 | calm | Slows stressors nearby |
-| 6 | ease | 11 | ease | Mends itself continuously |
-| 7 | collectedness | 17 | gather | Repeated strikes on one target grow |
-| 8 | seeing as it is | 26 | see | Ignores opacity and veils |
-| 9 | disenchantment | 40 | tire | Stressors nearby lose salience |
-| 10 | dispassion | 62 | fade | Counts as every aspect; cannot be dysregulated |
-| 11 | release | 95 | release | On falling, mends every ally |
-| 12 | knowing the ending | 150 | end | Dissolves into a permanent ending |
+| 1 | Unsatisfactoriness | 1 | ache | Deals more the less tolerance it has left |
+| 2 | Confidence | 1.7 | trust | Starts each wave with a veil worth a share of tolerance |
+| 3 | Gladness | 2.8 | glad | Each strike yields a little affect |
+| 4 | Rapture | 4.5 | rapture | First strikes of a wave come much faster |
+| 5 | Tranquillity | 7 | calm | Slows the latency of stressors nearby |
+| 6 | Ease | 11 | ease | Mends itself continuously |
+| 7 | Collectedness | 17 | gather | Repeated strikes on one target grow |
+| 8 | Seeing As It Is | 26 | see | Ignores opacity and veils |
+| 9 | Disenchantment | 40 | tire | Stressors nearby lose salience |
+| 10 | Dispassion | 62 | fade | Counts as every aspect |
+| 11 | Release | 95 | release | On falling, mends every ally |
+| 12 | Knowing The Ending | 150 | end | Dissolves into a permanent ending |
 
 ### Operations
 
@@ -235,9 +259,9 @@ A genome is a tree, maximum **6 leaves**. Beyond that the lightest leaves are pr
 |---|---|---|---|
 | **Integrate** | stage 3 | 20 insight | `blend` two units; link is the higher of the two; traits are unioned (cap 10) |
 | **Subtract** | stage 8 | 35 insight | `carve` the second out of the first; carved genes weigh less; keeps the first's link |
-| **Split** | stage 6 | 10 insight | Undo a node into its two children at the same link, or split a whole gene at link 2+ into an idealized and a devalued half at link minus 1 |
-| **Repurpose** | stage 4 | free | Dissolve a unit into habits of its first family's gate |
-| **Fuse** | automatic | free | Identical genome and link merge into link + 1 |
+| **Split** | stage 6 | 10 insight | Undo a node into its two children, each returning at the link its parent brought to the integrate (so joining then parting mints no link), or split a whole gene at link 2+ into an idealized and a devalued half at link minus 1 |
+| **Repurpose** | stage 4 | free | Dissolve a unit into habits. The habit is chosen by worth: `tier - 1 + floor((link - 1) / 3)` indexes the ten habits. The count is `round(link x (1 + parts) / 2)`, at least 1, so a cheap unit never becomes a late habit |
+| **Fuse** | automatic | free | Identical genome and link merge into link + 1 (from link 4, a neighbour link works too) |
 
 ```
 leaf            Reappraisal                       one gene
@@ -248,33 +272,41 @@ deeper          blend( blend(A, B), C )               trees nest up to 6 leaves
 
 split (node)    blend(A, B)                  ->  A  and  B  (same link)
 split (whole)   Attunement, link 4           ->  Attunement+ and Attunement-, both link 3
+split (node)    blend(A at 3, B at 1)        ->  A at link 3  and  B at link 1
 fuse            Attunement L2 + Attunement L2  ->  Attunement L3, gains trait `glad`
+fuse (L4+)      Attunement L4 + Attunement L3  ->  Attunement L5
 ```
 
 Names are generated from the tree: heaviest gene is the noun, others become adjectives (`Ruminative Hollowed Suppression`).
 
 ### Waves, beats and the ten arc modifiers
 
-A wave is 10 beats of 2.4 s (0.7x under heavy overwhelm). Each beat spawns stressors at a gate. Waves 1 to 10 cycle, then the cycle counter rises. Wave 10 (and the Return arc) ends on the boss. Stressor tolerance scales `1.15^(wave-1)`, salience `1.1^(wave-1)`, further by overwhelm and mirrors. At most 14 spawn per beat.
+A wave is 10 beats of 2.4 s (0.7x once overwhelm passes one half). Each beat spawns `1 + floor(gw / 4)` stressors at a gate (one more on every fifth beat, 1.5x while three Dreads are held, at most 14), where `gw` is the global wave number. Waves 1 to 10 cycle, then the cycle counter rises. Wave 10 (the Return arc) ends on a boss, and the four bosses take turns by cycle.
+
+```
+tolerance = base x 3.4 x 1.1^min(gw-1, 18) x 1.04^clamp(gw-19, 0, 10) x 1.015^max(0, gw-29)
+            x (1 + 1.2 x overwhelm) x (1 + 0.2 x mirrors) x 0.88^habituation
+salience  = base x 1.04^(gw-1)
+```
 
 | Wave | Arc | Modifier |
 |---|---|---|
 | 1 | It Does Not Appear | Stressors are half-unseen (opacity 35) |
 | 2 | Beyond The Path Of Words | Charge fills at half speed |
-| 3 | Just As | Double the stressors at 0.55x tolerance |
+| 3 | Just As | Each stressor arrives with its likeness: double the stressors at 0.55x tolerance |
 | 4 | One, Therefore Many | One great stressor; when it falls it is many |
 | 5 | Neither One Nor Two | Counts are unreliable |
-| 6 | No Place, Every Place | They arrive through every gate |
-| 7 | Same, Different | They wear your forms; 1.3x salience |
-| 8 | Equal In Number To Thoughts | Their number follows your clicks |
+| 6 | No Place, Every Place | They arrive through every gate at once |
+| 7 | Same, Different | They wear the forms of your own; 1.3x salience |
+| 8 | Equal In Number To Thoughts | Their number follows your attention (your clicks this wave) |
 | 9 | Who Is Able | Aspect bonds are silent |
-| 10 | Light Appears | A boss, and a single strike may undo a great one |
+| 10 | Light Appears | A boss, and each strike you land has a 3 percent chance to take the target's whole remaining tolerance (the one-strike rule) |
 
 Stressors: five base kinds (Intrusion, Deadline, Criticism, Ambiguity, Shame) and the boss Abandonment, plus an extended roster of eleven more (Clutter, Silence, Comparison, Obligation, Boredom, Hurry, Noise, Doubt, Loss, Lateness, Envy) and three later bosses (Expectation, Transition, Inadequacy). The ordinary pool widens with the global wave number, up to 16 kinds.
 
 **Affixes.** From global wave 4 a stressor may carry one of 40 named distortions (Unread, Inherited, 3 A.M., Anticipated, Recurring, and so on), each a stat change with a minimum wave. The chance rises linearly from 0 at wave 3 to 70 percent at wave 40. Bosses carry none.
 
-**Habituation.** Every loss on a wave multiplies the next attempt's stressor tolerance by `0.88`, up to 12 losses. A win resets it to zero.
+**Habituation.** Every loss on a wave multiplies the next attempt's stressor tolerance by `0.88`, up to 12 losses, so no wall is permanent. A win resets it to zero.
 
 ### Habits, upgrades, spells, verbs, moods
 
@@ -291,7 +323,7 @@ Stressors: five base kinds (Intrusion, Deadline, Criticism, Ambiguity, Shame) an
 | Myth | 1.2e9 | 2.1e6 |
 | Identity | 2.5e10 | 2.6e7 |
 
-Cost grows `x1.15` per owned. Eight upgrades (Noticing, Counting Breaths, Old Wound, Long View, Inner Crowd, Thrift Of Attention, Second Arrow, Lending) and three insight spells (**Exhale**: heal a third, **Name It**: double harm for 8 s, **Recollect**: 30 s of habit yield) are stage-gated. **Attendants** (300 x 2.2^n affect) click for you.
+Cost grows `x1.15` per owned. Inner Crowd adds `C / 60` to every regulator's salience multiplier. Eight upgrades (Noticing, Counting Breaths, Old Wound, Long View, Inner Crowd, Thrift Of Attention, Second Blow, Lending) and three insight spells (**Exhale**: every regulator mends a third and composure gains 20, **Name It**: double harm for 8 s, **Recollect**: 30 s of habit yield) are stage-gated. **Attendants** (300 x 2.2^n affect) click for you.
 
 | Verb | Time | Needs | Result |
 |---|---|---|---|
@@ -306,17 +338,17 @@ Moods decay: **Dread** (180 s; three of them open the gates wider, 1.5x stressor
 
 ```
 unit complexity = (leaves + 0.5*depth + 0.5*ghosts) * (1 + 0.35*(link-1)) + 0.25*traits
-C   = sum(units) + 1.2*sqrt(habits) + 1.5*upgrades + moods + 12*mirrors
-      + 0.6*attendants + 3 if stance + 2.5*log10(1+earned) + 1.2*global wave
+C   = sum(units) + 1.2*sqrt(habits) + 1.5*upgrades + moods + 70*mirrors
+      + 0.6*attendants + 3 if stance + 2.5*log10(1+earned) + 1.5*global wave
 capacity  = 40 * (1 + 0.3 * stage)
-overwhelm = clamp( (C - capacity) / (0.35 * capacity), 0, 1 )
-affect x  = (1 + 0.04 mu) * (1 + C/25) * (1 + 0.1 endings) * 2^mirrors * aspect/upgrade/mood terms
+overwhelm = clamp( (C - capacity) / (0.12 * capacity), 0, 1 )
+affect x  = (1 + 0.04 residue) * (1 + C/25) * (1 + 0.1 endings) * 2^mirrors * aspect/upgrade/mood terms
 
-non-mind: mu += floor( (peak C / 8)^0.8 * (1 + stage/17) * (2 if overwhelm >= 1) )
-          keeps mu, endings, depth, best stage; everything else resets
+non-mind: residue += floor( (peak C / 8)^0.8 * (1 + stage/17) * (2 if overwhelm >= 1) * (1 + 0.15 * depth) )
+          keeps residue, endings, depth, best stage; everything else resets
 ```
 
-At overwhelm 1 composure drains 2% of max per second, and stressors are up to 3x tougher.
+The overwhelm band is narrow: from capacity to 12 percent above it. At overwhelm 1 composure drains 2% of max per second, and stressors are 2.2x tougher.
 
 ### Mutations
 
@@ -335,11 +367,11 @@ Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs
 
 | System | Rule |
 |---|---|
-| **Mirror** | Cost `1e6 x 40^n` affect. Doubles affect, +2 unit cap, opens the third ring, +12 complexity, stressors +50% tolerance each |
+| **Mirror** | Cost `1.5e12 x 25^n` affect. Doubles affect, +2 unit cap, opens the third ring, +70 complexity, stressors +20% tolerance each |
 | **Stance** | Toward: mending x2, reach x0.8. Away: opacity +20, reach x1.3, affect x0.8. Against: salience x1.6, tolerance x0.8 |
 | **Seasons** | Every 60 s the season takes 3 attention, or, if you cannot pay, adds a Dread |
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
-| **Seats** | 3 rings of 10. Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
+| **Seats** | 3 rings of 10 (the second opens at stage 7, the third with a mirror). Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
 
 ---
 
@@ -350,7 +382,7 @@ Several familiar genres share a table here. Only their systems were borrowed, an
 | Genre system | NON-MIND system | What changed |
 |---|---|---|
 | Auto-battler drafting: shop, bench, board, level-gated odds, traits that need N members | Shop with 5 slots, tier odds by level, 3 seat rings, **aspect** thresholds 2 / 4 / 6 | Units are not fixed catalogue entries. Any two can be integrated or carved into a new genome, and merging copies climbs a 12-link ladder instead of a three-star cap. |
-| Idle and incremental layering: buildings, prestige, a reset that multiplies the next run | Ten habits at x1.15 cost growth, the **non-mind** reset paying mu | The reset is driven by overwhelm, not a timer. Complexity both multiplies income and is the pressure that forces the reset. |
+| Idle and incremental layering: buildings, prestige, a reset that multiplies the next run | Ten habits at x1.15 cost growth, the **non-mind** reset paying residue | The reset is driven by overwhelm, not a timer. Complexity both multiplies income and is the pressure that forces the reset. |
 | Card-table occultism with timed verbs: slots, aspects, decaying moods | Verbs with aspect-gated slots, Dread / Contentment / Fascination, seasons | Verbs act on your own regulators, and aspects feed battle tiers as well as slots. |
 | Unlock-by-progress tutorials | 18 stages, each unlocking one system | The unlock conditions are things you do (fuse, split, subtract), so the tutorial is the game. |
 

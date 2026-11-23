@@ -8,7 +8,8 @@ export { TextGenerateEffect } from './TextGenerateEffect';
 export { MovingBorder, MovingBorderButton } from './MovingBorder';
 export { NoiseBackground, GRAIN_URL } from './NoiseBackground';
 export { CardSpotlight } from './CardSpotlight';
-export { CanvasRevealEffect } from './CanvasRevealEffect';
+// CanvasRevealEffect (R3F + three) is not re-exported: CardSpotlight lazy-loads it so the HUD boots without three.
+// Import it from './CanvasRevealEffect' directly.
 export { WavyBackground } from './WavyBackground';
 
 // Cult UI ports
