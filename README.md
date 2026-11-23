@@ -388,7 +388,7 @@ The idle hints and the guide do not point at these. They are meant to be noticed
 
 ### Things that drift in
 
-Some things in this game are not earned and not bought. Once in a while something drifts in over the sea that was not sent, and stays only a short while. A soft chime and a line in the log say when it has come. If you reach it in time it is kept in the **book**, and each one kept leaves a small, lasting kindness behind. If you miss it, the next one waits longer for you. Later, once attention can be lent, an attendant gathers at the last moment what would otherwise have gone. How many there are, what they show and what they say is for you to find. The book has room for all of them.
+Some things in this game are not earned and not bought. Once in a while something drifts in over the sea that was not sent, and stays only a short while. A soft chime and a line in the log say when it has come. If you reach it in time it is kept in the **book**, and each one kept leaves a small, lasting kindness behind, and a very little more yield besides. If you miss it, the next one waits longer for you. Later, once attention can be lent, an attendant gathers at the last moment what would otherwise have gone. How many there are, what they show and what they say is for you to find. The book has room for all of them.
 
 ---
 

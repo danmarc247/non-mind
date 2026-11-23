@@ -12,6 +12,9 @@ import { CARDS } from './content/cards.js';
 // The 22 cards: found now and then, kept forever (they survive every reset). Each grants a small boon.
 export const cardBoon = (G, kind, field = 'pct') => (G.cards || []).reduce((n, id) => { const c = CARDS.find((x) => x.id === id); return n + (c && c.boon.kind === kind ? c.boon[field] || 0 : 0); }, 0);
 export const CARD_LIFETIME = 35;
+// Besides its own gift, every card kept adds a very small share of yield.
+export const BOOK_BONUS = 0.005;
+export const bookBonus = (G) => BOOK_BONUS * (G.cards || []).length;
 // A card that left unkept makes the next one stay longer (35, 49, 69, 96, then 105 s at most); keeping one clears it.
 export const cardLifetime = (G) => Math.min(CARD_LIFETIME * 3, Math.round(CARD_LIFETIME * Math.pow(1.4, Math.min(12, G.cardMisses || 0))));
 const CARD_ARRIVES = ['Something has drifted in over the water. It was not sent.', 'A small thing floats in above the sea, and waits a little.', 'Something is here that was not here. It will not stay long.', 'Over the water, something has come that asks to be kept.'];
@@ -100,6 +103,7 @@ export function affectMul(G) {
   if (G.upgrades.long_view) m *= 1 + Math.pow(G.t, 0.45) / 40;
   if (moodN(G, 'fascination')) m *= 1.5;
   m *= 1 + cardBoon(G, 'affect') / 100;
+  m *= 1 + bookBonus(G);
   m *= 1 + awakeningBonus(G);
   if (G.stance === 'away') m *= 0.8;
   return m;

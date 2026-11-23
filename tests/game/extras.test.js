@@ -4,7 +4,7 @@
 import { describe, it, expect, afterAll, vi } from 'vitest';
 import {
   createGame, step, actions, serialize, deserialize, leaf, node, nameOf, FAMILIES, FAMILY, CARDS, cardById, cardBoon,
-  CARD_LIFETIME, ASPECT_IDS, affectMul, capacityOf, unitStats, aspectTiers, muGain, ringsOpen, suggestions, nextSuggestion,
+  CARD_LIFETIME, BOOK_BONUS, ASPECT_IDS, affectMul, capacityOf, unitStats, aspectTiers, muGain, ringsOpen, suggestions, nextSuggestion,
   SUGGESTION_LIFETIME, SUGGESTION_GAP, BENCH, COSTS, STAGES, LINKS, TRAITS, ASPECTS, WAVE_ARC, HABITS, UPGRADES, SPELLS,
   VERBS, MOODS, STANCES, STRESSORS, STRESSOR_AFFIXES, MUTATIONS, KOANS, ABILITIES, unlocked,
 } from '../../src/game/index.js';
@@ -169,20 +169,21 @@ describe('cards: each boon has exactly its stated effect and stacks additively',
     for (const k of BOON_KINDS) expect(cardBoon(G, k)).toBe(0);
   });
 
-  it('affect: affectMul rises by exactly the summed pct (additive, not compounded); other cards do nothing', () => {
+  it('affect: affectMul rises by exactly the summed pct (additive, not compounded), times the small share every kept card adds', () => {
     const G = stage8();
     const base = affectMul(G);
     const ids = idsOfKind('affect');
+    const kept = (n) => 1 + n * BOOK_BONUS; // every card kept, of any kind, adds BOOK_BONUS of yield
     expect(ids.length).toBeGreaterThanOrEqual(2);
     G.cards = [ids[0]];
-    expect(affectMul(G) / base).toBeCloseTo(1 + cardById[ids[0]].boon.pct / 100, 12);
+    expect(affectMul(G) / base).toBeCloseTo((1 + cardById[ids[0]].boon.pct / 100) * kept(1), 12);
     G.cards = ids;
-    expect(affectMul(G) / base).toBeCloseTo(1 + sumOfKind('affect') / 100, 12);
+    expect(affectMul(G) / base).toBeCloseTo((1 + sumOfKind('affect') / 100) * kept(ids.length), 12);
     G.cards = others('affect');
-    expect(affectMul(G)).toBeCloseTo(base, 9);
+    expect(affectMul(G) / base).toBeCloseTo(kept(G.cards.length), 9);
     // the boon reaches the real economy: a click pays affectMul-scaled affect
     G.cards = ids; const a = actions.attend(G); G.cards = []; const b = actions.attend(G);
-    expect(a / b).toBeCloseTo(1 + sumOfKind('affect') / 100, 9);
+    expect(a / b).toBeCloseTo((1 + sumOfKind('affect') / 100) * kept(ids.length), 9);
   });
 
   it('attention: a won wave pays exactly the summed flat amount more (and the event pay is unchanged)', () => {

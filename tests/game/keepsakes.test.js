@@ -1,7 +1,7 @@
 // What drifts in: it is announced, a miss makes the next one stay longer, and attendants gather what
 // would otherwise leave. Engine API only; numbers come from exported constants and functions.
 import { describe, it, expect } from 'vitest';
-import { createGame, step, actions, serialize, deserialize, CARD_LIFETIME, CARDS, cardLifetime } from '../../src/game/index.js';
+import { createGame, step, actions, serialize, deserialize, CARD_LIFETIME, CARDS, cardLifetime, affectMul, cardBoon, BOOK_BONUS, bookBonus } from '../../src/game/index.js';
 import { gameAt } from './helpers.js';
 
 function run(G, seconds, dt = 0.1, each = null) {
@@ -101,5 +101,23 @@ describe('what drifts in: attendants gather it', () => {
     run(G, CARD_LIFETIME - 1);
     expect(G.cardOffer?.id).toBe(id);
     expect(G.cards).not.toContain(id);
+  });
+});
+
+describe('what is kept: every one adds a very small share of yield, whatever else it gives', () => {
+  it('bookBonus is BOOK_BONUS per card kept, and tiny', () => {
+    expect(BOOK_BONUS).toBeGreaterThan(0);
+    expect(BOOK_BONUS).toBeLessThanOrEqual(0.01);
+    const G = createGame(7);
+    expect(bookBonus(G)).toBe(0);
+    G.cards = CARDS.slice(0, 5).map((c) => c.id);
+    expect(bookBonus(G)).toBeCloseTo(5 * BOOK_BONUS, 12);
+  });
+
+  it('yield rises by exactly that share on top of the cards\' own gifts', () => {
+    const a = createGame(7), b = createGame(7);
+    b.cards = CARDS.slice(0, 6).map((c) => c.id);
+    const own = 1 + cardBoon(b, 'affect') / 100;
+    expect(affectMul(b) / affectMul(a)).toBeCloseTo(own * (1 + 6 * BOOK_BONUS), 12);
   });
 });
