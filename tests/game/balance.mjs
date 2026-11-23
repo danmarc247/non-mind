@@ -93,8 +93,8 @@ function stageTable(first, seeds, label) {
 }
 stageTable(first1, SEEDS, 'extended bot');
 { // which gate stalls: per stage, the longest wait after minute 5 across seeds
-  const w = []; for (let s = 2; s <= 17; s++) { const d = SEEDS.map((k) => (first1[k][s] ?? Infinity) - (first1[k][s - 1] ?? 0)).filter(Number.isFinite); if (d.length) w.push(`${s}:${Math.round(Math.max(...d))}s`); }
-  console.log('  longest wait per stage (s):', w.join(' '));
+  const w = []; for (let s = 2; s <= 17; s++) { const d = SEEDS.map((k) => (first1[k][s] ?? Infinity) - Math.max(300, first1[k][s - 1] ?? 0)).filter((x) => Number.isFinite(x) && x > 0); if (d.length) w.push(`${s}:${Math.round(Math.max(...d))}s`); }
+  console.log('  longest wait per stage after min 5 (s):', w.join(' '));
   if (process.env.NM_SEEDLINES) for (const s of [6, 7, 10, 13, 15, 16, 17]) console.log(`  stage ${s} per seed:`, SEEDS.map((k) => Math.round(first1[k][s])).join(' '));
 }
 

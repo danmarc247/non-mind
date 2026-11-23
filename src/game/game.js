@@ -262,7 +262,7 @@ export const actions = {
   },
 };
 export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth));
-export const mirrorCost = (G) => 4e11 * Math.pow(25, G.mirrors);
+export const mirrorCost = (G) => 6e10 * Math.pow(25, G.mirrors);
 export const attendantCost = (G) => 300 * Math.pow(2.2, G.attendants);
 
 const firstFamily = (u) => { let g = u.g; while (g.t === 'node') g = g.a; return g.f; };

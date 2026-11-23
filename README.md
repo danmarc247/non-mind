@@ -401,21 +401,22 @@ The stack was chosen so one painted look could run in the browser without a serv
 | Shader Park (`shader-park-core`) | https://shaderpark.com | Compiles each genome's JS sculpture program to a GLSL raymarcher |
 | lygia | https://lygia.xyz | GLSL noise (`snoise`, `psrdnoise`, `random`) in sea and sky shaders |
 | postprocessing + @react-three/postprocessing | https://github.com/pmndrs/postprocessing | `EffectComposer`, custom painter effects, mipmap bloom |
-| OGL | https://github.com/oframe/ogl | Installed for WebGL helpers; the ported backgrounds currently use raw WebGL2 (one uses Three) |
-| PixiJS 8 | https://pixijs.com | Installed for 2D effects; not yet used in the shipped scene |
-| GSAP | https://gsap.com | Installed for timeline animation; not yet used in the shipped scene |
+| PixiJS 8 | https://pixijs.com | The Lineage map, loaded lazily and only while it is open |
+| GSAP | https://gsap.com | Timelines for the Ceremony overlays (stage, ending, reset, arc banners) |
+| marked | https://marked.js.org | Renders this README as the in-game Manual |
 | Motion | https://motion.dev | HUD springs and presence |
 | Tailwind CSS 4 | https://tailwindcss.com | Utility styling, `@theme` palette tokens |
 | Pretext | https://github.com/chenglou/pretext | Text measuring and line layout for flowing type |
 | three-text | https://github.com/countertype/three-text | 3D text engine for 3D type |
 | @pmndrs/glyph | https://github.com/pmndrs/glyph | Glyph ticker text (isolated in a lazy canvas with DOM fallback) |
 | kinetic-type-engine | https://www.npmjs.com/package/@andyed/kinetic-type-engine | Rapid-serial text flashes for the cryptic lines |
-| React Bits | https://reactbits.dev | 14 ported WebGL backgrounds |
+| React Bits | https://reactbits.dev | 14 ported WebGL backgrounds (raw WebGL2; OGL is not a dependency) |
 | Aceternity UI | https://ui.aceternity.com | Glow, encrypted text, spotlight cards and more (ported) |
 | Cult UI | https://www.cult-ui.com | Texture cards and buttons, lens blur (ported) |
-| Zustand (installed), lucide-react, clsx, tailwind-merge, cva, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
-| Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl`, `vite-plugin-singlefile` |
-| Vitest 5 | https://vitest.dev | 171 engine tests in node, run in CI before every deploy |
+| lucide-react, clsx, tailwind-merge, class-variance-authority, @radix-ui/react-slot, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
+| @fontsource packages | https://fontsource.org | Self-hosted fonts |
+| Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl` (`vite-plugin-singlefile` is installed but not enabled) |
+| Vitest 5 | https://vitest.dev | TESTCOUNT engine tests in node, run in CI before every deploy |
 | Web Audio API | https://developer.mozilla.org/docs/Web/API/Web_Audio_API | All music and SFX, no samples and no libraries |
 
 ---
@@ -449,8 +450,8 @@ flowchart LR
 
 ### Genome to shader pipeline
 
-1. A unit is `{ g, link, traits, ghosts }`; `g` is a tree of `leaf` and `node` records.
-2. `treeSrc` walks the tree. Each leaf emits a Shader Park form for its family (lens, slab, knot, shard, rings, spike, shell, flame, bowl, orbit), coloured by family and link grade.
+1. A unit is `{ g, link, traits, ghosts, muts }`; `g` is a tree of `leaf` and `node` records.
+2. `treeSrc` walks the tree. Each leaf emits a Shader Park form for its family (lens, slab, knot, shard, rings, spike, shell, flame, bowl, orbit) in one of three growth stages (raw for links 1 to 4, grown 5 to 8, refined 9 to 12), jittered by a seed from the genome, mutations and unit id so siblings differ, coloured by family and link grade.
 3. Each node emits `blend(k)`, `difference()` or `mixGeo(k)`, a displacement and a rotation, then the second child.
 4. `unitSource` wraps it: low links get a domain-warp "knot", high links gain halo rings (`floor(link / 3)`).
 5. `sculptToThreeJSShaderSource` turns the program into vertex and fragment GLSL.
@@ -462,21 +463,23 @@ flowchart LR
 
 | Layer | What | Where |
 |---|---|---|
-| Sky | Painted dome: flow-warped strokes, drifting rings (more as complexity rises), one more motif switched on at each stage, palette shifting by stage and rotated by depth | `PainterSky.jsx`, `glsl/sky.*` |
-| Sea | Contained vessel: flow-warped bands of the stage palette, foam rings and ten spokes, cut-face strata | `Scene.jsx`, `glsl/sea.*` |
-| Sculptures | Core, regulators, stressors, raymarched, with `gl_FragDepth` | `sculpt.js` |
-| Fx | Instanced strokes, splats and rings per game event (220 max) | `Scene.jsx` |
+| Sky | Painted dome: flow-warped strokes, drifting rings (more as complexity rises), one more motif switched on at each stage, ten wave compositions that cross-fade as the wave changes, palette shifting by stage and rotated by depth | `PainterSky.jsx`, `glsl/sky.*` |
+| Sea | Contained vessel: seven movements (canvas, marbling, kaleidoscope, colonies, reaction, fold, flood) cross-fade with the stage; events drop ripples; cut-face strata | `gfx/sea/`, `glsl/sea2.*` |
+| Arena | Gate portals, seat rings, core aura, sea caustics, glass vessel | `gfx/arena/`, `glsl/arena.*` |
+| Drift | Floating bodies that touch nothing: mobiles, paint strata below the vessel, rising motes, tethers between bodies | `gfx/drift/`, `glsl/drift.*` |
+| Sculptures | Core, regulators, stressors, raymarched, with `gl_FragDepth`; three growth-stage forms per family, seeded siblings, a painted sky reflected in each, a spark under the pointer | `sculpt.js` |
+| Fx | Paint marks per game event (pools of 192 ground, 64 ribbon, 640 air, 16 invert) and one of ten veils per wave-arc modifier | `gfx/fx/`, `glsl/fx.*` |
 | Post chain | 1 Kuwahara, 2 Relief, 3 Bloom, 4 Grade, 5 Overwhelm; one pass each, `mergeMode="none"` | `PainterPost.jsx`, `glsl/post.*` |
 
-The post stages: anisotropic generalized Kuwahara (4 sectors, structure tensor); impasto height with bristle line-integral lighting, canvas weave and ink edges (reads depth); low bloom pumped by flashes; a filmic grade with a torn paper vignette; and the overwhelm pass (wobble, chroma smear, posterise, splashes, drips, whiteout). Quality presets are `low`, `med`, `high`.
+The post stages: anisotropic generalized Kuwahara (4 sectors, structure tensor); impasto height with bristle line-integral lighting, canvas weave and ink edges (reads depth), preceded inside the same pass by a detachment stage (tilt-shift soft focus, a paper halo and ink line around near silhouettes, aerial perspective) that lifts the arena off the far picture; low bloom pumped by flashes; a filmic grade with a torn paper vignette; and the overwhelm pass (wobble, chroma smear, posterise, splashes, drips, whiteout). Quality presets are `low`, `med`, `high`.
 
 ### Director
 
-`Director.jsx` listens to game events (link, integrate, subtract, split, mutation, repurpose, ending, stage, wave result, boss arrival, reset, first attend). Each maps to a zoom fraction, a hold time and a time scale (as low as 0.2 for an ending). The camera eases toward the focus, then lets go, with a slow breathing dolly in between. Player orbiting is preserved because the changes are applied as relative offsets.
+`Director.jsx` also sets the camera's auto-turn speed (`0.35 + 0.11 x stage`, faster under overwhelm, plus a decaying push on joining, parting, new stages and resets). It listens to game events (link, integrate, subtract, split, mutation, repurpose, ending, stage, wave result, boss arrival, reset, first attend). Each maps to a zoom fraction, a hold time and a time scale (as low as 0.2 for an ending). The camera eases toward the focus, then lets go, with a slow breathing dolly in between. Player orbiting is preserved because the changes are applied as relative offsets.
 
 ### The mood contract
 
-`src/gfx/mood.js` is a plain mutable object written once per frame by the game loop and read by every shader and the audio engine: `time, complexity, overwhelm, tension, depth, stage, flash, audio {low, mid, high, rms}`. No React re-renders at 60 Hz.
+`src/gfx/mood.js` is a plain mutable object written once per frame by the game loop and read by every shader and the audio engine: `time, complexity, overwhelm, tension, depth, stage, wave, cycle, flash, audio {low, mid, high, rms}`. The canvas is `linear legacy flat`, so every shader writes display sRGB itself. No React re-renders at 60 Hz.
 
 ### Audio graph
 
@@ -497,23 +500,25 @@ master -> mute -> compressor -> makeup -> soft clip -> analyser -> out
 | Aspects and stance | Colour the mix: vagal breath, somatic heartbeat, shadow bends the drone, mythic adds a choir fifth, relational adds ping-pong delay |
 | Depth | Eight modes and keys cycle with prestige depth |
 | Reset | About 2 s collapse to a single tone, then regrowth |
-| SFX | 28 named procedural effects, pitched to the current mode, budgeted at 48 oscillators |
+| SFX | 32 named procedural effects, pitched to the current mode, budgeted at 48 oscillators; a sound ring mutes everything |
 
 ### Directory map
 
 ```
 src/
   game/        data.js genome.js battle.js game.js store.js index.js   (the engine; no DOM)
+               advisor.js (idle suggestions) savecode.js (export and import codec)
     content/   mutations, stressor affixes, names, cryptic line pools  (authored text)
   gfx/         Scene.jsx sculpt.js mood.js PainterSky.jsx PainterPost.jsx
     glsl/      sea.* sky.* post.*
     palettes/  stages.js (18 stage palettes) families.js (family + link grade + aspect tones)
-    arena/ fx/ Director.jsx                                            (aura, portals, paint fx, camera)
-    galleries/ scene.jsx sky.jsx post.jsx
+    arena/ fx/ drift/ sea/ Director.jsx                               (vessel parts, paint fx, floating bodies, the sea, camera)
+    galleries/ one development page per area
   audio/       engine.js music.js instruments.js sfx.js util.js lab.js
-  ui/          Hud.jsx  bits/ (HUD kit + backgrounds/)  hud/ (panels, codex, tutorial)  type/ (typography)
+  ui/          Hud.jsx  bits/ (HUD kit + backgrounds/)  hud/ (panels, codex, tutorial, nudges)  type/ (typography)
+               Lineage.jsx lineage/ (PixiJS map)  Ceremony.jsx  SaveMenu.jsx  Manual.jsx
   index.css    palette and font tokens
-tests/         game/ (vitest + balance probe)  audio/ (offline render harness)
+tests/         game/ (vitest + balance probe)  audio/ (offline render harness, run by hand)
 docs/          TEAM.md team-log.md
 ```
 
@@ -562,8 +567,8 @@ A small agent team with one mediator.
 | Role | Model | Lanes |
 |---|---|---|
 | Mediator | Fable | Architecture, contracts, engine, genome-to-shader pipeline, arena, integration, git |
-| Opus lanes | Opus | Sky, post chain, HUD kit, audio engine, HUD, research |
-| Support | Sonnet | Backgrounds, tests and balance, content tables |
+| Opus lanes | Opus | Sky, post chain, HUD kit, audio engine, HUD, arena, paint fx, drift, sea, sculpture forms, Lineage map, research |
+| Support | Sonnet | Backgrounds, tests and balance, content tables, save menu |
 | Minis | Haiku | Palettes |
 
 Protocol: brief, work and self-verify, hand back a short report, cross-lane needs go through `docs/team-log.md` (`from -> to: need`), the mediator integrates. Nobody edits outside their lane; only the mediator touches git, npm and config. Contracts: `src/gfx/mood.js`, `src/game/index.js`, `src/index.css`. Details in [`docs/TEAM.md`](docs/TEAM.md) and [`docs/team-log.md`](docs/team-log.md).
@@ -578,24 +583,34 @@ Everything runs locally with Node.
 npm i --legacy-peer-deps      # install
 npm run dev                   # vite dev server, port 5173
 npm run build                 # production build to dist/ (base './', hosted under /non-mind/)
-npm test                      # 171 tests (vitest, node environment); CI runs this before the build
+npm test                      # TESTCOUNT tests (vitest, node environment); CI runs this before the build
 ```
 
 Parallel dev servers need separate caches: `NM_CACHE_DIR=/tmp/cache-x npx vite --port 5181 --strictPort`.
 
 Pushes to `main` run the tests, then build and deploy to GitHub Pages through `.github/workflows`.
 
-### Galleries (dev server pages)
+### Galleries (development only)
+
+Each area has a gallery page at the repository root for checking it alone. They are part of the dev server, not of the deployed build (`vite build` ships `index.html` only), so they have no public address. To open one, run `npm run dev` and visit `http://localhost:5173/<name>.html` (or the port you chose).
 
 | Page | Shows |
 |---|---|
-| `/scene-gallery.html` | The full arena with a bot playing, for scene checks |
-| `/sky-gallery.html` | The painted sky dome |
-| `/post-gallery.html` | The painter post chain and quality levels |
-| `/bits-gallery.html` | The HUD kit (panels, buttons, meters, cards, tooltips) |
-| `/bits-backgrounds.html` | The 14 background shaders |
-| `/type-gallery.html` | Typography components (flash, flow, 3D, glyph ticker) |
-| `/audio-lab.html` | Audio bench: mood sliders, aspects, every SFX |
+| `scene-gallery.html` | The full arena with a bot playing, for scene checks |
+| `sky-gallery.html` | The painted sky dome |
+| `post-gallery.html` | The painter post chain and quality levels |
+| `sea-gallery.html` | The contained sea and its seven movements |
+| `arena-gallery.html` | Gate portals, seat rings, core aura, glass vessel |
+| `fx-gallery.html` | Paint fx and the ten arc veils |
+| `drift-gallery.html` | Floating bodies, strata, motes, tethers |
+| `sculpt-gallery.html` | Every family form, growth stage, sibling and stressor |
+| `bits-gallery.html` | The HUD kit (panels, buttons, meters, cards, tooltips) |
+| `bits-backgrounds.html` | The 14 background shaders |
+| `hud-gallery.html` | HUD panels |
+| `lineage-gallery.html` | The Lineage map |
+| `save-gallery.html` | The save menu |
+| `type-gallery.html` | Typography components (flash, flow, 3D, glyph ticker) |
+| `audio-lab.html` | Audio bench: mood sliders, aspects, every SFX |
 
 ### Headless simulation
 
@@ -608,7 +623,7 @@ import('./src/game/game.js').then(({ simulate }) => {
 });
 ```
 
-`node tests/game/balance.mjs` runs 10 seeds across several resets and prints stage, wave and complexity over time. Audio renders offline with `node tests/audio/render.cjs <url>`.
+`node tests/game/balance.mjs` runs 10 seeds across several resets, prints stage, wave and complexity over time, and ends with goal lines (G1 to G7) marked PASS or FAIL. Audio renders offline with `node tests/audio/render.cjs <url>`.
 
 ---
 

@@ -12,6 +12,7 @@ const vendorGroups = [
   { name: 'vendor-r3f', test: nm(['@react-three', 'postprocessing', 'three-stdlib', 'camera-controls', 'maath', 'react-reconciler', 'its-fine', 'suspend-react', 'troika-[^\\\\/]+', 'meshline', 'stats-gl', 'detect-gpu', 'tunnel-rat', 'n8ao']), priority: 30 },
   { name: 'vendor-three', test: nm(['three']), priority: 35 },
   { name: 'vendor-motion', test: nm(['motion', 'framer-motion', 'motion-dom', 'motion-utils']), priority: 10 },
+  { name: 'vendor-gsap', test: nm(['gsap']), priority: 10 },
 ];
 
 export default defineConfig({
