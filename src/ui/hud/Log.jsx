@@ -85,8 +85,8 @@ export function Herald({ size = 30 }) {
           initial={{ opacity: 0, y: 12, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ ...POP, layout: { type: 'spring', stiffness: 170, damping: 21, mass: 0.9 } }}
-          className="relative max-w-[min(620px,100%)] text-center font-body italic leading-[1.2] text-ink"
-          style={{ fontSize: size, textShadow: '0 0 6px var(--color-paper), 0 0 14px var(--color-paper), 0 0 24px var(--color-paper)' }}
+          className="relative max-w-[min(660px,100%)] rounded-[22px] border-[3px] border-ink bg-paper/95 px-6 py-3 text-center font-body italic leading-[1.25] text-ink shadow-[5px_6px_0_var(--color-ink)]"
+          style={{ fontSize: size }}
         >
           {/* the brush underline is painted as a per-line background so it spans every wrapped line fully
               (an absolutely positioned stroke inside an inline span only covered part of multi-line text) */}
