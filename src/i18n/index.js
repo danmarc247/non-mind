@@ -96,8 +96,8 @@ function askSwitch() {
     : { h: 'Switch to English?', p: 'The game is saved and reloads.', yes: 'English', no: 'bei Deutsch bleiben' };
   const el = document.createElement('div');
   el.id = 'nm-locale-ask'; el.setAttribute('aria-modal', 'true'); el.setAttribute('role', 'dialog'); el.dataset.modal = 'locale';
-  el.className = 'pointer-events-auto fixed inset-0 z-[70] flex items-center justify-center bg-ink/35 backdrop-blur-[3px]';
-  el.innerHTML = `<div class="w-[min(440px,92vw)] rounded-[26px] border-4 border-ink bg-paper p-6 text-center shadow-[8px_10px_0_var(--color-ink)]">
+  el.className = 'pointer-events-auto fixed inset-0 z-[70] flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]';
+  el.innerHTML = `<div class="max-h-full w-[min(440px,100%)] overflow-y-auto rounded-[28px] border-4 border-ink bg-paper p-6 text-center shadow-[10px_12px_0_var(--color-ink)]">
     <div class="font-title text-3xl text-ink">${txt.h}</div>
     <p class="mt-2 font-body italic text-ink-2">${txt.p}</p>
     <div class="mt-4 flex justify-center gap-3 font-head">

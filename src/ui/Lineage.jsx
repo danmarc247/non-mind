@@ -73,7 +73,7 @@ function Legend() {
     <svg viewBox="0 0 34 10" className="h-2.5 w-9"><path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeDasharray={dash} /></svg>
   );
   return (
-    <div className="pointer-events-none absolute bottom-4 left-5 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-full border-[3px] border-ink bg-paper/90 px-4 py-1 font-head text-[13px] text-ink shadow-[2px_3px_0_var(--color-ink)]">
+    <div className="pointer-events-none absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] flex-wrap sm:bottom-4 sm:left-5 sm:max-w-[calc(100%-260px)] items-center gap-x-4 gap-y-1 rounded-full border-[3px] border-ink bg-paper/90 px-4 py-1 font-head text-[13px] text-ink shadow-[2px_3px_0_var(--color-ink)]">
       <span className="flex items-center gap-1.5"><Sw d="M2 5 C 12 1, 22 9, 32 5" stroke="var(--color-teal)" />{TX.legend.blend}</span>
       <span className="flex items-center gap-1.5"><Sw d="M2 5 L 32 5" stroke="var(--color-ink)" w={5} />{TX.legend.carve}</span>
       <span className="flex items-center gap-1.5"><Sw d="M2 5 Q 9 0, 17 5 T 32 5" stroke="var(--color-tangerine)" />{TX.legend.mix}</span>
@@ -108,7 +108,7 @@ export default function Lineage({ initialOpen = false } = {}) {
         <motion.div key="lineage" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
           <motion.div onClick={(e) => e.stopPropagation()}
-            className="relative h-[min(88vh,900px)] w-[min(1180px,96vw)] overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
+            className="relative h-[min(88dvh,900px)] max-h-[calc(100dvh-32px)] w-[min(1180px,100%)] overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
             style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, transparent 35%, var(--color-paper-2) 100%)' }}
             initial={{ y: 26, scale: 0.96, rotate: -0.6 }} animate={{ y: 0, scale: 1, rotate: 0 }} exit={{ y: 18, scale: 0.97, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 420, damping: 30 }}>
@@ -118,10 +118,10 @@ export default function Lineage({ initialOpen = false } = {}) {
               <svg className="mt-1 h-3 w-44" viewBox="0 0 180 12"><path d="M2 7 C 30 1, 50 12, 80 6 S 140 2, 178 7" fill="none" stroke="var(--color-magenta)" strokeWidth="5" strokeLinecap="round" /></svg>
               <div className="mt-1 font-body text-[13px] italic text-ink-2">{TX.sub}</div>
             </div>
-            <button onClick={() => setOpen(false)} className="absolute right-5 top-5 rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
+            <button onClick={() => setOpen(false)} className="absolute right-4 top-4 whitespace-nowrap rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
             <Legend />
-            <div className="absolute bottom-4 right-5 flex items-center gap-2">
-              <span className="pointer-events-none mr-1 font-stat text-[11px] text-ink-2">{TX.hint}</span>
+            <div className="absolute bottom-[4.75rem] right-4 flex items-center gap-2 sm:bottom-4 sm:right-5">
+              <span className="pointer-events-none mr-1 hidden font-stat sm:inline text-[11px] text-ink-2">{TX.hint}</span>
               <button className={btn} onClick={() => current?.zoom(1 / 1.25)}>-</button>
               <button className={btn} onClick={() => current?.zoom(1.25)}>+</button>
               <button className={btn} onClick={() => current?.fit()}>fit</button>

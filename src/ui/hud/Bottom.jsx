@@ -55,7 +55,7 @@ export function Shop({ G, compact, mobile }) {
           </Tooltip>
         </div>
       </Head>
-      <div className={mobile ? 'flex flex-col gap-2' : cn('flex items-start gap-2.5 pt-4 pb-2', compact ? (heldRow ? 'min-h-[178px]' : 'min-h-[144px]') : 'min-h-[188px]')}>
+      <div className={mobile ? 'flex flex-col gap-2' : cn('flex items-start gap-2.5 pt-4 pb-2', compact ? (heldRow ? 'min-h-[195px]' : 'min-h-[161px]') : 'min-h-[208px]')}>
         <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-2.5 pt-4 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
           {G.shop.map((id, i) => {
             const f = id && FAMILY[id];
@@ -86,7 +86,7 @@ export function Shop({ G, compact, mobile }) {
                       key={`empty-${i}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[136px] w-[96px]' : 'h-[180px] w-[108px]')}
+                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[136px] w-[96px]' : 'h-[184px] w-[108px]')}
                     />
                   )}
                 </AnimatePresence>
@@ -240,7 +240,7 @@ export function Bench({ G, compact }) {
         {(compact || !G.units.some((u) => u.seat)) && <span className="flex-1" />}
       </Head>
       {compact && <div className="flex"><Seated G={G} compact /></div>}
-      <div className={cn('nm-scroll flex items-start gap-2 overflow-x-auto px-2.5 pt-4 pb-2', compact ? 'min-h-[144px]' : 'min-h-[188px]')}>
+      <div className={cn('nm-scroll flex items-start gap-2 overflow-x-auto px-2.5 pt-4 pb-2', compact ? 'min-h-[161px]' : 'min-h-[208px]')}>
         <AnimatePresence initial={false} mode="popLayout">
           {bench.map((u) => (
             <Appear key={u.id} from="up" layout className="shrink-0" data-tut={`unit-${u.id}`}>

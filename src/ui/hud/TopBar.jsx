@@ -48,7 +48,7 @@ export function StageTracker({ G, compact }) {
 }
 
 export function Resources({ G, compact, mobile }) {
-  const w = compact ? 'w-[94px]' : 'w-[108px]';
+  const w = mobile ? 'w-[90px]' : compact ? 'w-[94px]' : 'w-[108px]';
   const chips = [
     { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : '' },
     { k: 'attention', show: unlocked(G, 'shop'), tone: 'yolk', value: fmt(G.attention, { int: true }), hint: 'Attention. Spent to bring things in, to look again, to grow. Paid out when a wave is held; idle attention earns a little more.' },
@@ -66,7 +66,7 @@ export function Resources({ G, compact, mobile }) {
               value={<span className="nm-tab"><span className="nm-num">{c.value}</span>{c.sub && <span className="ml-1.5 text-[12px] text-ink-2">{c.sub}</span>}</span>}
               tone={c.tone}
               hint={c.hint}
-              className={c.sub !== undefined ? (compact ? 'w-[150px]' : 'w-[170px]') : w}
+              className={c.sub !== undefined ? (mobile ? 'w-[124px]' : compact ? 'w-[150px]' : 'w-[170px]') : w}
             />
           </Appear>
         ))}
@@ -136,7 +136,7 @@ export default function TopBar({ compact }) {
   const fighting = unlocked(G, 'shop');
   return (
     <div className="pointer-events-none flex items-stretch gap-3">
-      <Shake seed={11} className="pointer-events-auto h-full" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
+      <Shake seed={11} className="pointer-events-auto" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
       <Shake seed={12} className="pointer-events-auto self-start"><Resources G={G} compact={compact} /></Shake>
       {/* the top centre stays clear: the mediator's Manual / Save controls live there */}
       <div className="flex-1" />

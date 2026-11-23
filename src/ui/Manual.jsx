@@ -48,16 +48,16 @@ export default function Manual({ initialOpen = false } = {}) {
           <motion.div aria-modal="true" role="dialog" data-modal="manual" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
             <motion.div onClick={(e) => e.stopPropagation()}
-              className="relative flex h-[min(88vh,900px)] w-[min(1180px,96vw)] overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
+              className="relative flex h-[min(88dvh,900px)] max-h-[calc(100dvh-32px)] w-[min(1180px,100%)] flex-col overflow-hidden md:flex-row rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
               initial={{ y: 26, scale: 0.96, rotate: -0.6 }} animate={{ y: 0, scale: 1, rotate: 0 }} exit={{ y: 18, scale: 0.97, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 30 }}>
               {/* spine: contents */}
-              <nav className="flex w-[250px] shrink-0 flex-col gap-1 overflow-y-auto border-r-4 border-ink bg-paper-2 p-4">
-                <div className="mb-2 font-title text-3xl leading-none text-ink">{doc.title}</div>
-                <div className="mb-3 font-body text-xs italic text-ink-2">the manual</div>
+              <nav className="nm-scroll flex shrink-0 flex-row items-center gap-1.5 overflow-x-auto border-b-4 border-ink bg-paper-2 p-2 md:w-[250px] md:flex-col md:items-stretch md:gap-1 md:overflow-y-auto md:overflow-x-hidden md:border-b-0 md:border-r-4 md:p-4">
+                <div className="hidden font-title text-3xl leading-none text-ink md:mb-2 md:block">{doc.title}</div>
+                <div className="mb-3 hidden font-body text-xs italic text-ink-2 md:block">the manual</div>
                 {doc.sections.map((s, i) => (
                   <button key={s.id} onClick={() => setActive(i)}
-                    className={`group relative rounded-xl px-3 py-1.5 text-left font-head text-[15px] leading-tight transition-all duration-150 ${i === active ? 'translate-x-1 bg-ink text-paper' : 'text-ink hover:translate-x-1 hover:bg-paper'}`}>
+                    className={`group relative shrink-0 whitespace-nowrap rounded-xl px-3 py-1.5 text-left font-head text-[15px] leading-tight transition-all duration-150 md:whitespace-normal ${i === active ? 'bg-ink text-paper md:translate-x-1' : 'text-ink hover:bg-paper md:hover:translate-x-1'}`}>
                     <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full border-2 border-ink align-middle" style={{ background: `var(--color-${s.tone})` }} />
                     {s.name}
                   </button>
@@ -65,14 +65,15 @@ export default function Manual({ initialOpen = false } = {}) {
               </nav>
               {/* page */}
               <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex h-[52px] shrink-0 items-center justify-end border-b-[3px] border-ink/15 px-6">
-                  <button onClick={() => setOpen(false)} className="rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
+                <div className="flex h-[52px] shrink-0 items-center justify-between border-b-[3px] border-ink/15 px-4 md:justify-end md:px-6">
+                  <span className="font-title text-2xl leading-none text-ink md:hidden">{doc.title}</span>
+                  <button onClick={() => setOpen(false)} className="whitespace-nowrap rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
                 </div>
-                <div ref={body} className="nm-manual flex-1 overflow-y-auto px-10 py-8">
+                <div ref={body} className="nm-manual flex-1 overflow-y-auto px-5 py-5 md:px-10 md:py-8">
                 <AnimatePresence mode="wait">
                   <motion.article key={sec.id} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
                     {active === 0 && <div className="nm-intro mb-6" dangerouslySetInnerHTML={{ __html: doc.intro }} />}
-                    <h2 className="mb-1 font-title text-5xl leading-none" style={{ color: `var(--color-${sec.tone})`, WebkitTextStroke: '1.5px var(--color-ink)' }}>{sec.name}</h2>
+                    <h2 className="mb-1 font-title text-4xl leading-none md:text-5xl" style={{ color: `var(--color-${sec.tone})`, WebkitTextStroke: '1.5px var(--color-ink)' }}>{sec.name}</h2>
                     <svg className="mb-5 h-3 w-64" viewBox="0 0 260 12"><path d="M2 7 C 40 1, 70 12, 110 6 S 190 2, 258 7" fill="none" stroke={`var(--color-${sec.tone})`} strokeWidth="5" strokeLinecap="round" /></svg>
                     <div dangerouslySetInnerHTML={{ __html: sec.html }} />
                     <div className="mt-10 flex justify-between font-head text-sm">

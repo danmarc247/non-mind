@@ -34,7 +34,7 @@ export function anchorRect(anchor) {
 }
 const same = (a, b) => (!a && !b) || (a && b && Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
-function placeCard(t, ch, prefer, gap = 56) {
+function placeCardBase(t, ch, prefer, gap = 56) {
   const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = gap;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   if (!t) return { left: (vw - cardW()) / 2, top: vh * 0.24 };
@@ -57,6 +57,22 @@ function placeCard(t, ch, prefer, gap = 56) {
     if (fits || ((o === 'above' || o === 'below') && top >= M && top + ch <= vh - M) || ((o === 'left' || o === 'right') && left >= M && left + cardW() <= vw - M)) return nudged;
   }
   return { left: clamp(cx - cardW() / 2, M, vw - cardW() - M), top: clamp(t.top - ch - GAP, M, vh - ch - M) };
+}
+
+// touch layouts: keep the card off the rings (reset, ask, tools, attend); least overlap wins, then nearest to the first choice
+function placeCard(t, ch, prefer, gap, avoid = []) {
+  const base = placeCardBase(t, ch, prefer, gap);
+  if (!avoid.length || !t) return base;
+  const vw = window.innerWidth, vh = window.innerHeight, M = 14, w = cardW();
+  const hits = (l, tp) => avoid.reduce((a, r) => a + Math.max(0, Math.min(l + w, r.left + r.width + 6) - Math.max(l, r.left - 6)) * Math.max(0, Math.min(tp + ch, r.top + r.height + 6) - Math.max(tp, r.top - 6)), 0)
+    + 4 * Math.max(0, Math.min(l + w, t.left + t.width + PAD) - Math.max(l, t.left - PAD)) * Math.max(0, Math.min(tp + ch, t.top + t.height + PAD) - Math.max(tp, t.top - PAD));
+  if (!hits(base.left, base.top)) return base;
+  let best = base, bc = hits(base.left, base.top) * 1000;
+  for (let tp = M; tp <= vh - ch - M; tp += 8) for (let l = M; l <= vw - w - M; l += 8) {
+    const c = hits(l, tp) * 1000 + Math.hypot(l - base.left, tp - base.top);
+    if (c < bc) { bc = c; best = { left: l, top: tp }; }
+  }
+  return best;
 }
 
 // nearest point of rect r to point p
@@ -165,7 +181,8 @@ export default function Tutorial() {
   const cardRef = useRef(null);
   const [ch, setCh] = useState(170);
   useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - ch) > 1) setCh(h); });
-  const pos = step ? placeCard(rect, ch, step.at || step.side, step.gap) : null;
+  const avoid = step && touch ? ['reset', 'ask', 'codex', 'manual', 'save', 'lineage', 'again', 'sound', 'attend'].filter((a) => a !== step.anchor && a !== step.also).map(anchorRect).filter(Boolean) : [];
+  const pos = step ? placeCard(rect, ch, step.at || step.side, step.gap, avoid) : null;
   const card = pos && { left: pos.left, top: pos.top, width: cardW(), height: ch };
   const coreIdx = step ? CORE.findIndex((s) => s.id === step.id) : -1;
   const line = step && ((touch && step.touch) || step.plain);
@@ -207,7 +224,7 @@ export default function Tutorial() {
             <div className="mt-3 flex items-center gap-3">
               {step.ack && <InkButton size="sm" tone="yolk" onClick={() => finish(step.id)}>got it</InkButton>}
               <span className="flex-1" />
-              <button type="button" onClick={skipAll} className="font-body text-[13px] text-ink-2 underline decoration-ink-2/50 underline-offset-2 hover:text-ink">
+              <button type="button" onClick={skipAll} className="font-body text-[13px] text-ink-2 underline decoration-ink-2/50 underline-offset-2 hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-2">
                 skip the guide
               </button>
             </div>

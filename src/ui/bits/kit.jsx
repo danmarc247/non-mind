@@ -254,7 +254,7 @@ export function StatChip({ label, value, tone = 'ultra', hint, className }) {
     >
       <span aria-hidden="true" className="w-2 shrink-0 border-r-2 border-ink" style={{ background: toneVar(tone) }} />
       <span className="flex flex-col justify-center gap-0.5 px-2 py-1 leading-none">
-        <span className="font-head text-[11px] tracking-wider text-ink-2 uppercase">{label}</span>
+        <span className="font-head text-[11px] pointer-coarse:text-[12px] tracking-wider text-ink-2 uppercase">{label}</span>
         <span className="font-stat text-xl leading-none text-ink">{value}</span>
       </span>
     </div>

@@ -35,7 +35,7 @@ function Gene({ g, depth = 0 }) {
     return (
       <Tooltip content={`${g.pole > 0 ? 'Idealized ' : g.pole < 0 ? 'Devalued ' : ''}${f.name}`}>
         <span
-          className="inline-flex h-[20px] items-center rounded-[6px] border-2 border-ink px-1 font-stat text-[11px] leading-none"
+          className="inline-flex h-[20px] items-center rounded-[6px] border-2 border-ink px-1 font-stat text-[11px] pointer-coarse:text-[12px] leading-none"
           style={{ background: p.a, color: dark ? 'var(--color-paper)' : 'var(--color-ink)' }}
         >
           {f.id.slice(0, 3)}{g.pole > 0 ? '+' : g.pole < 0 ? '-' : ''}
@@ -183,7 +183,7 @@ export function Body({ G, u }) {
       <div className="mt-3 flex gap-1 border-b-2 border-ink/15 pb-1">
         {[['nature', 'nature'], ['measures', 'measures'], ['lineage', 'lineage']].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
-            className={cn('rounded-full border-2 px-2.5 py-[2px] font-head text-[13px] tracking-wide transition-transform duration-150 hover:-translate-y-0.5', tab === id ? 'border-ink bg-ink text-paper' : 'border-ink/40 bg-paper text-ink')}>
+            className={cn('rounded-full border-2 px-2.5 py-[2px] pointer-coarse:min-h-11 pointer-coarse:px-3.5 font-head text-[13px] tracking-wide transition-transform duration-150 hover:-translate-y-0.5', tab === id ? 'border-ink bg-ink text-paper' : 'border-ink/40 bg-paper text-ink')}>
             {label}
           </button>
         ))}
@@ -214,7 +214,7 @@ export function Body({ G, u }) {
             <div key={r.k} className="contents">
               <span className="font-head text-[13px] leading-tight text-ink">{r.name}</span>
               <span className="text-right font-stat text-[14px] leading-tight text-ink nm-tab">{r.v(s)}</span>
-              <span className="font-body text-[11px] italic leading-tight text-ink-2">{r.line}</span>
+              <span className="font-body text-[11px] pointer-coarse:text-[12px] italic leading-tight text-ink-2">{r.line}</span>
             </div>
           ))}
         </div>
@@ -233,7 +233,7 @@ export function Body({ G, u }) {
         <div className="flex flex-col gap-1">
           {Object.entries(tc).map(([t, n]) => (
             <p key={t} className="font-body text-[12px] leading-snug">
-              <b className="font-head text-[13px] tracking-wide">{t}{n > 1 && <span className="font-stat text-[11px]"> x{n}</span>}.</b> {TRAITS[t]?.text}
+              <b className="font-head text-[13px] tracking-wide">{t}{n > 1 && <span className="font-stat text-[11px] pointer-coarse:text-[12px]"> x{n}</span>}.</b> {TRAITS[t]?.text}
             </p>
           ))}
         </div>
@@ -250,7 +250,7 @@ export function Body({ G, u }) {
             {u.muts.map((id) => MUTATION[id]).filter(Boolean).map((m) => (
               <p key={m.id} className="font-body text-[12px] leading-snug">
                 <b className="font-head text-[13px] tracking-wide">{m.name}</b>
-                <span className="ml-1 font-stat text-[11px] text-ink-2">{'r' + m.rarity}</span>{' '}
+                <span className="ml-1 font-stat text-[11px] pointer-coarse:text-[12px] text-ink-2">{'r' + m.rarity}</span>{' '}
                 <span className="italic">{m.text}</span>
               </p>
             ))}

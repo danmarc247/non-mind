@@ -28,7 +28,7 @@ export default function Reset({ compact, small }) {
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Residue remains, and makes the next time wider.'}>
-          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 60 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
+          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 76 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
             <span className="font-title text-[12px] leading-none [text-shadow:none]">NON-MIND</span>
             <span className={small ? 'mt-0.5 font-stat text-[12px] nm-tab [text-shadow:none]' : 'mt-1 font-stat text-[12px] nm-tab [text-shadow:none]'}>+{fmt(gain, { int: true })} residue</span>
           </RingButton>

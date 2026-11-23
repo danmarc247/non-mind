@@ -9,7 +9,7 @@ import { emitHud } from './bus.js';
 import { useEffect, useMemo, useState } from 'react';
 import { nudgesOn, setNudges } from './Nudge.jsx';
 import { CODEX, CODEX_INTRO } from './text.js';
-import { Key, POP, scramble } from './shared.jsx';
+import { POP, scramble } from './shared.jsx';
 
 const colW = () => Math.min(560, (typeof window !== 'undefined' ? window.innerWidth : 720) - 56); // text column: shrinks on phones
 const DISC = 46; // radius of the painted disc each section flows around
@@ -80,7 +80,7 @@ export default function Codex({ onClose }) {
       aria-modal="true"
       role="dialog"
       data-modal="codex"
-      className="pointer-events-auto fixed inset-0 z-40 flex items-center justify-center bg-ink/45"
+      className="pointer-events-auto fixed inset-0 z-40 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.15 } }}
@@ -88,7 +88,7 @@ export default function Codex({ onClose }) {
       onClick={onClose}
     >
       <motion.div
-        className="relative flex max-h-[calc(100dvh-24px)] flex-col rounded-[22px] border-[3px] border-ink bg-paper shadow-[5px_7px_0_0_var(--color-ink)]"
+        className="relative flex max-h-[calc(100dvh-32px)] max-w-full flex-col overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
         style={{ width: COL + (narrow ? 32 : 72) }}
         initial={{ opacity: 0, y: 24, scale: 0.95, rotate: -0.6 }}
         animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
@@ -96,18 +96,18 @@ export default function Codex({ onClose }) {
         transition={POP}
         onClick={(e) => e.stopPropagation()}
       >
-        <header className={cn('flex flex-wrap items-center gap-3 border-b-[3px] border-ink pt-5 pb-3', narrow ? 'px-4' : 'px-9')}>
+        <header className={cn('flex shrink-0 items-center gap-3 border-b-[3px] border-ink/15 pt-4 pb-3', narrow ? 'px-4' : 'px-9')}>
           <h2 className="font-title text-[40px] leading-none text-ink [text-shadow:3px_3px_0_var(--color-magenta)]">Codex</h2>
-          <p className="min-w-[160px] flex-1 font-body text-[13px] italic leading-snug text-ink-2">{CODEX_INTRO}</p>
-          <div className="flex flex-col items-end gap-1.5">
-            <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the way again</InkButton>
-            <HintToggle />
-          </div>
-          <button type="button" onClick={onClose} className="flex items-center gap-1.5 rounded-[8px] border-2 border-ink bg-paper px-2 py-1 pointer-coarse:min-h-11 font-head text-[13px] uppercase shadow-[1px_2px_0_0_var(--color-ink)] hover:-translate-y-[1px]">
-            close <Key k="esc" />
-          </button>
+          <button type="button" onClick={onClose} className="ml-auto shrink-0 whitespace-nowrap rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3 pointer-coarse:min-h-11">close · esc</button>
         </header>
         <div className={cn('nm-scroll overflow-y-auto overscroll-contain pb-8 [touch-action:pan-y]', narrow ? 'px-4' : 'px-9')}>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <p className="min-w-[200px] flex-1 font-body text-[13px] italic leading-snug text-ink-2 [@media(max-height:500px)]:hidden">{CODEX_INTRO}</p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the way again</InkButton>
+              <HintToggle />
+            </div>
+          </div>
           {STAGES.map((_, i) => <Section key={i} i={i} open={i <= G.stage} COL={COL} />)}
         </div>
       </motion.div>

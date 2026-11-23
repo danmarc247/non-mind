@@ -78,14 +78,17 @@ export default function SaveMenu({ initialOpen = false } = {}) {
           <motion.div aria-modal="true" role="dialog" data-modal="save" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.14 } }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
             <motion.div onClick={(e) => e.stopPropagation()}
-              className="relative flex max-h-[92vh] w-[min(560px,96vw)] flex-col gap-3 overflow-y-auto rounded-[28px] border-4 border-ink bg-paper p-6 shadow-[10px_12px_0_var(--color-ink)]"
+              className="relative flex max-h-[calc(100dvh-32px)] w-[min(560px,100%)] flex-col overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
               initial={{ y: 26, scale: 0.96, rotate: -0.6 }} animate={{ y: 0, scale: 1, rotate: 0 }} exit={{ y: 18, scale: 0.97, opacity: 0, transition: { duration: 0.14 } }}
               transition={POP}>
-              <button onClick={() => setOpen(false)} className="absolute right-5 top-5 rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
-              <div>
+              <div className="flex shrink-0 items-start justify-between gap-3 border-b-[3px] border-ink/15 px-5 pb-3 pt-4 sm:px-6">
+              <div className="min-w-0">
                 <h2 className="font-title text-4xl leading-none" style={{ color: 'var(--color-magenta)', WebkitTextStroke: '1.5px var(--color-ink)' }}>Keep</h2>
                 <div className="mt-1 font-body text-[13px] italic text-ink-2">What is kept can be carried. Save, export or load a game.</div>
               </div>
+              <button onClick={() => setOpen(false)} className="shrink-0 whitespace-nowrap rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
+              </div>
+              <div className="nm-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-5 sm:p-6">
 
               <Row tone="yolk" title="Now" line="Nothing is kept until it is kept. The game also keeps itself every ten seconds.">
                 <div className="flex flex-wrap items-center gap-3">
@@ -124,6 +127,7 @@ export default function SaveMenu({ initialOpen = false } = {}) {
                 <div className="font-head text-lg leading-none text-blood">Wipe</div>
                 <div className="mb-2 mt-1 font-body text-[13px] italic text-ink-2">{confirm ? 'Once more, and it is gone. The saved copy goes with it.' : 'Erases the saved game and begins a new one. Export first to keep a copy.'}</div>
                 <button className={`${btn} ${confirm ? 'bg-blood text-paper' : 'bg-paper'}`} onClick={doWipe}>{confirm ? 'Yes, wipe everything' : 'Wipe'}</button>
+              </div>
               </div>
             </motion.div>
           </motion.div>

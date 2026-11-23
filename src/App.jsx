@@ -56,10 +56,16 @@ function Veil() {
 function Restart() {
   const [open, setOpen] = useState(false);
   useEffect(() => { const t = () => setOpen(true); window.addEventListener('nonmind:restart', t); return () => window.removeEventListener('nonmind:restart', t); }, []);
+  useEffect(() => {
+    if (!open) return;
+    const esc = (e) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); } };
+    window.addEventListener('keydown', esc, true);
+    return () => window.removeEventListener('keydown', esc, true);
+  }, [open]);
   if (!open) return null;
   return (
-    <div aria-modal="true" role="dialog" data-modal="restart" className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center bg-ink/35 backdrop-blur-[3px]" onClick={() => setOpen(false)}>
-      <div onClick={(e) => e.stopPropagation()} className="w-[min(440px,92vw)] rounded-[26px] border-4 border-ink bg-paper p-6 text-center shadow-[8px_10px_0_var(--color-ink)]">
+    <div aria-modal="true" role="dialog" data-modal="restart" className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]" onClick={() => setOpen(false)}>
+      <div onClick={(e) => e.stopPropagation()} className="max-h-full w-[min(440px,100%)] overflow-y-auto rounded-[28px] border-4 border-ink bg-paper p-6 text-center shadow-[10px_12px_0_var(--color-ink)]">
         <div className="font-title text-4xl text-ink">again?</div>
         <p className="mt-2 font-body italic text-ink-2">Everything here goes, including what the resets kept.</p>
         <p className="font-body text-sm text-ink-2">This erases the whole save and starts a new game.</p>
