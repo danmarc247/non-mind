@@ -45,9 +45,9 @@ export function clearOfArena(camPos, target, c, r, arenaR = 14, margin = 0.05) {
   ta.copy(target).sub(camPos); const da = ta.length(); ta.multiplyScalar(1 / da);
   tv.copy(c).sub(camPos); const dv = tv.length();
   const along = tv.dot(ta);
-  if (along > da + r) return 1;                      // behind the arena: occluded, not occluding
+  if (along > da - arenaR * 0.25) return 1;          // beyond the arena's middle: occluded, not occluding
   if (dv < r + 2) return 0;                          // at the lens
   const ang = Math.acos(Math.min(1, Math.max(-1, along / dv)));
   const lim = Math.asin(Math.min(1, arenaR / da)) + Math.asin(Math.min(1, r / dv));
-  return smooth(lim, lim + margin + 0.08, ang);
+  return smooth(lim, lim + margin + 0.04, ang);
 }

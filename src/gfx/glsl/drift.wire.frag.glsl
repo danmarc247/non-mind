@@ -20,6 +20,6 @@ void main() {
   col = mix(col, uPaper, smoothstep(0.85, 0.95, l) * 0.5);
   col = mix(col, uPaper, uPale * 0.6);
   col = mix(col, uPaper, uFlash);
-  if (dr_hash(gl_FragCoord.xy * 0.71 + uSeed) < 1.0 - uFade) discard;
+  if (dr_noise(gl_FragCoord.xy * 0.09 + uSeed * 7.0) * 0.8 + dr_hash(gl_FragCoord.xy * 0.71 + uSeed) * 0.2 < 1.0 - uFade) discard;
   gl_FragColor = vec4(col, 1.0);
 }

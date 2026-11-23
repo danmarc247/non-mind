@@ -54,7 +54,7 @@ Under overwhelm, the bodies are sliced into sheared bands with gaps, and a torn 
 
 **Wire orbits** (`drift.wire.frag.glsl`) are dry-brushed, dashed rings around two of the solids, plus one pair of great rings around the whole arena far below.
 
-**Clear view.** Every frame, each body is tested against a cone from the live camera to the arena: a sphere of radius 15 around `controls.target`. A body between the camera and the arena fades out and side-steps. A body behind the arena is allowed. This holds at every auto-rotate angle.
+**Clear view.** Every frame, each body is tested against a cone from the live camera to the arena: a sphere of radius 15 around `controls.target`. A body between the camera and the arena fades out and side-steps. A body beyond the middle of the arena is allowed, because the opaque sea hides it rather than it hiding the arena. This holds at every auto-rotate angle.
 
 ### Strata
 Five horizontal discs, at y = -9, -15, -21, -26 and -30, with radii from 25 to 56. Each has its own pattern:

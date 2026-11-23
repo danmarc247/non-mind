@@ -32,7 +32,7 @@ void main() {
   vec2 off = position.xy * ext * sz;
   off = dir * off.x + vec2(-dir.y, dir.x) * off.y;
   // never closer than a few units: no giant blobs on the lens
-  vAlpha *= smoothstep(4.0, 9.0, -mv.z);
+  vAlpha *= smoothstep(16.0, 26.0, -mv.z);   // nothing big between the lens and the arena
   mv.xy += off * on;
   vQ = position.xy * 2.0;
   gl_Position = projectionMatrix * mv;

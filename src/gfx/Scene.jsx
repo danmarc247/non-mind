@@ -13,6 +13,7 @@ import { game, tick, act, choose, onEvent, notify } from '../game/store.js';
 import { ARENA, seatPos, gatePos, ringsOpen, FAMILIES, aspectsOf, leaves, ANY_STRESSOR } from '../game/index.js';
 import { GatePortals, SeatRings, GlassVessel, CoreAura, SeaCaustics } from './arena/index.js';
 import { PaintFx, ArcVeil } from './fx/index.js';
+import { Mobiles, Strata, Motes, Tethers } from './drift/index.js';
 import Director, { director } from './Director.jsx';
 import seaFrag from './glsl/sea.frag.glsl';
 import seaVert from './glsl/sea.vert.glsl';
@@ -261,6 +262,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Loop audioRef={audioRef} />
       <Director />
       <PainterSky />
+      <Strata />
       <Sea />
       <SeaCaustics />
       <GatePortals />
@@ -270,6 +272,9 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Bodies />
       <ArcVeil />
       <PaintFx />
+      <Mobiles />
+      <Tethers />
+      <Motes />
       <GlassVessel />
       <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}

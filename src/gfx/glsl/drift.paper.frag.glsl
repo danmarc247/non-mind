@@ -119,6 +119,6 @@ void main() {
   col = mix(col, uInk, shadowA > 0.0 && inside < 0.5 ? 0.8 : 0.0);
   col = mix(col, uPaper, uFlash);
   float a = max(inside, shadowA);
-  if (dr_hash(gl_FragCoord.xy * 0.77 + uSeed) < 1.0 - uFade) discard;
+  if (dr_noise(gl_FragCoord.xy * 0.09 + uSeed * 7.0) * 0.8 + dr_hash(gl_FragCoord.xy * 0.77 + uSeed) * 0.2 < 1.0 - uFade) discard;
   gl_FragColor = vec4(col, a);
 }

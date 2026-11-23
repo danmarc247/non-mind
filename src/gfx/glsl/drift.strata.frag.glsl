@@ -107,8 +107,8 @@ void main() {
   }
   // a white-outlined lip (ref b) inside the fade, broken by a dry brush, so each slice reads as a plate
   float lipR = 0.8 + 0.03 * rimN;
-  float lip = smoothstep(0.022, 0.008, abs(rn - lipR)) * smoothstep(0.3, 0.5, dr_bristle(atan(p.y, p.x) * 0.6 + uSeed));
-  float lipInk = smoothstep(0.01, 0.003, abs(rn - lipR - 0.025)) * 0.6;
+  float lip = smoothstep(0.03, 0.015, abs(rn - lipR)) * smoothstep(0.3, 0.5, dr_bristle(atan(p.y, p.x) * 0.6 + uSeed));
+  float lipInk = smoothstep(0.012, 0.004, abs(rn - lipR - 0.038)) * 0.75;
   c = mix(c, uInk, lipInk); c = mix(c, uPaper, lip);
   a = max(a, max(lip, lipInk) * smoothstep(1.0, 0.85, rn));
   a *= smoothstep(lipR + 0.02, lipR - 0.02, rn) * 0.6 + 0.4;   // inside the lip is the slice, outside only a ghost

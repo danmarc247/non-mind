@@ -173,7 +173,7 @@ void main() {
     steps += 1.0;
     if (t > tEnd) break;
   }
-  float dz = dr_hash(gl_FragCoord.xy * 0.913 + uSeed);
+  float dz = dr_noise(gl_FragCoord.xy * 0.09 + uSeed * 7.0) * 0.8 + dr_hash(gl_FragCoord.xy * 0.913 + uSeed) * 0.2;   // brush-blotch dissolve
   vec3 col; vec3 P;
   if (!hit) {
     // cut-paper outline from the closest approach: a white brush band with a hairline of ink outside
@@ -203,7 +203,7 @@ void main() {
     base *= 0.8 + 0.32 * n1;
     float diff = dot(N, L) * 0.5 + 0.5;
     float cel = dr_cel(diff);
-    vec3 shade = mix(base, pal(id + uSeed + 2.0), 0.3) * 0.5 + uInk * 0.12;
+    vec3 shade = mix(mix(base, pal(id + uSeed + 2.0), 0.35) * 0.42, uInk, 0.22);
     col = mix(shade, base, clamp(cel, 0.0, 1.0));
     // impasto highlight fleck and soft cavity from the march
     vec3 Hh = normalize(L - rd);

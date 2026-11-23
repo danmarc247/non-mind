@@ -102,6 +102,7 @@ void strokeLayer(
 
     // shape: blunt start, tapering/feathered tail, ragged edges
     float taper = 1.0 - 0.55 * smoothstep(0.1, 1.0, u) - 0.25 * smoothstep(-0.6, -1.0, u);
+    if (abs(v) - taper > 0.2 || abs(u) > 1.05) continue;   // cheap early-out before the noise
     float rag = 0.12 * (vnoise1(along * 23.0 + h.w * 40.0) - 0.5);
     float edge = abs(v) - taper - rag;
     float aaw = aa / W + 0.02;
@@ -129,6 +130,9 @@ void strokeLayer(
     float smear = smoothstep(0.35, 0.85, br2 * 0.7 + 0.3 * vnoise1(along * 6.0 + k.x * 5.0))
                 * mix(0.25, 0.8, k.y) * (0.15 + 0.85 * uMotifB.y);
     vec3 sc = mix(cA, cB, smear * (0.4 + 0.6 * smoothstep(-0.2, 1.0, u)));
+    // value variety: some strokes lighter (white mixed in), some deeper
+    sc = mix(sc, uPaper, step(0.82, h.z) * 0.3) * mix(0.8, 1.02, k.w);
+    sc *= 0.9 + 0.18 * bristle;                        // bristle streaks read through soft focus
 
     float pr = k.x + seed * 0.0;
     if (pr > pr1) {
@@ -206,9 +210,10 @@ void main() {
   vec3 washB = pal(region + 0.42);
   vec3 wash = mix(washA, washB, smoothstep(-0.12, 0.12, m2n + (drag - 0.5) * 0.6));
   wash = mix(wash, uPaper, smoothstep(0.6, 0.95, drag) * 0.3);
-  float ce = -0.15 - 0.55 * uMotifD.w - 0.2 * C;
+  float ce = 0.1 - 0.4 * uMotifD.w - 0.15 * C;
   float cover = smoothstep(ce - 0.05, ce + 0.05, mass + 0.3 * (drag - 0.5)) * uMotifA.x * K;
-  vec3 col = mix(uPaper, mix(uPaper, wash, sat), cover * 0.92);
+  wash *= 0.88 + 0.24 * drag;                    // dragged streaks along the flow
+  vec3 col = mix(uPaper, mix(uPaper, wash, sat), cover * 0.9);
   float height = cover * 0.1 * drag;
 
   // ------------------------------------------------- brush strokes: 3 layers, big -> small
@@ -216,11 +221,11 @@ void main() {
   float D = uMotifD.w;
   float opa = 0.85 + 0.15 * D;
   float dens[3];
-  dens[0] = 0.95 * D * uMotifA.w * K;
-  dens[1] = mix(0.5, 0.9, D) * mix(1.0, 0.2, uMotifD.z);
-  dens[2] = 0.7 * D * uMotifB.w * K;
+  dens[0] = 0.8 * D * uMotifA.w * K;
+  dens[1] = mix(0.6, 0.92, D) * mix(1.0, 0.2, uMotifD.z);
+  dens[2] = mix(0.35, 0.75, uMotifB.w) * D * K;
   float scl[3];
-  scl[0] = 0.42 * comp.y; scl[1] = 0.8 * comp.y; scl[2] = 1.55 * comp.y;
+  scl[0] = 0.6 * comp.y; scl[1] = 1.1 * comp.y; scl[2] = 2.0 * comp.y;
   float topM = 0.0;
   for (int l = 0; l < 3; l++) {
     if (dens[l] < 0.01) continue;
@@ -360,7 +365,7 @@ void main() {
   // ------------------------------------------------- impasto lighting from height derivatives
   float dhx = dFdx(height);
   float dhy = dFdy(height);
-  vec2 slope = clamp(vec2(dhx, dhy) * 2.2, -0.6, 0.6);
+  vec2 slope = clamp(vec2(dhx, dhy) * 3.0, -0.7, 0.7);
   vec3 nrm = normalize(vec3(-slope, 1.0));
   vec3 L = normalize(vec3(-0.5, 0.6, 0.65));
   float diff = dot(nrm, L) / L.z;                       // 1.0 on flat paint
@@ -371,8 +376,10 @@ void main() {
 
   // ------------------------------------------------- stage grading: saturation push + contrast around the ground
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
-  col = mix(vec3(lum), col, max(uSat, 1.0) * (1.0 + 0.08 * uMotifD.y));
+  col = mix(vec3(lum), col, clamp(uSat, 1.0, 1.15) * (1.0 + 0.05 * uMotifD.y));
   col = uPaper + (col - uPaper) * uContrast;
+  // pre-compensate the post chain (aerial lift toward the ground, soft focus): deepen mid-tones
+  col = mix(col, col * col, 0.22 * K);
   col = clamp(col, 0.0, 1.0);
 
   // ------------------------------------------------- audio shimmer + flash

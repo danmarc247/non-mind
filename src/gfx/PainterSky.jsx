@@ -160,8 +160,8 @@ export function PainterSky({ radius = 400, fadeSeconds = 2.5 }) {
       pals.A = buildSlots(p, stage, depth, c.prev, cycle, collapse);
       pals.B = buildSlots(p, stage, depth, c.cur, cycle, collapse);
       // pre-compensate the post chain's aerial fade + soft focus on the sky
-      u.uSat.value = Math.max(p.saturation, 0.95) * 1.12;
-      u.uContrast.value = Math.max(p.contrast, 1.0) * 1.08;
+      u.uSat.value = Math.max(p.saturation, 0.9) * 1.06;
+      u.uContrast.value = Math.max(p.contrast, 1.0) * 1.12;
       c.density = 0.65 + 0.35 * p.strokeDensity;
       u.uMotifA.value.set(...m.A);
       u.uMotifB.value.set(...m.B);

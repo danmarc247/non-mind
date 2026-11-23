@@ -97,30 +97,31 @@ vec4 mv_kaleido(SeaCtx c) {
 
 // (d) white-outlined ring colonies that drift, merge (smooth union) and split (drift apart)
 vec4 mv_colonies(SeaCtx c) {
-  vec2 q = c.p * 0.27 + c.g * 0.12 + vec2(c.t * 0.025, -c.t * 0.018);
+  vec2 q = c.p * 0.29 + c.g * 0.12 + vec2(c.t * 0.025, -c.t * 0.018);
   vec2 base = floor(q - 0.5);
   float d = 10.0, dn = 10.0, id = 0.0;
   for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) {
     vec2 cc = base + vec2(float(i), float(j));
     vec2 h = sp_h2(cc);
     vec2 ctr = cc + 0.5 + 0.3 * vec2(sin(c.t * (0.11 + 0.2 * h.x) + h.y * 6.28), cos(c.t * (0.09 + 0.2 * h.y) + h.x * 6.28));
-    float rad = 0.2 + 0.13 * sin(c.t * 0.21 + h.x * 9.0);
+    float rad = 0.25 + 0.11 * sin(c.t * 0.21 + h.x * 9.0);
     float di = length(q - ctr) - rad;
     float hh = clamp(0.5 + 0.5 * (d - di) / 0.22, 0.0, 1.0);
     d = mix(d, di, hh) - 0.22 * hh * (1.0 - hh);
     if (di < dn) { dn = di; id = sp_h1(cc + 7.0); }
   }
-  vec3 bg = mix(sp_pal(floor(c.fn * 1.6 + 2.0) + 2.0), uGround, 0.2);
+  vec3 bg = mix(sp_pal(floor(c.fn * 1.2 + 2.0) + 2.0), uGround, 0.35);
   float w = fwidth(d) + 0.004;
   vec3 col = bg;
   col = mix(col, sp_pal(id * 5.0), sp_aa(d, w));
-  float outline = sp_aa(abs(d) - 0.045, w);
-  float inner = sp_aa(abs(d + 0.11) - 0.014, w);
+  float outline = sp_aa(abs(d) - 0.055, w);
+  float inner = sp_aa(abs(d + 0.12) - 0.016, w);
+  float inner2 = sp_aa(abs(dn + 0.2) - 0.03, w) * step(0.35, id);         // a second white ring in some
   float pip = sp_aa(dn + 0.17 + 0.03 * sin(c.t + id * 20.0), w);
   float streak = sp_vn(atan(q.y - base.y, q.x - base.x) * 9.0 + id * 30.0);
   col = mix(col, uInk, inner * 0.7);
   col = mix(col, sp_pal(id * 5.0 + 2.0), pip);
-  col = mix(col, uPaper, outline * (0.75 + 0.25 * streak));
+  col = mix(col, uPaper, max(outline * (0.75 + 0.25 * streak), inner2 * 0.9));
   float dry = smoothstep(0.62, 0.8, sp_vn(dot(c.p, c.N) * 30.0)) * 0.12;   // dry streak across the ground
   col = mix(col, uPaper, dry * (1.0 - sp_aa(d, w)));
   return vec4(col, 0.6 * outline + 0.2 * sp_aa(d, w) + 0.3 * pip);
@@ -152,10 +153,11 @@ vec4 mv_reaction(SeaCtx c) {
 // (f) folded interference: an IFS of mirror folds + rotation + scale (9 folds), orbit-trap colouring,
 // fine paper interference lines from the trap distance (faded by their own fwidth)
 vec4 mv_fold(SeaCtx c) {
-  vec2 z = sp_rot(c.t * 0.01) * c.p * 0.075;
+  vec2 z = sp_rot(c.t * 0.01) * c.p * 0.034;
   float ang = 0.62 + 0.08 * sin(c.t * 0.05), sc = 1.0;
   mat2 R = sp_rot(ang);
-  vec2 off = vec2(0.46, 0.27) + 0.04 * vec2(sin(c.t * 0.07), cos(c.t * 0.06));
+  vec2 off = vec2(0.46, 0.27) + 0.04 * vec2(sin(c.t * 0.07), cos(c.t * 0.06))
+           + 0.05 * vec2(sin(c.r * 0.45 - c.t * 0.09), cos(c.r * 0.3 + c.t * 0.05));   // the fold bends with radius: interference
   float t1 = 10.0, t2 = 10.0;
   for (int i = 0; i < 9; i++) {
     z = abs(z) - off;
@@ -163,7 +165,7 @@ vec4 mv_fold(SeaCtx c) {
     t1 = min(t1, abs(z.y) / sc);
     t2 = min(t2, length(z) / sc);
   }
-  float v = t2 * 26.0;
+  float v = t2 * 20.0 + t1 * 52.0 + c.r * 0.08;
   vec3 col = mix(sp_pal(floor(v)), sp_pal(floor(v) + 1.0), smoothstep(0.75, 0.95, fract(v)));
   float w2 = fwidth(v) + 0.01;
   col = mix(col, uInk, sp_aa(0.47 - abs(fract(v) - 0.5), w2) * smoothstep(0.4, 0.1, w2) * 0.8);
@@ -175,38 +177,43 @@ vec4 mv_fold(SeaCtx c) {
   return vec4(col, 0.3 * smoothstep(0.0, 1.0, fract(v)) + 0.4 * lines);
 }
 
-// (g) overwhelm: white canvas floods in; magenta and ultramarine splashes with spikes and satellites
+// (g) overwhelm: white canvas; big magenta and ultramarine splashes (lobed, a few sharp spikes,
+// radial drip-rays, satellites), each living a short cycle then fading back into the white
 vec4 mv_flood(SeaCtx c) {
   vec3 col = uPaper;
-  vec2 q = c.p * 0.27;
+  vec2 q = c.p * 0.16;
   vec2 base = floor(q - 0.5);
-  float rag = snoise(vec3(c.p * 0.9, c.t * 0.08)) * 0.06;
+  float rag = snoise(vec3(c.p * 0.8, c.t * 0.08));
   float h = 0.0;
   for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) {
     vec2 cc = base + vec2(float(i), float(j));
     float seed = sp_h1(cc);
-    float ph = c.t * 0.07 + seed;
+    float ph = c.t * 0.06 + seed;
     float ep = floor(ph), life = fract(ph);
     vec2 hh = sp_h2(cc + ep * 13.1);
-    vec2 ctr = cc + 0.25 + 0.5 * hh;
+    if (hh.x < 0.18 - 0.15 * uOverwhelm) continue;                     // some cells stay white
+    vec2 ctr = cc + 0.35 + 0.3 * hh;
     vec2 dv = q - ctr; float dl = length(dv);
     float an = atan(dv.y, dv.x);
-    float grow = smoothstep(0.0, 0.12, life) * (0.65 + 0.35 * uOverwhelm);
-    float rad = (0.12 + 0.2 * hh.x) * grow;
-    float spikes = pow(abs(sin(an * (3.0 + floor(hh.y * 4.0)) + hh.x * 6.0)), 14.0) * 0.6 * rad;
-    float d = dl - rad - spikes - rag * rad * 3.0;
+    float grow = smoothstep(0.0, 0.1, life);
+    float rad = (0.16 + 0.24 * hh.x) * grow;
+    float lobes = 0.22 * sin(an * 3.0 + hh.y * 6.0) + 0.12 * sin(an * 5.0 + hh.x * 9.0) + 0.08 * rag;
+    float spikes = pow(abs(sin(an * (2.0 + floor(hh.y * 3.0)) + hh.x * 6.0)), 24.0) * 0.55;
+    float d = dl - rad * (1.0 + lobes + spikes);
+    float ray = pow(abs(sin(an * (5.0 + floor(hh.x * 5.0)) + hh.y * 3.0)), 90.0) * smoothstep(rad * 2.4, rad * 1.1, dl) * grow;
     vec3 sc = hh.y > 0.5 ? uMagenta : uUltra;
-    float m = sp_aa(d, 0.012);
+    float m = max(sp_aa(d, 0.01), smoothstep(0.3, 0.6, ray));
     float sat = 0.0;
     for (int s = 0; s < 2; s++) {   // satellites
       float fs = float(s);
-      vec2 o = vec2(cos(hh.x * 30.0 + fs * 2.1), sin(hh.x * 30.0 + fs * 2.1)) * rad * (1.6 + 0.5 * fs);
-      sat = max(sat, sp_aa(length(dv - o) - rad * (0.16 - 0.04 * fs), 0.01));
+      vec2 o = vec2(cos(hh.x * 30.0 + fs * 2.4), sin(hh.x * 30.0 + fs * 2.4)) * rad * (1.9 + 0.6 * fs);
+      sat = max(sat, sp_aa(length(dv - o) - rad * (0.18 - 0.05 * fs), 0.01));
     }
     m = max(m, sat * grow);
-    vec3 cc2 = mix(sc, mix(sc, uInk, 0.45), sp_aa(d + rad * 0.55, 0.02));
-    col = mix(col, cc2, m * (1.0 - smoothstep(0.85, 1.0, life)));
-    h = max(h, m * 0.7);
+    vec3 c2 = mix(sc, mix(sc, uInk, 0.4), sp_aa(d + rad * 0.5, 0.02));   // dark wet core
+    float fadeOut = 1.0 - smoothstep(0.8, 1.0, life);
+    col = mix(col, c2, m * fadeOut);
+    h = max(h, m * fadeOut * 0.8);
   }
   return vec4(col, h);
 }
@@ -225,7 +232,18 @@ vec3 sea_paint(vec2 p, out float hgt) {
   if (uMoveA.w > 0.003) { m = mv_colonies(c); col += m.rgb * uMoveA.w; h += m.a * uMoveA.w; }
   if (uMoveB.x > 0.003) { m = mv_reaction(c); col += m.rgb * uMoveB.x; h += m.a * uMoveB.x; }
   if (uMoveB.y > 0.003) { m = mv_fold(c);     col += m.rgb * uMoveB.y; h += m.a * uMoveB.y; }
-  if (uMoveB.z > 0.003) { m = mv_flood(c);    col += m.rgb * uMoveB.z; h += m.a * uMoveB.z; }
+  float wg = uMoveB.z;
+  if (wg > 0.003) {
+    float rest = max(1e-3, 1.0 - wg);
+    col /= rest; h /= rest;                                        // the earlier painting, at full strength
+    m = mv_flood(c);
+    float fld = clamp(0.5 + 0.4 * c.fn + 0.3 * (c.r / uR - 0.5), 0.0, 1.0);   // floods in from the rim
+    float k = wg * 1.2 - 0.1;
+    float cover = smoothstep(fld - 0.05, fld + 0.05, k);
+    float front = smoothstep(0.06, 0.0, abs(k - fld)) * step(0.004, wg) * step(wg, 0.995);
+    col = mix(col, m.rgb, cover); h = mix(h, m.a, cover) + front * 0.5;
+    col = mix(col, uPaper, front);
+  }
   // central rings, pulsed by the low band (always, faint)
   float cr = smoothstep(0.06, 0.0, abs(fract(c.r * 0.9 - c.t * 0.25) - 0.5) - 0.44) * smoothstep(3.8, 1.6, c.r);
   float pulse = 0.12 + 0.55 * uLow;
