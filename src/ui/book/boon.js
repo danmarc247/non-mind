@@ -8,8 +8,8 @@ const LINES = {
   insight: '+%v% insight, always',
   capacity: '+%v% capacity, always',
   residue: '+%v% residue per reset',
-  tolerance: '+%v% tolerance, every unit',
-  salience: '+%v% salience, every unit',
+  tolerance: '+%v% tolerance, every regulator',
+  salience: '+%v% salience, every regulator',
   attention: '+%v attention per wave held',
 };
 export function boonText(boon) {

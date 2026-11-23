@@ -30,8 +30,8 @@ export const bookKey = (e) => {
 
 function Boon({ card, className = '' }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 font-stat text-[11px] text-ink ${className}`}>
-      <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border-2 border-ink" style={{ background: toneVar(card.tone) }} />
+    <span className={`inline-flex items-center gap-1.5 font-head text-[14px] leading-none text-ink ${className}`}>
+      <span className="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-ink" style={{ background: toneVar(card.tone) }} />
       {boonText(card.boon)}
     </span>
   );
@@ -41,14 +41,14 @@ function Place({ card, held, fresh, onOpen, stagger }) {
   const pos = stagger ? 'lg:col-start-2' : '';
   if (!held) {
     return (
-      <div className={`flex h-[168px] items-center justify-center rounded-[16px] border-[2.5px] border-dashed border-ink/25 lg:col-span-2 lg:h-[158px] ${pos}`} aria-label={`${card.n}`}>
+      <div className={`flex h-[188px] items-center justify-center rounded-[16px] border-[2.5px] border-dashed border-ink/25 lg:col-span-2 lg:h-[180px] ${pos}`} aria-label={`${card.n}`}>
         <span className="font-outline text-[44px] leading-none text-ink/30">{card.n}</span>
       </div>
     );
   }
   return (
     <motion.button type="button" layoutId={`book-card-${card.id}`} onClick={() => onOpen(card.id)} data-place={card.n}
-      className={`group relative flex h-[168px] flex-col overflow-hidden rounded-[16px] border-[3px] border-ink bg-paper p-2.5 text-left text-ink lg:col-span-2 lg:h-[158px] ${pos} ${fresh ? 'shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-yolk)_55%,transparent),0_0_22px_6px_color-mix(in_srgb,var(--color-yolk)_45%,transparent),3px_4px_0_var(--color-ink)]' : 'shadow-[3px_4px_0_var(--color-ink)]'}`}
+      className={`group relative flex h-[188px] flex-col overflow-hidden rounded-[16px] border-[3px] border-ink bg-paper p-2.5 text-left text-ink lg:col-span-2 lg:h-[180px] ${pos} ${fresh ? 'shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-yolk)_55%,transparent),0_0_22px_6px_color-mix(in_srgb,var(--color-yolk)_45%,transparent),3px_4px_0_var(--color-ink)]' : 'shadow-[3px_4px_0_var(--color-ink)]'}`}
       whileHover={{ y: -3, rotate: -0.6 }} whileTap={{ scale: 0.97 }} transition={LAYOUT}>
       {fresh && <span className="absolute top-1.5 right-1.5 rounded-full border-2 border-ink bg-yolk px-1.5 font-stat text-[11px] leading-[16px]">{t('new')}</span>}
       <span className="flex shrink-0 items-start gap-2">
@@ -59,8 +59,8 @@ function Place({ card, held, fresh, onOpen, stagger }) {
         </span>
       </span>
       <span className="mt-1 line-clamp-2 shrink-0 font-body text-[12.5px] leading-[1.25] italic">{quoteText(card.quote)}</span>
-      <span className="mt-0.5 line-clamp-2 min-h-0 font-body text-[11px] leading-[1.25] text-ink-2">{card.principle}</span>
-      <Boon card={card} className="mt-auto shrink-0 pt-0.5 whitespace-nowrap" />
+      <span className="mt-0.5 line-clamp-2 min-h-0 font-body text-[12.5px] leading-[1.25] text-ink-2">{card.principle}</span>
+      <Boon card={card} className="mt-auto shrink-0 pt-0.5 text-[13.5px] leading-[1.1]" />
     </motion.button>
   );
 }
@@ -80,7 +80,7 @@ function Enlarged({ card, onClose }) {
         <svg className="mt-1.5 mb-3 h-2.5 w-40" viewBox="0 0 160 10" aria-hidden="true"><path d="M2 6 C 30 1, 55 9, 85 5 S 135 2, 158 6" fill="none" stroke={toneVar(card.tone)} strokeWidth="4.5" strokeLinecap="round" /></svg>
         <p className="font-body text-[19px] leading-snug italic">{quoteText(card.quote)}</p>
         <p className="mt-3 font-body text-[14.5px] leading-snug text-ink-2">{card.principle}</p>
-        <Boon card={card} className="mt-4 rounded-full border-[2.5px] border-ink bg-paper-2 px-3 py-1 text-[12px]" />
+        <Boon card={card} className="mt-4 rounded-full border-[2.5px] border-ink bg-paper-2 px-3.5 py-1.5 text-[16px]" />
         <button type="button" onClick={onClose} className="absolute top-3 right-3 rounded-full border-[3px] border-ink bg-paper px-2.5 font-head text-sm leading-6 hover:rotate-3">{t('back')}</button>
       </motion.div>
     </motion.div>

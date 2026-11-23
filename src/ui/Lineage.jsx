@@ -70,14 +70,14 @@ function Map2D() {
 
 function Legend() {
   const Sw = ({ d, stroke, w = 4, dash }) => (
-    <svg viewBox="0 0 34 10" className="h-2.5 w-9"><path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeDasharray={dash} /></svg>
+    <svg viewBox="0 0 34 10" className="h-3.5 w-12"><path d={d} fill="none" stroke={stroke} strokeWidth={w} strokeLinecap="round" strokeDasharray={dash} /></svg>
   );
   return (
-    <div className="pointer-events-none absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] flex-wrap sm:bottom-4 sm:left-5 sm:max-w-[calc(100%-260px)] items-center gap-x-4 gap-y-1 rounded-full border-[3px] border-ink bg-paper/90 px-4 py-1 font-head text-[13px] text-ink shadow-[2px_3px_0_var(--color-ink)]">
+    <div className="pointer-events-none absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] flex-wrap sm:bottom-4 sm:left-5 sm:max-w-[calc(100%-260px)] items-center gap-x-5 gap-y-1.5 rounded-full border-[3px] border-ink bg-paper/95 px-5 py-2 font-head text-[17px] tracking-wide text-ink shadow-[2px_3px_0_var(--color-ink)]">
       <span className="flex items-center gap-1.5"><Sw d="M2 5 C 12 1, 22 9, 32 5" stroke="var(--color-teal)" />{TX.legend.blend}</span>
       <span className="flex items-center gap-1.5"><Sw d="M2 5 L 32 5" stroke="var(--color-ink)" w={5} />{TX.legend.carve}</span>
       <span className="flex items-center gap-1.5"><Sw d="M2 5 Q 9 0, 17 5 T 32 5" stroke="var(--color-tangerine)" />{TX.legend.mix}</span>
-      <span className="flex items-center gap-1.5 opacity-70"><Sw d="M2 5 L 32 5" stroke="var(--color-ink-2)" w={3} dash="4 4" />{TX.legend.ghost}</span>
+      <span className="flex items-center gap-1.5 opacity-80"><Sw d="M2 5 L 32 5" stroke="var(--color-ink-2)" w={3} dash="4 4" />{TX.legend.ghost}</span>
     </div>
   );
 }
