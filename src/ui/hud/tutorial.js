@@ -12,12 +12,14 @@ export const CORE = [
     id: 'attend', anchor: 'attend', also: 'core', side: 'left',
     voice: 'Something is here. It wants to be looked at.',
     plain: (G) => `Click ATTEND, click the glowing core, or press SPACE.${G.stats.clicks > 0 ? ` ${Math.max(0, 5 - G.stats.clicks)} more.` : ''}`,
+    touch: (G) => `Tap ATTEND or the glowing core.${G.stats.clicks > 0 ? ` ${Math.max(0, 5 - G.stats.clicks)} more.` : ''}`,
     done: (G) => unlocked(G, 'shop'),
   },
   {
     id: 'buy', anchor: 'shop',
     voice: 'What arrives can be brought in.',
     plain: 'Click a card, or press 1 to 5. The yellow coin is its price in attention.',
+    touch: 'Tap a card in ARRIVALS. The yellow coin is its price in attention.',
     when: (G) => unlocked(G, 'shop'),
     on: (e) => e.type === 'unitNew',
     done: (G) => G.units.length > 0,
@@ -26,6 +28,7 @@ export const CORE = [
     id: 'seat', anchor: 'core',
     voice: 'It has taken a place in the circle by itself.',
     plain: 'To move one: click it in the circle, then click an empty seat on the ring.',
+    touch: 'To move one: tap it in the circle, then tap an empty seat on the ring.',
     when: (G) => seatedN(G) > 0,
     on: isSfx('place'), ack: true,
   },
@@ -47,6 +50,7 @@ export const CORE = [
     id: 'attention', anchor: 'lookgrow',
     voice: 'Attention is paid for holding. Unspent, it gathers more.',
     plain: 'Yellow is attention. Every 10 you keep adds 1 after a held wave. LOOK (R) brings new arrivals; GROW (X) raises your level.',
+    touch: 'Yellow is attention. Every 10 you keep adds 1 after a held wave. LOOK brings new arrivals; GROW raises your level.',
     on: (e) => isSfx('reroll')(e) || e.type === 'level', ack: true,
   },
   {
@@ -64,7 +68,7 @@ export const INTROS = [
   { id: 'repurpose', key: 'repurpose', anchor: 'bench', voice: 'A thing can become a habit instead.', plain: 'Select a unit you do not need and press REPURPOSE: it turns into habits.', done: (G) => G.stats.repurposes > 0 },
   { id: 'insight', key: 'insight', anchor: 'chip-insight', tab: 'insight', voice: 'Insight seeps in on its own.', plain: 'Insight (blue) pays for joining, splitting, and the spells in the INSIGHT tab.' },
   { id: 'split', key: 'split', anchor: 'bench', voice: 'What was joined still has its seam.', plain: 'Select a merged unit and press SPLIT to get its parts back. It costs 10 insight.', done: (G) => G.stats.splits > 0 },
-  { id: 'ring2', key: 'ring2', anchor: 'core', voice: 'The circle has a second ring.', plain: 'Select a unit, then click an empty seat on the outer ring to place it there.' },
+  { id: 'ring2', key: 'ring2', anchor: 'core', voice: 'The circle has a second ring.', plain: 'Select a unit, then click an empty seat on the outer ring to place it there.', touch: 'Tap a unit, then tap an empty seat on the outer ring to place it there.' },
   { id: 'subtract', key: 'subtract', anchor: 'bench', voice: 'One can be carved out of another.', plain: 'Select a unit, press SUBTRACT, then click the unit to carve away. The first keeps one of its traits.', done: (G) => G.stats.subtractions > 0 },
   { id: 'attendants', key: 'attendants', anchor: 'tab-attendants', tab: 'attendants', voice: 'Attention can be lent out.', plain: 'In OTHERS, press LEND: each helper attends once a second for you.', done: (G) => G.attendants > 0 },
   { id: 'verbs', key: 'verbs', anchor: 'tab-verbs', tab: 'verbs', voice: 'Some things take time and come back changed.', plain: 'Select a unit, then press GIVE on a verb. The ring counts down; the moods it leaves fade on their own.', done: (G) => G.stats.verbsDone > 0 || Object.values(G.verbs).some(Boolean) },
@@ -79,6 +83,9 @@ export const INTROS = [
 ].map((s) => ({ ...s, ack: true, intro: true, when: s.when || ((G) => unlocked(G, s.key)) }));
 
 export const STEPS = [...CORE, ...INTROS];
+
+// which mobile sheet holds a step's anchor
+export const SHEET_OF = { shop: 'shop', lookgrow: 'shop', bench: 'bench' };
 
 export function loadTut() {
   try {

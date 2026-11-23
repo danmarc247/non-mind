@@ -8,7 +8,7 @@ import { act, useGame } from '../../game/store.js';
 import { fmt } from './fmt.js';
 import { POP } from './shared.jsx';
 
-export default function Reset({ compact }) {
+export default function Reset({ compact, small }) {
   const G = useGame();
   const [confirm, setConfirm] = useState(false);
   const gain = muGain(G);
@@ -28,9 +28,9 @@ export default function Reset({ compact }) {
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Mu remains, and makes the next time wider.'}>
-          <RingButton tone={full ? 'magenta' : 'violet'} size={compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
-            <span className={compact ? 'font-title text-[11px] leading-none' : 'font-title text-[13px] leading-none'}>NON-MIND</span>
-            <span className="mt-1 font-stat text-[13px] nm-tab">+{fmt(gain, { int: true })} mu</span>
+          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 60 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
+            <span className={small ? 'font-title text-[9px] leading-none' : compact ? 'font-title text-[11px] leading-none' : 'font-title text-[13px] leading-none'}>NON-MIND</span>
+            <span className={small ? 'mt-0.5 font-stat text-[11px] nm-tab' : 'mt-1 font-stat text-[13px] nm-tab'}>+{fmt(gain, { int: true })} mu</span>
           </RingButton>
         </Tooltip>
       </motion.div>

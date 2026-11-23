@@ -12,6 +12,7 @@ import PainterPostDefault, * as PostMod from './PainterPost.jsx';
 import { game, tick, act, choose, onEvent, notify } from '../game/store.js';
 import { ARENA, seatPos, gatePos, ringsOpen, FAMILIES, aspectsOf, leaves, ANY_STRESSOR } from '../game/index.js';
 import { GatePortals, SeatRings, GlassVessel, CoreAura, SeaCaustics } from './arena/index.js';
+import { PaintFx, ArcVeil } from './fx/index.js';
 import Director, { director } from './Director.jsx';
 import seaFrag from './glsl/sea.frag.glsl';
 import seaVert from './glsl/sea.vert.glsl';
@@ -34,7 +35,8 @@ function Sea() {
   useFrame(() => {
     const p = mixStagePalette(Math.min(17, mood.stage + mood.overwhelm * 0.999 * (mood.stage >= 16 ? 1 : 0)));
     const s = (c) => c.map(linearToSrgb);
-    for (const u of [uniforms, sideU]) {
+    // R3F copies a `uniforms` prop, so write to the live material uniforms, not the memoised objects
+    for (const u of [top.current.material.uniforms, side.current.material.uniforms]) {
       u.uTime.value = mood.time; u.uA.value.set(...s(p.primary)); u.uB.value.set(...s(p.secondary)); u.uC.value.set(...s(p.accent));
       u.uComplexity.value = mood.complexity; u.uOverwhelm.value = mood.overwhelm; u.uTension.value = mood.tension; u.uPulse.value = mood.flash;
     }
@@ -259,7 +261,8 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Core />
       <CoreAura />
       <Bodies />
-      <Fx />
+      <ArcVeil />
+      <PaintFx />
       <GlassVessel />
       <OrbitControls makeDefault enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}

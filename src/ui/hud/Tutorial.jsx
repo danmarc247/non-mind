@@ -6,11 +6,11 @@ import { InkButton } from '../bits';
 import { game, onEvent, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { emitHud, onHud } from './bus.js';
-import { CORE, activeStep, loadTut, saveTut } from './tutorial.js';
+import { CORE, SHEET_OF, activeStep, loadTut, saveTut } from './tutorial.js';
 import { POP } from './shared.jsx';
 import { mood } from '../../gfx/mood.js';
 
-const CARD_W = 310;
+const cardW = () => Math.min(310, window.innerWidth - 28);
 const PAD = 10;
 
 /** Where is the anchor on screen? 'core' is the centre of the arena (the 3D scene keeps it centred). */
@@ -35,7 +35,7 @@ const same = (a, b) => (!a && !b) || (a && b && Math.abs(a.left - b.left) < 1 &&
 function placeCard(t, ch, prefer) {
   const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = 56;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  if (!t) return { left: (vw - CARD_W) / 2, top: vh * 0.24 };
+  if (!t) return { left: (vw - cardW()) / 2, top: vh * 0.24 };
   const cx = t.left + t.width / 2, cy = t.top + t.height / 2;
   const opts = prefer ? [prefer] : [];
   if (cy > vh * 0.55) opts.push('above'); else opts.push('below');
@@ -43,16 +43,16 @@ function placeCard(t, ch, prefer) {
   opts.push('above', 'below', 'right', 'left');
   for (const o of opts) {
     let left, top;
-    if (o === 'above') { left = cx - CARD_W / 2; top = t.top - GAP - ch; }
-    if (o === 'below') { left = cx - CARD_W / 2; top = t.top + t.height + GAP; }
+    if (o === 'above') { left = cx - cardW() / 2; top = t.top - GAP - ch; }
+    if (o === 'below') { left = cx - cardW() / 2; top = t.top + t.height + GAP; }
     if (o === 'right') { left = t.left + t.width + GAP; top = cy - ch / 2; }
-    if (o === 'left') { left = t.left - GAP - CARD_W; top = cy - ch / 2; }
-    const fits = top >= M && top + ch <= vh - M && left >= M && left + CARD_W <= vw - M;
-    const nudged = { left: clamp(left, M, vw - CARD_W - M), top: clamp(top, M, vh - ch - M) };
+    if (o === 'left') { left = t.left - GAP - cardW(); top = cy - ch / 2; }
+    const fits = top >= M && top + ch <= vh - M && left >= M && left + cardW() <= vw - M;
+    const nudged = { left: clamp(left, M, vw - cardW() - M), top: clamp(top, M, vh - ch - M) };
     // a horizontal nudge is fine for above/below; a vertical one for left/right
-    if (fits || ((o === 'above' || o === 'below') && top >= M && top + ch <= vh - M) || ((o === 'left' || o === 'right') && left >= M && left + CARD_W <= vw - M)) return nudged;
+    if (fits || ((o === 'above' || o === 'below') && top >= M && top + ch <= vh - M) || ((o === 'left' || o === 'right') && left >= M && left + cardW() <= vw - M)) return nudged;
   }
-  return { left: clamp(cx - CARD_W / 2, M, vw - CARD_W - M), top: clamp(t.top - ch - GAP, M, vh - ch - M) };
+  return { left: clamp(cx - cardW() / 2, M, vw - cardW() - M), top: clamp(t.top - ch - GAP, M, vh - ch - M) };
 }
 
 // nearest point of rect r to point p
@@ -129,7 +129,11 @@ export default function Tutorial() {
   // advance on state
   useEffect(() => { if (step?.done && step.done(G)) finish(step.id); });
   // open the tab a step talks about
-  useEffect(() => { if (step?.tab) emitHud({ type: 'tab', id: step.tab }); }, [step?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (step?.tab) emitHud({ type: 'tab', id: step.tab });
+    else if (step && SHEET_OF[step.anchor]) emitHud({ type: 'sheet', id: SHEET_OF[step.anchor] });
+  }, [step?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [touch] = useState(() => typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches);
 
   // track the anchor (it moves: panels appear, layout shifts)
   const [rect, setRect] = useState(null);
@@ -151,9 +155,10 @@ export default function Tutorial() {
   const [ch, setCh] = useState(170);
   useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - ch) > 1) setCh(h); });
   const pos = step ? placeCard(rect, ch, step.side) : null;
-  const card = pos && { left: pos.left, top: pos.top, width: CARD_W, height: ch };
+  const card = pos && { left: pos.left, top: pos.top, width: cardW(), height: ch };
   const coreIdx = step ? CORE.findIndex((s) => s.id === step.id) : -1;
-  const plain = step && (typeof step.plain === 'function' ? step.plain(G) : step.plain);
+  const line = step && ((touch && step.touch) || step.plain);
+  const plain = step && (typeof line === 'function' ? line(G) : line);
 
   return (
     <AnimatePresence>
@@ -175,7 +180,7 @@ export default function Tutorial() {
             role="dialog"
             aria-label="guide"
             className="pointer-events-auto absolute rounded-[16px] border-[3px] border-ink bg-paper p-4 shadow-[4px_5px_0_0_var(--color-ink)]"
-            style={{ width: CARD_W }}
+            style={{ width: cardW() }}
             initial={{ opacity: 0, scale: 0.92, y: 10, left: pos.left, top: pos.top }}
             animate={{ opacity: 1, scale: 1, y: 0, left: pos.left, top: pos.top }}
             transition={POP}

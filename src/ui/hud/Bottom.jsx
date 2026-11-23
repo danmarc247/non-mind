@@ -173,12 +173,12 @@ export function AttendButton({ G, compact, size: sizeIn, touch }) {
       )}
       <AnimatePresence>
         {invite && (
-          <motion.div key="hint" className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 flex w-[230px] -translate-x-1/2 flex-col items-center"
+          <motion.div key="hint" className={cn('pointer-events-none absolute bottom-[calc(100%+6px)] flex flex-col', touch ? 'right-0 items-end' : 'left-1/2 w-[230px] -translate-x-1/2 items-center')}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={POP}>
-            <span className="rounded-[10px] border-[3px] border-ink bg-yolk px-3 py-1.5 text-center font-head text-[18px] leading-tight tracking-wide text-ink uppercase shadow-[2px_3px_0_0_var(--color-ink)]">
+            <span className="whitespace-nowrap rounded-[10px] border-[3px] border-ink bg-yolk px-3 py-1.5 text-center font-head text-[18px] leading-tight tracking-wide text-ink uppercase shadow-[2px_3px_0_0_var(--color-ink)]">
               {touch ? 'tap here' : <>click, or press <span className="rounded-[6px] border-2 border-ink bg-paper px-1.5">space</span></>}
             </span>
-            <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}>
+            <motion.span className={touch ? 'mr-6' : undefined} animate={{ y: [0, 5, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}>
               <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
                 <path d="M20 4 C 17 14, 23 22, 20 32" fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round" />
                 <path d="M11 24 L20 34 L29 23" fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />

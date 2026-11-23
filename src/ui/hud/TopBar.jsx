@@ -47,7 +47,7 @@ export function StageTracker({ G, compact }) {
   );
 }
 
-export function Resources({ G, compact }) {
+export function Resources({ G, compact, mobile }) {
   const w = compact ? 'w-[94px]' : 'w-[108px]';
   const chips = [
     { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : '' },
@@ -57,7 +57,7 @@ export function Resources({ G, compact }) {
     { k: 'endings', show: G.endings > 0, tone: 'leaf', value: fmt(G.endings, { int: true }), hint: 'Endings. Things that reached the twelfth link and stopped. Each one raises affect and salience for good.' },
   ];
   return (
-    <div className={cn('flex flex-wrap content-start gap-2', compact ? 'max-w-[256px]' : 'max-w-[400px]')}>
+    <div className={cn('flex content-start gap-2', mobile ? 'flex-nowrap' : 'flex-wrap', mobile ? '' : compact ? 'max-w-[256px]' : 'max-w-[400px]')}>
       <AnimatePresence initial={false}>
         {chips.filter((c) => c.show).map((c) => (
           <Appear key={c.k} from="down" className="relative" data-tut={`chip-${c.k}`}>

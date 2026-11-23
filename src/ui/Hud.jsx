@@ -14,6 +14,7 @@ import Reset from './hud/Reset.jsx';
 import Codex from './hud/Codex.jsx';
 import Title from './hud/Title.jsx';
 import Tutorial from './hud/Tutorial.jsx';
+import Mobile from './hud/Mobile.jsx';
 import { Log, StageFlash } from './hud/Log.jsx';
 import { attend } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
@@ -75,6 +76,8 @@ export default function Hud() {
   const G = useGame();
   const { w, h } = useViewport();
   const compact = w < 1320 || h < 820;
+  // phones and portrait tablets get the dock-and-sheet layout
+  const mobile = h < 520 || w < 720 || (w < 960 && h > w);
   const [codex, setCodex] = useState(false);
   const [topRef, topH] = useHeight();
   const [botRef, botH] = useHeight();
@@ -119,6 +122,11 @@ export default function Hud() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+  useEffect(() => {
+    const on = () => setCodex(true);
+    window.addEventListener('nonmind:codex', on);
+    return () => window.removeEventListener('nonmind:codex', on);
+  }, []);
   const codexRef = useRef(codex);
   codexRef.current = codex;
 
@@ -131,10 +139,17 @@ export default function Hud() {
     <DegradeCtx.Provider value={{ d, tick }}>
       <style>{HUD_CSS}</style>
       <div
-        className="pointer-events-none fixed inset-0 z-10 overflow-hidden font-body text-ink select-none"
+        className="pointer-events-none fixed inset-0 z-10 overflow-hidden overscroll-none font-body text-ink select-none"
         style={{ '--band-h': `${bandH}px`, '--log-h': `${logH}px` }}
       >
-        {started && (
+        {started && mobile && (
+          <>
+            <Mobile w={w} h={h} />
+            <StageFlash />
+            <Tutorial />
+          </>
+        )}
+        {started && !mobile && (
           <>
             <div ref={topRef} className="absolute inset-x-3 top-3"><TopBar compact={compact} /></div>
             <div ref={botRef} className="absolute inset-x-3 bottom-3"><Bottom compact={compact} /></div>
