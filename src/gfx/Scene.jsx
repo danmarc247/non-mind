@@ -127,9 +127,9 @@ function Bodies() {
       if (!u.seat) continue;
       const c = fighting ? B.units.find((x) => x.uid === u.id) : null;
       const [sx, sz] = seatPos(u.seat.ring, u.seat.dir);
-      want.set('u' + u.id, { k: `${u.id}|${u.link}|${leaves(u.g).length}|${(u.muts || []).length}`, mat: () => unitMaterial(u.g, u.link, u.muts || []), x: c ? c.x : sx, z: c ? c.z : sz, s: 1.9 + 0.09 * u.link + 0.1 * leaves(u.g).length, hp: c ? c.hp / c.max : 1, dead: c ? !c.alive : false, alias: c ? 'c' + c.id : null, sel: game.selected === u.id, tone: ASPECT_TONES[aspectsOf(u.g)[0]], charge: c ? c.charge / 100 : 0 });
+      want.set('u' + u.id, { k: `${u.id}|${u.link}|${leaves(u.g).length}|${(u.muts || []).length}`, mat: () => unitMaterial(u.g, u.link, u.muts || [], u.id), x: c ? c.x : sx, z: c ? c.z : sz, s: 1.9 + 0.09 * u.link + 0.1 * leaves(u.g).length, hp: c ? c.hp / c.max : 1, dead: c ? !c.alive : false, alias: c ? 'c' + c.id : null, sel: game.selected === u.id, tone: ASPECT_TONES[aspectsOf(u.g)[0]], charge: c ? c.charge / 100 : 0 });
     }
-    if (fighting) for (const e of B.enemies) want.set('e' + e.id, { k: e.def, mat: () => stressorMaterial(e.def), x: e.x, z: e.z, s: (e.boss ? 3.6 : 1.45) + Math.min(0.5, (ANY_STRESSOR[e.def]?.value || 1) * 0.07), hp: e.hp / e.max, dead: !e.alive, enemy: true, tone: '#1b1030' });
+    if (fighting) for (const e of B.enemies) want.set('e' + e.id, { k: `${e.def}|${e.affix || ''}`, mat: () => stressorMaterial(e.def, e.affix || null), x: e.x, z: e.z, s: (e.boss ? 3.6 : 1.45) + Math.min(0.5, (ANY_STRESSOR[e.def]?.value || 1) * 0.07), hp: e.hp / e.max, dead: !e.alive, enemy: true, tone: '#1b1030' });
     // reconcile
     for (const [id, w] of want) {
       let b = map.current.get(id);
