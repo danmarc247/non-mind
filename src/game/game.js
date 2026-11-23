@@ -18,6 +18,7 @@ function mutate(G, u, chance = 1) { if ((u.muts ||= []).length < MAX_MUTS && G.r
 
 export const SAVE_KEY = 'non-mind-save-v1';
 export const BENCH = 8;
+const SHOP_FOCUS = 0.3;
 
 function mulberry(seed) {
   let a = seed >>> 0;
@@ -83,6 +84,9 @@ function rollShop(G, free = false) {
     const pool = FAMILIES.filter((f) => f.tier === tier + 1);
     return pool[Math.floor(G.rng() * pool.length)].id;
   });
+  // the shop leans toward the family you are already climbing, so the ladder is a path and not a lottery
+  const lead = G.units.filter((u) => u.g.t === 'leaf').sort((a, b) => b.link - a.link)[0];
+  if (lead && G.stage >= 3) for (let i = 0; i < 5; i++) if (G.rng() < SHOP_FOCUS) G.shop[i] = lead.g.f;
   if (!free) G.events.push({ type: 'sfx', name: 'reroll' });
 }
 const bench = (G) => G.units.filter((u) => !u.seat && !u.busy);
@@ -234,7 +238,7 @@ export const actions = {
   },
   chooseStance(G, id) { if (!unlocked(G, 'stance') || !STANCES.some((s) => s.id === id)) return fail(G); G.stance = id; G.events.push({ type: 'stance', id }); return true; },
   mirror(G) {
-    const cost = 1e6 * Math.pow(40, G.mirrors);
+    const cost = mirrorCost(G);
     if (!unlocked(G, 'mirror') || G.affect < cost) return fail(G);
     G.affect -= cost; G.mirrors++; G.events.push({ type: 'mirror', n: G.mirrors }); say(G, 'The same assembly, in every direction, under the same names.', 'op'); return true;
   },
@@ -251,8 +255,8 @@ export const actions = {
     return N;
   },
 };
-export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1));
-export const mirrorCost = (G) => 1e6 * Math.pow(40, G.mirrors);
+export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth));
+export const mirrorCost = (G) => 5e12 * Math.pow(25, G.mirrors);
 export const attendantCost = (G) => 300 * Math.pow(2.2, G.attendants);
 
 const firstFamily = (u) => { let g = u.g; while (g.t === 'node') g = g.a; return g.f; };
@@ -298,7 +302,7 @@ export function step(G, dt) {
   if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three.', 'season'); } else addMood(G, 'dread'); } }
   // complexity and overwhelm
   let C = 0; for (const u of G.units) C += complexityOf(u);
-  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 12 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.2;
+  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 25 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
   G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.35)));
@@ -328,7 +332,7 @@ function endWave(G, won) {
     G.streak = Math.max(1, G.streak + 1); G.habituation = 0;
     const cap = G.upgrades.thrift ? 10 : 5;
     const interest = Math.min(cap, Math.floor(G.attention / 10));
-    const pay = 4 + interest + Math.min(3, Math.floor(G.streak / 3));
+    const pay = 7 + interest + Math.min(3, Math.floor(G.streak / 3));
     G.attention += pay; addXp(G, 2);
     G.gain(20 * Math.pow(1.35, G.cycle * 10 + G.wave - 1), 'wave');
     G.composure = Math.min(G.composureMax, G.composure + G.composureMax * 0.25);
@@ -336,7 +340,7 @@ function endWave(G, won) {
     G.wave++; if (G.wave > WAVES_PER_CYCLE) { G.wave = 1; G.cycle++; say(G, 'The ten have spoken. The ten begin.', 'stage'); }
     rollShop(G, true);
   } else {
-    G.streak = 0; G.composure = G.composureMax; G.habituation = Math.min(12, (G.habituation || 0) + 1); G.attention += 2; addXp(G, 1);
+    G.streak = 0; G.composure = G.composureMax; G.habituation = Math.min(12, (G.habituation || 0) + 1); G.attention += 3; addXp(G, 1);
     addMood(G, 'dread'); G.events.push({ type: 'waveLose' }); koan(G, 'waveLose', 'warn'); rollShop(G, true);
   }
 }

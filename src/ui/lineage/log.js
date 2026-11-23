@@ -60,6 +60,18 @@ export function ancestry() {
   return edges;
 }
 
+// Heaviest leaf's family (same weights as genome.js), for colouring a unit by its head.
+export function headFamily(g) {
+  let best = null, bw = -1;
+  const walk = (n, w) => {
+    if (n.t === 'leaf') { if (w > bw) { bw = w; best = n.f; } return; }
+    const wb = n.op === 'carve' ? 0.35 : 0.5;
+    walk(n.a, w * (1 - wb) * (n.op === 'carve' ? 1.25 : 1.15)); walk(n.b, w * wb * 1.15);
+  };
+  walk(g, 1);
+  return best;
+}
+
 let off = null;
 export function startLineageLog() { if (!off) off = onEvent(record); return off; }
 startLineageLog();

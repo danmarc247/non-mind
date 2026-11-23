@@ -22,7 +22,7 @@ export const STAGES = [
   { id: 'evoke', unlock: 'echo', hint: 'The called now call.', need: (g) => g.stats.exchanges >= 3 },
   { id: 'inhabit', unlock: 'stance', hint: 'A stance is a house you wear.', need: (g) => g.stats.echoes >= 5 },
   { id: 'sustain', unlock: 'seasons', hint: 'Everything kept is kept against something.', need: (g) => !!g.stance },
-  { id: 'penetrate', unlock: 'mirror', hint: 'Small enters great. Great enters small.', need: (g) => g.stats.seasons >= 3 },
+  { id: 'penetrate', unlock: 'mirror', hint: 'Small enters great. Great enters small.', need: (g) => g.stats.seasons >= 5 },
   { id: 'embrace', unlock: 'wildcard', hint: 'No aspect is absent from any aspect.', need: (g) => g.mirrors >= 1 },
   { id: 'overwhelm', unlock: 'nonmind', hint: 'It is too much. It was always this much.', need: (g) => g.overwhelm >= 1 },
 ];

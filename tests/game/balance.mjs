@@ -37,6 +37,12 @@ function extendedBot(G, t) {
   if (unlocked(G, 'exchange') && G.stats.exchanges < 3 + 2) actions.exchange(G, 'attention', 'insight');
   if (unlocked(G, 'stance') && !G.stance) actions.chooseStance(G, 'toward');
   if (unlocked(G, 'mirror') && G.affect >= mirrorCost(G)) actions.mirror(G);
+  // echo needs a seated hybrid: swap the weakest seated pure leaf for a benched hybrid between waves
+  if (G.stage >= 12 && G.phase !== 'fight' && G.units.filter((u) => u.seat && u.g.t === 'node').length < 2) {
+    if (G.units.filter((u) => u.g.t === 'node' && !u.busy).length < 2 || (G.stats.echoes < 5 && G.units.filter((u) => u.seat && u.g.t === 'node').length === 0)) { const b = G.units.filter((u) => !u.seat && !u.busy); if (b.length >= 2) actions.integrate(G, b[0].id, b[1].id); }
+    const h = G.units.find((u) => !u.seat && !u.busy && u.g.t === 'node'), l = G.units.filter((u) => u.seat && u.g.t !== 'node').sort((a, b) => a.link - b.link)[0];
+    if (h && l) actions.place(G, h.id, l.seat);
+  }
 }
 
 // ---------- 1 ----------
@@ -123,7 +129,7 @@ const goal = (n, ok, msg) => { goals.push(ok); console.log(`G${n} ${P(ok)}  ${ms
   const allReached = SEEDS.every((k) => first1[k][17] !== undefined);
   const gaps = SEEDS.map((k) => { let g = 0, prev = 0; for (let s = 1; s <= 17; s++) { const t = first1[k][s]; if (t === undefined) { g = Infinity; break; } if (t > 300) g = Math.max(g, t - Math.max(prev, 300)); prev = t; } return g; });
   const t17 = median(reached17) / 60, mg = median(gaps) / 60;
-  goal(1, allReached && t17 >= 25 && t17 <= 45 && Math.max(...gaps) <= 360, `stage17 in ${reached17.length}/10 seeds, median ${fmt(t17)} min (want 25-45); largest stage gap after min 5: median ${fmt(mg)}, worst ${fmt(Math.max(...gaps) / 60)} min (want <= 6)`);
+  goal(1, allReached && t17 >= 25 && t17 <= 45 && Math.max(...gaps) <= 360, `stage17 in ${reached17.length}/${SEEDS.length} seeds, median ${fmt(t17)} min (want 25-45); largest stage gap after min 5: median ${fmt(mg)}, worst ${fmt(Math.max(...gaps) / 60)} min (want <= 6)`);
   const mir = SEEDS.map((k) => M[k].mirrorsAt17);
   goal(2, mir.every((x) => x >= 1 && x <= 3), `mirrors bought by stage 17 per seed: [${mir}] (want each 1-3)`);
   const dT = median(SEEDS.flatMap((k) => M[k].tiersAfter.map((x, i) => x - M[k].tiersBefore[i])));

@@ -68,11 +68,14 @@ export default function Manual() {
                 ))}
               </nav>
               {/* page */}
-              <div ref={body} className="nm-manual relative flex-1 overflow-y-auto px-10 py-8">
-                <button onClick={() => setOpen(false)} className="absolute right-5 top-5 rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex h-[52px] shrink-0 items-center justify-end border-b-[3px] border-ink/15 px-6">
+                  <button onClick={() => setOpen(false)} className="rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
+                </div>
+                <div ref={body} className="nm-manual flex-1 overflow-y-auto px-10 py-8">
                 <AnimatePresence mode="wait">
                   <motion.article key={sec.id} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
-                    {active === 0 && <div className="nm-intro mb-6 pr-28" dangerouslySetInnerHTML={{ __html: doc.intro }} />}
+                    {active === 0 && <div className="nm-intro mb-6" dangerouslySetInnerHTML={{ __html: doc.intro }} />}
                     <h2 className="mb-1 font-title text-5xl leading-none" style={{ color: `var(--color-${sec.tone})`, WebkitTextStroke: '1.5px var(--color-ink)' }}>{sec.name}</h2>
                     <svg className="mb-5 h-3 w-64" viewBox="0 0 260 12"><path d="M2 7 C 40 1, 70 12, 110 6 S 190 2, 258 7" fill="none" stroke={`var(--color-${sec.tone})`} strokeWidth="5" strokeLinecap="round" /></svg>
                     <div dangerouslySetInnerHTML={{ __html: sec.html }} />
@@ -82,6 +85,7 @@ export default function Manual() {
                     </div>
                   </motion.article>
                 </AnimatePresence>
+                </div>
               </div>
             </motion.div>
           </motion.div>
