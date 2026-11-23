@@ -35,7 +35,10 @@ function snapshot() {
 }
 function write(dict) {
   const { tables, en } = snap;
-  for (const [k, list] of Object.entries(tables)) for (const [id, o] of byId(list)) Object.assign(o, en[k][id], dict?.[k]?.[id] || {});
+  for (const [k, list] of Object.entries(tables)) for (const [id, o] of byId(list)) {
+    for (const f of FIELDS) if (f in o && !(f in en[k][id])) delete o[f]; // fields a translation added (e.g. trait names) leave again
+    Object.assign(o, en[k][id], dict?.[k]?.[id] || {});
+  }
   LINKS.forEach((o, i) => Object.assign(o, en.links[i], dict?.links?.[i] || {}));
   // stage ids drive logic and stay English; the shown word is `label`
   STAGES.forEach((o, i) => Object.assign(o, en.stages[i], { label: dict?.stages?.[i]?.id || o.id }, dict?.stages?.[i]?.hint ? { hint: dict.stages[i].hint } : {}));

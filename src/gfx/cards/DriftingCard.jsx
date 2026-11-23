@@ -56,29 +56,29 @@ function fxMesh(count, kind) {
   g.setAttribute('aIdx', new THREE.InstancedBufferAttribute(idx, 1));
   g.instanceCount = count;
   const mat = new THREE.ShaderMaterial({
-    vertexShader: fxVert, fragmentShader: fxFrag, transparent: true, depthWrite: false, depthTest: kind === 0, toneMapped: false,
+    vertexShader: fxVert, fragmentShader: fxFrag, transparent: true, side: THREE.DoubleSide, depthWrite: false, depthTest: kind !== 1, toneMapped: false,
     uniforms: {
-      uCenter: { value: new THREE.Vector3() }, uTime: { value: 0 }, uCount: { value: count }, uSize: { value: kind ? 2.6 : 0.17 }, uKind: { value: kind },
+      uCenter: { value: new THREE.Vector3() }, uTime: { value: 0 }, uCount: { value: count }, uSize: { value: [0.17, 2.6, 2.4][kind] }, uKind: { value: kind },
       uRing: { value: 1 }, uFade: { value: 0 }, uTone: { value: tok('paper') }, uPaper: { value: tok('paper') }, uInk: { value: tok('ink') }, uA: { value: tok('yolk') },
     },
   });
   const m = new THREE.Mesh(g, mat);
-  m.frustumCulled = false; m.renderOrder = kind ? 12 : 7; m.raycast = () => {}; m.visible = false;
+  m.frustumCulled = false; m.renderOrder = [7, 12, 3][kind]; m.raycast = () => {}; m.visible = false;
   return m;
 }
 
 // fixedYaw (galleries only): hold the slow turn at this angle (0 shows the front to a camera on +z).
-export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
+export function DriftingCard({ y = CARD_Y, scale = 1.6, groundY = 0.1, fixedYaw = null }) {
   const { camera } = useThree();
   const mesh = useRef();
   const parts = useMemo(() => {
     const geo = slabGeometry(), mat = cardMaterial();
-    return { geo, mat, motes: fxMesh(MOTES, 0), ring: fxMesh(1, 1) };
+    return { geo, mat, motes: fxMesh(MOTES, 0), ring: fxMesh(1, 1), ground: fxMesh(1, 2) };
   }, []);
-  useEffect(() => () => { parts.geo.dispose(); parts.mat.dispose(); for (const m of [parts.motes, parts.ring]) { m.geometry.dispose(); m.material.dispose(); } }, [parts]);
+  useEffect(() => () => { parts.geo.dispose(); parts.mat.dispose(); for (const m of [parts.motes, parts.ring, parts.ground]) { m.geometry.dispose(); m.material.dispose(); } }, [parts]);
 
   const st = useMemo(() => ({
-    phase: 'idle', id: null, k: 0, pop: 0, s: 0.01, fade: 0, hov: 0, hover: false, yaw: 0, ringK: 1, clock: 0, motes: 0,
+    phase: 'idle', id: null, k: 0, pop: 0, phi: 0, s: 0.01, fade: 0, hov: 0, hover: false, yaw: 0, ringK: 1, clock: 0, motes: 0,
     pos: new THREE.Vector3(), from: new THREE.Vector3(), to: new THREE.Vector3(), q: new THREE.Quaternion(), qIdle: new THREE.Quaternion(),
     qFace: new THREE.Quaternion(), qFrom: new THREE.Quaternion(), e: new THREE.Euler(), dummy: new THREE.Object3D(), v: new THREE.Vector3(), flipAx: new THREE.Vector3(0, 1, 0), qFlip: new THREE.Quaternion(),
   }), []);
@@ -101,7 +101,7 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
     // phase changes, by polling
     if (o && st.id !== o.id && st.phase !== 'collect') {
       const c = cardById[o.id];
-      st.phase = 'live'; st.id = o.id; st.k = 0; st.pop = 1; st.s = 0.01; st.fade = 0; st.hov = 0; st.yaw = Math.random() * 6.28;
+      st.phase = 'live'; st.id = o.id; st.k = 0; st.pop = 1; st.s = 0.01; st.fade = 0; st.hov = 0; st.phi = 0;
       st.pos.set(o.x, y, o.z);
       u.uSymbol.value = symbolIndex(c?.symbol); u.uSeed.value = ((c?.n ?? 0) * 0.618 + 0.13) % 1;
       u.uTone.value.fromArray(PALETTE[c?.tone] || PALETTE.yolk); parts.motes.material.uniforms.uTone.value.copy(u.uTone.value);
@@ -118,8 +118,10 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
     if (st.phase === 'live') {
       st.pop = ease(st.pop, 0, dt, 7); st.fade = ease(st.fade, 1, dt, 12);
       st.hov = ease(st.hov, st.hover ? 1 : 0, dt, st.hover ? 14 : 6);
-      st.yaw += dt * (0.5 + 0.5 * urgency) * (1 - st.hov);
-      if (fixedYaw !== null) st.yaw = fixedYaw;
+      // the slow turn dwells facing the camera and hurries past edge-on, so the card always reads
+      st.phi += dt * (0.42 + 0.5 * urgency) * (1 - st.hov);
+      const camYaw = Math.atan2(camera.position.x - st.pos.x, camera.position.z - st.pos.z);
+      st.yaw = fixedYaw !== null ? fixedYaw : camYaw + st.phi - 0.42 * Math.sin(2 * st.phi);
       const t = st.clock;
       m.position.set(st.pos.x, st.pos.y + 0.14 * Math.sin(t * 1.6 + st.pos.x) + 0.45 * st.hov + 0.6 * st.pop, st.pos.z);
       st.e.set(0.12 * Math.sin(t * 0.9), st.yaw, 0.07 * Math.sin(t * 1.3 + 1)); st.qIdle.setFromEuler(st.e);
@@ -163,6 +165,10 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
     mu.uCenter.value.copy(m.position); mu.uTime.value = st.clock; mu.uCount.value = st.motes; mu.uFade.value = st.fade; mu.uA.value.set(...pal.accent);
     const ru = parts.ring.material.uniforms;
     parts.ring.visible = st.ringK < 1; ru.uRing.value = st.ringK; ru.uFade.value = 1;
+    const gu = parts.ground.material.uniforms;
+    parts.ground.visible = m.visible && st.phase === 'live';
+    gu.uCenter.value.set(st.pos.x, groundY, st.pos.z); gu.uTime.value = st.clock; gu.uRing.value = urgency; gu.uFade.value = st.fade * (1 - 0.6 * st.hov);
+    gu.uTone.value.copy(u.uTone.value);
     cardView.pos.copy(m.position); cardView.phase = st.phase; cardView.id = st.id; cardView.hover = st.hover;
   });
 
@@ -175,6 +181,7 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
         onPointerDown={(e) => e.stopPropagation()} />
       <primitive object={parts.motes} />
       <primitive object={parts.ring} />
+      <primitive object={parts.ground} />
     </group>
   );
 }

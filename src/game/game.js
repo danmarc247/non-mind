@@ -98,6 +98,8 @@ function rollShop(G, free = false) {
   if (!free) G.events.push({ type: 'sfx', name: 'reroll' });
 }
 const bench = (G) => G.units.filter((u) => !u.seat && !u.busy);
+// units away in a verb come back to the waiting row, so they hold a place there while they are gone
+const waiting = (G) => G.units.filter((u) => !u.seat).length;
 const seated = (G) => G.units.filter((u) => u.seat);
 const unitById = (G, id) => G.units.find((u) => u.id === id);
 
@@ -150,8 +152,8 @@ export const actions = {
     const f = FAMILY[G.shop[i]]; if (!f || !unlocked(G, 'shop')) return false;
     const cost = TIER_COST[f.tier - 1];
     if (G.attention < cost) return fail(G);
-    const twinExists = G.units.some((o) => o.link === 1 && key(o.g) === f.id);
-    if (bench(G).length >= BENCH && !twinExists) return fail(G, 'The bench is full.');
+    const twinExists = G.units.some((o) => !o.busy && o.link === 1 && key(o.g) === f.id); // a twin away in a verb cannot fuse
+    if (waiting(G) >= BENCH && !twinExists) return fail(G, 'The bench is full.');
     G.attention -= cost; G.shop[i] = null;
     const nu = addUnit(G, leaf(f.id));
     autoSeat(G, nu);
@@ -169,16 +171,19 @@ export const actions = {
   place(G, id, seat) {
     const u = unitById(G, id); if (!u || u.busy) return false;
     if (seat) {
-      if (seat.ring >= ringsOpen(G)) return fail(G);
+      // a seat is an open ring and one of the ten directions, as whole numbers
+      if (typeof seat !== 'object' || !Number.isInteger(seat.ring) || !Number.isInteger(seat.dir) || seat.ring < 0 || seat.ring >= ringsOpen(G) || seat.dir < 0 || seat.dir >= 10) return fail(G);
+      seat = { ring: seat.ring, dir: seat.dir };
       const other = G.units.find((o) => o.seat && o.seat.ring === seat.ring && o.seat.dir === seat.dir);
       if (!other && !u.seat && seated(G).length >= unitCap(G)) return fail(G, 'No more can be held at once.');
       if (other) other.seat = u.seat;
-    } else if (bench(G).length >= BENCH) return fail(G);
+    } else if (waiting(G) >= BENCH) return fail(G);
     u.seat = seat; G.events.push({ type: 'sfx', name: 'place' }); return true;
   },
   buyHabit(G, id, n = 1) {
     if (!unlocked(G, 'habits')) return false;
     const h = HABITS.find((x) => x.id === id); let bought = 0;
+    if (!h) return fail(G);
     while (bought < n && G.affect >= habitCost(G, h)) { G.affect -= habitCost(G, h); G.habits[id] = (G.habits[id] || 0) + 1; bought++; }
     if (bought) G.events.push({ type: 'sfx', name: 'upgrade' });
     return bought > 0 || fail(G);
@@ -203,7 +208,7 @@ export const actions = {
     if (u.g.t === 'node') parts = [u.g.a, u.g.b];
     else if (u.g.pole === 0 && u.link > 1) parts = [leaf(u.g.f, 1), leaf(u.g.f, -1)];
     else return fail(G, 'It has no seam.');
-    if (bench(G).length >= BENCH) return fail(G, 'There is nowhere for the second part to wait.');
+    if (waiting(G) >= BENCH) return fail(G, 'There is nowhere for the second part to wait.');
     G.insight -= COSTS.split;
     G.units.splice(G.units.indexOf(u), 1);
     // a hybrid gives back what its parents brought (no link is minted by joining then parting);
@@ -238,6 +243,7 @@ export const actions = {
     const v = VERBS.find((x) => x.id === verbId), u = unitById(G, unitId);
     if (!v || !u || u.busy || G.verbs[verbId] || !unlocked(G, 'verbs')) return fail(G);
     if (v.needs && !aspectsOf(u.g).includes(v.needs) && !u.traits.includes('fade')) return fail(G, `It wants something ${ASPECTS[v.needs].name}.`);
+    if (u.seat && waiting(G) >= BENCH) return fail(G, 'There is nowhere for it to return to.');
     u.busy = verbId; u.seat = null; G.verbs[verbId] = { t: v.time, unit: u.id };
     G.events.push({ type: 'verbStart', id: verbId }); return true;
   },
@@ -349,7 +355,7 @@ export function step(G, dt) {
   // stages
   while (G.stage < STAGES.length - 1 && STAGES[G.stage + 1].need(G)) {
     G.stage++; const s = STAGES[G.stage];
-    G.events.push({ type: 'stage', stage: G.stage, id: s.id }); say(G, `${s.id.toUpperCase()}. ${s.hint}`, 'stage'); koan(G, `byStage.${s.id}`, 'stage');
+    G.events.push({ type: 'stage', stage: G.stage, id: s.id }); say(G, `${(s.label || s.id).toUpperCase()}. ${s.hint}`, 'stage'); koan(G, `byStage.${s.id}`, 'stage');
   }
   // phases
   G.phaseT += dt;
@@ -396,7 +402,7 @@ function addMood(G, kind) {
 
 function finishVerb(G, id) {
   const v = G.verbs[id], u = unitById(G, v.unit); G.verbs[id] = null; G.stats.verbsDone++;
-  if (u) u.busy = null;
+  if (u) { u.busy = null; if (waiting(G) > BENCH) autoSeat(G, u); } // back from a verb: if the waiting row is full it takes a free seat
   if (id === 'dream' && u) {
     const asp = aspectsOf(u.g), t = tierOf(u.g);
     const pool = FAMILIES.filter((f) => f.tier <= t + 1 && f.aspects.some((a) => asp.includes(a)) && f.id !== firstFamily(u));

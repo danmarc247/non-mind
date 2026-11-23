@@ -458,7 +458,7 @@ describe('advisor: rotation', () => {
   // Observed (state below, 300 calls): subtract, verb-dream, attend, lineage, codex never returned;
   // expected: every id within 4 x list.length calls. Repro: gameAt(14); attention 30; affect 1e9;
   // insight 100; level 3; four tier-1 leaves on the bench; call nextSuggestion every 21 s.
-  it.fails('BUG advisor-starve: every valid suggestion is returned within a bounded number of calls', () => {
+  it('FIXED advisor-starve: every valid suggestion is returned within a bounded number of calls', () => {
     const G = gameAt(14, 7);
     G.attention = 30; G.affect = 1e9; G.insight = 100; G.level = 3; G.stats.links = 5;
     for (const f of FIDS.slice(0, 4)) addLeaf(G, f);
@@ -477,7 +477,7 @@ describe('advisor: known false suggestions', () => {
   // Observed in extendedBot play at stage 17 (seeds 2 and 5): target 'xp' with attention 0, buyXp fails;
   // constructed: insight 5 at stage 6, integrate fails. Expected: the rule only fires with a doable target.
   // Smallest repro: gameAt(1); attention 0; habituation 3 -> suggestions has stuck -> xp; buyXp returns false.
-  it.fails('BUG advisor-stuck: the "stuck" suggestion only points at an action that can be done now', () => {
+  it('FIXED advisor-stuck: the "stuck" suggestion only points at an action that can be done now', () => {
     const bad = [];
     let G = gameAt(6); G.insight = 5; G.habituation = 4; addLeaf(G, FIDS[0]); addLeaf(G, FIDS[1]);
     bad.push(...invalid(G).filter((x) => x.startsWith('stuck')));
@@ -493,7 +493,7 @@ describe('advisor: known false suggestions', () => {
   // Observed: with 8 units waiting (one a hybrid) at stage 9 and insight 100, 'split' is suggested and
   // actions.split returns false; with 8 waiting, none seated and an affordable non-twin shop slot,
   // 'first-buy' is suggested and actions.buy returns false. Expected: neither is suggested then.
-  it.fails('BUG advisor-bench-full: split and first-buy are not suggested while the bench is full', () => {
+  it('FIXED advisor-bench-full: split and first-buy are not suggested while the bench is full', () => {
     const bad = [];
     let G = gameAt(9); G.insight = 100;
     addRaw(G, node('blend', leaf(FIDS[0]), leaf(FIDS[1])));
@@ -634,7 +634,7 @@ describe('locale', () => {
   // Observed: TRAITS.ache.name === 'Schmerz' after setLocale('de'); setLocale('en'). Expected: no name field
   // (as before). Fix: delete keys of the previous dict that the English snapshot lacks, or give English
   // TRAITS a name. Latent today (the Inspector reads only TRAITS[t].text), hence minor.
-  it.fails('BUG locale-traits: de -> en restores TRAITS exactly', async () => {
+  it('FIXED locale-traits: de -> en restores TRAITS exactly', async () => {
     await setLocale('de'); await setLocale('en');
     expect(JSON.parse(JSON.stringify(TRAITS))).toEqual(EN0.TRAITS);
   });
@@ -643,7 +643,7 @@ describe('locale', () => {
   // so a German game logs the English id next to the German hint ("EXPLORE. Was aus der Ferne ..."),
   // although src/i18n/index.js:40 says "stage ids drive logic and stay English; the shown word is `label`".
   // Expected: the line begins with the label ("ERKUNDEN. ..."). Fix: `(s.label || s.id).toUpperCase()`.
-  it.fails('BUG locale-stage-log: in German the stage log line shows the German label, not the English id', async () => {
+  it('FIXED locale-stage-log: in German the stage log line shows the German label, not the English id', async () => {
     await setLocale('de');
     const G = gameAt(0, 6);
     for (let i = 0; i < 5; i++) actions.attend(G);

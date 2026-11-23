@@ -1,6 +1,5 @@
 # NON-MIND
 
-*An abstract 3D auto-battler and incremental about affect regulation and complexity, drawn as wet acrylic paint.*
 
 This began as a quiet question: what would it look like to play a mind that keeps adding to itself? We wondered whether the thing a player collects could also be the thing that ends the run. We tried it, and kept the parts that held. What came out is a small glass vessel of painted sea with ten gates around the rim. Stressors arrive through them, ten beats to a wave, ten waves to a cycle. Regulators, which are defences in the language of affect science, sit around a glowing core and answer them. Each regulator is a genome tree, and its body is a sculpture compiled from that tree while the game runs. Complexity pays, then presses, then overwhelms, and the way out is a reset called non-mind.
 

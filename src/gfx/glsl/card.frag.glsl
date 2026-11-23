@@ -41,7 +41,7 @@ void main() {
     float r = length(s * vec2(1.0, 0.92) + vec2(0.03, -0.02)) + (cd_fbm(s * 2.1 + uSeed * 3.0) - 0.5) * 0.38;
     float aaS = fwidth(r) * 1.4 + 1e-4;
     float sw = smoothstep(0.98 + aaS, 0.98 - aaS, r);
-    float streak = cd_noise(cd_rot(0.6 + uSeed) * s * vec2(2.6, 24.0));
+    float streak = cd_noise(cd_rot(0.6 + uSeed) * s * vec2(2.2, 9.0)) * 0.7 + cd_noise(cd_rot(0.6 + uSeed) * s * vec2(3.0, 21.0)) * 0.3;
     vec3 swc = mix(uTone * 0.9, mix(uTone, uPaper, 0.42), smoothstep(0.35, 0.85, streak));
     sw *= smoothstep(0.08, 0.3, streak + 0.6 * (1.0 - r));          // dry edge of the swatch
     col = mix(col, swc, sw); height += sw * 0.35 * streak;
@@ -55,7 +55,7 @@ void main() {
     vec3 ink = mix(uInk, uTone * 0.4, 0.14 + 0.1 * cd_noise(s * 12.0));
     col = mix(col, ink, m); height += m * (0.55 + 0.25 * br);
     // the inset line in ink, and a tone corner wash outside it
-    col = mix(col, mix(uTone, uPaper, 0.2), smoothstep(-aaB, aaB, bd) * 0.55 * smoothstep(0.55, 0.2, cd_noise(p * 3.0 + uSeed)));
+    col = mix(col, mix(uTone, uPaper, 0.3), smoothstep(-aaB, aaB, bd) * 0.4 * smoothstep(0.5, 0.25, cd_noise(p * 2.4 + uSeed)));
     col = mix(col, uInk, smoothstep(aaB, -aaB, abs(bd) - 0.016) * 0.9);
   } else {
     p.x = -p.x;
@@ -73,18 +73,18 @@ void main() {
       float k = cd_knife(p, c, a, 0.55 + 0.35 * h.x, 0.13 + 0.06 * h.y, fi + uSeed);
       float pick = fract(fi * 0.618 + uSeed);
       vec3 sc = pick < 0.3 ? uPaper : pick < 0.55 ? uA : pick < 0.75 ? mix(uTone, uInk, 0.35) : uB;
-      col = mix(col, sc, k * 0.92); height += k * 0.4;
+      col = mix(col, sc, k * 0.92); height += k * 0.18;
     }
     // one white-outlined ring
     vec2 rc = vec2(0.28, 0.42) * (vec2(cd_hash(vec2(uSeed, 1.0)), cd_hash(vec2(2.0, uSeed))) * 2.0 - 1.0);
     float rd = length(p - rc) + (cd_noise(p * 7.0) - 0.5) * 0.03, R = 0.36;
     float aaR = fwidth(rd) * 1.2 + 1e-4;
-    col = mix(col, mix(uA, uTone, 0.4), smoothstep(R - 0.05 + aaR, R - 0.05 - aaR, rd) * 0.85);
+    col = mix(col, mix(uTone, uPaper, 0.5), smoothstep(R - 0.05 + aaR, R - 0.05 - aaR, rd) * 0.9);
     float ring = smoothstep(0.045 + aaR, 0.045 - aaR, abs(rd - R));
-    col = mix(col, uPaper * 1.02, ring); height = max(height, ring * 0.4);
+    col = mix(col, uPaper * 1.02, ring); height = max(height, ring * 0.2);
     // flecks
-    float fl = step(0.93, cd_hash(floor(p * 18.0) + uSeed)) * smoothstep(0.32, 0.1, length(fract(p * 18.0) - 0.5));
-    col = mix(col, uInk, fl * 0.6);
+    float fl = step(0.965, cd_hash(floor(p * 14.0) + uSeed)) * smoothstep(0.3, 0.12, length(fract(p * 14.0) - 0.5));
+    col = mix(col, uPaper, fl * 0.85);
     // paper margin outside the inset line, then the line
     col = mix(col, uPaper * (0.97 + 0.03 * cd_noise(p * 40.0)), smoothstep(-aaB, aaB, bd));
     col = mix(col, uInk, smoothstep(aaB, -aaB, abs(bd) - 0.018) * 0.9);

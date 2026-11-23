@@ -8,6 +8,8 @@ import { unlocked, unitCap, habitCost, attendantCost, mirrorCost, muGain, BENCH 
 
 const bench = (G) => G.units.filter((u) => !u.seat && !u.busy);
 const seated = (G) => G.units.filter((u) => u.seat);
+// a shop slot the player can really buy right now (mirrors actions.buy)
+const buyable = (G, id) => { const f = id && FAMILY[id]; return !!f && G.attention >= TIER_COST[f.tier - 1] && (G.units.filter((u) => !u.seat).length < BENCH || G.units.some((u) => !u.busy && u.link === 1 && key(u.g) === f.id)); };
 const dread = (G) => G.moods.filter((m) => m.kind === 'dread').length;
 
 // Each rule returns null or { id, target, weight, text (oblique), plain (what to do) }.
@@ -22,7 +24,7 @@ const RULES = [
     // a twin in the shop that would fuse with something you hold is the best buy there is
     for (let i = 0; i < G.shop.length; i++) {
       const f = FAMILY[G.shop[i]]; if (!f || G.attention < TIER_COST[f.tier - 1]) continue;
-      if (G.units.some((u) => u.link === 1 && key(u.g) === f.id)) return { id: `twin-${f.id}`, target: `shop:${i}`, weight: 70, text: `Two of ${f.name} would not stay two.`, plain: `Buy ${f.name}: it fuses with the one you have and climbs a link.` };
+      if (G.units.some((u) => !u.busy && u.link === 1 && key(u.g) === f.id)) return { id: `twin-${f.id}`, target: `shop:${i}`, weight: 70, text: `Two of ${f.name} would not stay two.`, plain: `Buy ${f.name}: it fuses with the one you have and climbs a link.` };
     }
     return null;
   },
@@ -31,11 +33,11 @@ const RULES = [
     if (!b.length || seated(G).length >= unitCap(G)) return null;
     return { id: 'seat', target: `unit:${b[0].id}`, weight: 65, text: `${nameOf(b[0].g)} is waiting by the door to be somewhere.`, plain: 'Select it, then click an empty ring on the sea to seat it.' };
   },
-  (G) => !seated(G).length && unlocked(G, 'shop') && G.shop.some((id) => id && G.attention >= TIER_COST[FAMILY[id].tier - 1]) && { id: 'first-buy', target: `shop:${G.shop.findIndex((id) => id && G.attention >= TIER_COST[FAMILY[id].tier - 1])}`, weight: 80, text: 'Nothing is seated. The gates will not wait for that.', plain: 'Buy an arrival: it takes a seat by itself.' },
+  (G) => { const i = G.shop.findIndex((id) => buyable(G, id)); return !seated(G).length && unlocked(G, 'shop') && i >= 0 && { id: 'first-buy', target: `shop:${i}`, weight: 80, text: 'Nothing is seated. The gates will not wait for that.', plain: 'Buy an arrival: it takes a seat by itself.' }; },
   (G) => {
     if (!unlocked(G, 'shop')) return null;
-    const room = bench(G).length < BENCH;
-    const i = G.shop.findIndex((id) => id && G.attention >= TIER_COST[FAMILY[id].tier - 1]);
+    const room = true;
+    const i = G.shop.findIndex((id) => buyable(G, id));
     return room && i >= 0 && G.attention >= 4 && { id: 'buy', target: `shop:${i}`, weight: 30, text: 'Attention unspent is attention unheld.', plain: `You can afford ${FAMILY[G.shop[i]].name}.` };
   },
   (G) => unlocked(G, 'shop') && G.level < 10 && G.attention >= COSTS.xp + 10 && seated(G).length >= unitCap(G) && { id: 'grow', target: 'xp', weight: 45, text: 'Every seat is taken. There could be more seats.', plain: 'GROW raises your level: one more regulator can be held, and rarer ones arrive.' },
@@ -52,7 +54,7 @@ const RULES = [
     const ok = !unlocked(G, 'insight') || G.insight >= COSTS.integrate;
     return b.length >= 2 && ok && { id: 'integrate', target: `op:integrate:${b[0].id}`, weight: 42, text: 'Two that lean together are not two.', plain: `Select ${nameOf(b[0].g)}, choose Integrate, then pick ${nameOf(b[1].g)}: one new body, both natures.` };
   },
-  (G) => { const h = G.units.find((u) => u.g.t === 'node' && !u.busy); return unlocked(G, 'split') && h && G.stats.splits < 1 && G.insight >= COSTS.split && { id: 'split', target: `op:split:${h.id}`, weight: 28, text: 'What was joined remembers the warmth of its seam.', plain: `Select ${nameOf(h.g)} and Split it back into its two parts.` }; },
+  (G) => { const h = G.units.find((u) => u.g.t === 'node' && !u.busy); return unlocked(G, 'split') && h && G.stats.splits < 1 && G.insight >= COSTS.split && G.units.filter((u) => !u.seat).length < BENCH && { id: 'split', target: `op:split:${h.id}`, weight: 28, text: 'What was joined remembers the warmth of its seam.', plain: `Select ${nameOf(h.g)} and Split it back into its two parts.` }; },
   (G) => { const b = bench(G); return unlocked(G, 'subtract') && b.length >= 2 && G.stats.subtractions < 1 && G.insight >= COSTS.subtract && { id: 'subtract', target: `op:subtract:${b[0].id}`, weight: 28, text: 'To take in is to be shaped, gently, by the taken.', plain: 'Select one, choose Subtract, pick another: the second is carved out of the first.' }; },
   (G) => { const b = bench(G); return unlocked(G, 'repurpose') && b.length >= BENCH - 2 && { id: 'repurpose', target: `op:repurpose:${b[b.length - 1].id}`, weight: 38, text: 'A function is a habit of a form.', plain: 'The waiting row is nearly full. Repurpose one: it becomes habits that yield forever.' }; },
   (G) => { const s = SPELLS.find((x) => G.insight >= x.cost); return unlocked(G, 'insight') && G.insight >= G.insightMax * 0.95 && s && G.phase === 'fight' && { id: 'spell', target: `spell:${s.id}`, weight: 33, text: 'Insight held is insight not had.', plain: `Insight is full. ${s.name}: ${s.text}` }; },
@@ -70,7 +72,7 @@ const RULES = [
   (G) => unlocked(G, 'stance') && !G.stance && { id: 'stance', target: 'stance', weight: 60, text: 'A stance is a house worn close, like a coat in the cold.', plain: 'Choose Toward, Away or Against. Each bends every regulator.' },
   (G) => unlocked(G, 'mirror') && G.affect >= mirrorCost(G) && { id: 'mirror', target: 'mirror', weight: 48, text: 'The same assembly, in every direction.', plain: 'A mirror doubles yield and adds seats. The gates widen too.' },
   (G) => unlocked(G, 'attendants') && G.affect >= attendantCost(G) && { id: 'attendant', target: 'attendant', weight: 32, text: 'Attention can be lent.', plain: 'An attendant attends for you, forever.' },
-  (G) => (G.habituation || 0) >= 3 && { id: 'stuck', target: unlocked(G, 'integrate') && bench(G).length >= 2 ? `op:integrate:${bench(G)[0].id}` : 'xp', weight: 52, text: 'The same wave, again. It is softer each time. So could you be different.', plain: 'Losing softens the wave by itself. Fusing, integrating or growing changes you.' },
+  (G) => { const canInt = unlocked(G, 'integrate') && bench(G).length >= 2 && (!unlocked(G, 'insight') || G.insight >= COSTS.integrate), canXp = G.attention >= COSTS.xp && G.level < 10; return (G.habituation || 0) >= 3 && (canInt || canXp) && { id: 'stuck', target: canInt ? `op:integrate:${bench(G)[0].id}` : 'xp', weight: 52, text: 'The same wave, again. It is softer each time. So could you be different.', plain: 'Losing softens the wave by itself. Fusing, integrating or growing changes you.' }; },
   (G) => G.stats.links + G.stats.integrations >= 3 && { id: 'lineage', target: 'lineage', weight: 8, text: 'Everything here came from something here, and was once held.', plain: 'The Lineage map shows what you have grown and what it grew from.' },
   (G) => G.stage >= 2 && { id: 'codex', target: 'codex', weight: 6, text: 'Some of this is written down, for whoever comes later.', plain: 'The Codex opens a little more with every stage.' },
   (G) => ({ id: 'attend', target: 'attend', weight: 10, text: 'Something is here. Attend to it.', plain: 'Click the core or press Space: attention is where affect comes from.' }),
@@ -90,9 +92,10 @@ export function nextSuggestion(G, memory = {}, now = 0, cooldown = 90) {
   const list = suggestions(G);
   let best = null, bestScore = -Infinity;
   for (const s of list) {
-    const since = now - (memory[s.id] ?? -1e9);
+    const since = now - (memory[s.id] ?? now - 600); // never shown counts as ten minutes unseen
     if (since < (s.weight >= 90 ? 40 : cooldown)) continue; // urgent ones return sooner, but still take turns
-    const score = s.weight + Math.min(30, since / 20);
+    // urgent first; otherwise weight plus staleness, which grows until even the quietest suggestion gets its turn
+    const score = s.weight + Math.min(since, 7200) / 6 + (s.weight >= 90 ? 1000 : 0);
     if (score > bestScore) { bestScore = score; best = s; }
   }
   if (best) memory[best.id] = now;

@@ -1,5 +1,5 @@
 // Card fx: camera-facing quads. Kind 0: motes shed by the card, falling toward the sea and fading.
-// Kind 1: one paper-white ring at the card when it is collected.
+// Kind 1: one paper-white ring at the card when it is collected. Kind 2: a flat ring on the sea under the card.
 attribute vec4 aSeed;
 attribute float aIdx;
 uniform vec3 uCenter; uniform float uTime; uniform float uCount; uniform float uSize; uniform float uKind;
@@ -16,6 +16,7 @@ void main() {
   }
   vSeed = aSeed.x;
   vQ = position.xy * 2.0;
+  if (uKind > 1.5) { gl_Position = projectionMatrix * viewMatrix * vec4(uCenter + vec3(position.x, 0.0, -position.y) * size, 1.0); return; }
   vec4 mv = viewMatrix * vec4(wp, 1.0);
   mv.xy += position.xy * size;
   gl_Position = projectionMatrix * mv;

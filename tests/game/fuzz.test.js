@@ -25,7 +25,7 @@ const ALL_BAD_SEATS = [...SAFE_BAD_SEATS, { ring: -1, dir: 2 }, { ring: 0, dir: 
 // KNOWN engine bugs the main fuzzers avoid (each has an it.fails test below):
 //   badSeats: place() accepts seats outside the board; badHabit: buyHabit() throws on an unknown id;
 //   benchSlack: a unit coming back from a verb (and a buy whose twin is busy) can overfill the bench.
-const KNOWN = { badSeats: false, badHabit: false, benchSlack: VERBS.length };
+const KNOWN = { badSeats: true, badHabit: true, benchSlack: 0 }; // all four engine bugs are fixed: the fuzzers run at full strength
 
 // Operations are plain data. Unit references are symbolic ({u: k} = k-th unit modulo count, {gone: 1} = the last
 // removed id) and are resolved at replay time, so a shrunk list still points at real units.
@@ -312,7 +312,7 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
   // yields NaN positions in battle, and {ring:'0',dir:'0'} slips past the occupancy check (=== against 0) so two units
   // share seat 0:0. Expected: place returns false and leaves the unit where it was.
   // Minimal reproduction (fuzzer, seed 4): createGame(4); attend x6; step 0.1 x60; buy(1); place(unit, {ring:0,dir:-3}).
-  it.fails('BUG place-seat: place refuses any seat that is not an open ring 0..rings-1 and a dir 0..9', () => {
+  it('FIXED place-seat: place refuses any seat that is not an open ring 0..rings-1 and a dir 0..9', () => {
     for (const seat of [{ ring: -1, dir: 2 }, { ring: 0, dir: 12 }, { ring: 0, dir: -3 }, {}, { ring: 0.5, dir: 1 }, { ring: '0', dir: '0' }, 'seat', 7]) {
       const G = gameAt(1, 4);
       const u = addLeaf(G, 'reappraisal');
@@ -321,7 +321,7 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
       expect(u.seat).toBeNull();
     }
   });
-  it.fails('BUG place-seat-share: a string-coordinate seat cannot double-book an occupied seat', () => {
+  it('FIXED place-seat-share: a string-coordinate seat cannot double-book an occupied seat', () => {
     const G = gameAt(1, 4);
     addLeaf(G, 'suppression', { seat: { ring: 0, dir: 0 } });
     const u = addLeaf(G, 'reappraisal');
@@ -334,7 +334,7 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
   // habitCost(G, undefined) reads h.base -> TypeError. Every other action answers an unknown id with false.
   // Observed: throws "Cannot read properties of undefined (reading 'base')". Expected: returns false, no change.
   // Minimal reproduction: gameAt(2); actions.buyHabit(G, 'nope').
-  it.fails('BUG buyHabit-unknown: buyHabit with an unknown habit id returns false instead of throwing', () => {
+  it('FIXED buyHabit-unknown: buyHabit with an unknown habit id returns false instead of throwing', () => {
     const G = gameAt(2, 1); G.affect = 1e6;
     const before = snapshot(G);
     for (const id of ['nope', undefined, {}, '__proto__']) expect(actions.buyHabit(G, id)).toBe(false);
@@ -347,14 +347,20 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
   // with all four verbs running, up to BENCH + 4. Expected: the bench never holds more than BENCH (e.g. count busy
   // units toward the bench limit in buy/split/place, or seat/hold the returning unit).
   // Minimal reproduction (fuzzer, from the 1500 s snapshot): step 140 s; startVerb('dream', u); split(benched leaf) -> bench 8; step until the dream ends -> bench 9.
-  it.fails('BUG verb-return-bench: a unit back from a verb never overfills the bench', () => {
+  it('FIXED verb-return-bench: a unit back from a verb never overfills the bench', () => {
     for (const verb of ['rest', 'dream']) {
       const G = gameAt(10, 2); G.level = 1; // unitCap 2
       addLeaf(G, 'suppression', { seat: { ring: 0, dir: 0 } }); addLeaf(G, 'containment', { seat: { ring: 0, dir: 5 } });
       const away = addLeaf(G, 'reappraisal'); // vagal, so it may rest
       expect(actions.startVerb(G, verb, away.id)).toBe(true);
-      for (let i = 0; i < BENCH; i++) addLeaf(G, 'avoidance', { link: 1 + i }); // distinct links: nothing fuses
-      expect(G.units.filter((u) => !u.seat && !u.busy).length).toBe(BENCH);
+      // the unit that is away keeps its place on the waiting row reserved: the row can only be filled to BENCH - 1,
+      // and every real way of adding one more (buy, split, sending a seated unit to wait) is refused
+      for (let i = 0; i < BENCH - 1; i++) addLeaf(G, 'avoidance', { link: 1 + i }); // distinct links: nothing fuses
+      expect(G.units.filter((u) => !u.seat && !u.busy).length).toBe(BENCH - 1);
+      G.attention = 100; G.insight = 100; G.shop = ['projection', 'projection', 'projection', 'projection', 'projection'];
+      expect(actions.buy(G, 0)).toBe(false);
+      expect(actions.place(G, G.units.find((u) => u.seat).id, null)).toBe(false);
+      expect(actions.split(G, G.units.find((u) => !u.seat && !u.busy && u.link > 1).id)).toBe(false);
       for (let t = 0; t < VERBS.find((v) => v.id === verb).time + 1; t += 0.25) { G.phase = 'prep'; G.phaseT = 0; step(G, 0.25); }
       expect(G.verbs[verb]).toBeNull();
       expect(G.units.filter((u) => !u.seat && !u.busy).length, verb).toBeLessThanOrEqual(BENCH);
@@ -365,7 +371,7 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
   // the promise that it fuses at once, but it does not check `!o.busy` while fuse() (game.js:115) skips busy units.
   // Observed: bench 8 -> buy(i) returns true -> bench 9. Expected: buy is refused ('The bench is full.').
   // Minimal reproduction: full seats and bench, a link-1 Reappraisal resting, shop[0] = 'reappraisal', buy(0).
-  it.fails('BUG buy-busy-twin: a busy twin does not let a buy past a full bench', () => {
+  it('FIXED buy-busy-twin: a busy twin does not let a buy past a full bench', () => {
     const G = gameAt(10, 2); G.level = 1; G.attention = 100;
     addLeaf(G, 'suppression', { seat: { ring: 0, dir: 0 } }); addLeaf(G, 'containment', { seat: { ring: 0, dir: 5 } });
     const twin = addLeaf(G, 'reappraisal');
@@ -378,7 +384,7 @@ describe('fuzz: known engine bugs (it.fails until fixed)', () => {
 
   // The unrestricted fuzzer (all bad seats, unknown habit ids, exact bench limit) must find nothing once the four
   // bugs above are fixed. While they exist it fails on one of them; this keeps the full-strength fuzzer in the suite.
-  it.fails('BUG fuzz-unrestricted: the fuzzer with every invalid input and the exact bench limit finds nothing', () => {
+  it('FIXED fuzz-unrestricted: the fuzzer with every invalid input and the exact bench limit finds nothing', () => {
     const o = { badSeats: true, badHabit: true, benchSlack: 0 };
     for (let seed = 1; seed <= 6; seed++) {
       expect(run(fresh(seed), genOps(seed, 1500, o), o).fail).toBeNull();

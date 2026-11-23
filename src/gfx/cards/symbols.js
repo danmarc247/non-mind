@@ -113,8 +113,11 @@ export const SYMBOLS = {
     { k: 'D', c: [0, 0], r: 0.3 },
     ...range(8).map((i) => { const a = (i * TAU) / 8 + 0.2; return { k: 'L', pts: [[0.45 * Math.cos(a), 0.45 * Math.sin(a)], [0.7 * Math.cos(a), 0.7 * Math.sin(a)]], w: 0.062 }; }),
   ],
-  // a four-pointed sparkle
-  star: [{ k: 'F', pts: rot(param((t) => { const r = 0.12 + 0.62 * Math.abs(Math.cos(2 * t)) ** 5; return [r * Math.cos(t), r * Math.sin(t)]; }, 0, TAU, 96).slice(0, -1), 0.12) }],
+  // a four-pointed sparkle with a small one beside it
+  star: [
+    { k: 'F', pts: rot(param((t) => { const r = 0.2 + 0.46 * Math.abs(Math.cos(2 * t)) ** 2.2; return [-0.08 + r * Math.cos(t), -0.08 + r * Math.sin(t)]; }, 0, TAU, 96).slice(0, -1), 0.08, -0.08, -0.08) },
+    { k: 'F', pts: rot(param((t) => { const r = 0.06 + 0.15 * Math.abs(Math.cos(2 * t)) ** 2.2; return [0.5 + r * Math.cos(t), 0.5 + r * Math.sin(t)]; }, 0, TAU, 48).slice(0, -1), 0.3, 0.5, 0.5) },
+  ],
   // a hand mirror with a glint
   mirror: [
     { k: 'L', pts: rot(ellipse(0, 0.2, 0.38, 0.46), 0.22, 0, 0), w: 0.075, closed: true },
