@@ -19,6 +19,7 @@ function mutate(G, u, chance = 1) { if ((u.muts ||= []).length < MAX_MUTS && G.r
 export const SAVE_KEY = 'non-mind-save-v1';
 export const BENCH = 8;
 const SHOP_FOCUS = 0.3;
+const FUSE_NEAR = 4; // from this link up, a unit also fuses with its neighbour link (the climb turns from doubling to Fibonacci)
 
 function mulberry(seed) {
   let a = seed >>> 0;
@@ -104,11 +105,11 @@ function addUnit(G, g, link = 1, traits = ['ache'], seat = null, ghosts = 0, mut
 function fuse(G, u) {
   for (;;) {
     const k = key(u.g);
-    const twin = G.units.find((o) => o !== u && !o.busy && o.link === u.link && key(o.g) === k);
+    const twin = G.units.find((o) => o !== u && !o.busy && o.link === u.link && key(o.g) === k) || (u.link >= FUSE_NEAR ? G.units.find((o) => o !== u && !o.busy && Math.abs(o.link - u.link) === 1 && o.link >= FUSE_NEAR - 1 && key(o.g) === k) : null);
     if (!twin) return;
     const keep = u.seat ? u : twin.seat ? twin : u, gone = keep === u ? twin : u;
     G.units.splice(G.units.indexOf(gone), 1);
-    keep.link++; keep.traits = inheritTraits(keep, gone, G.rng); keep.traits.push(traitForLink(keep.link));
+    keep.link = Math.max(u.link, twin.link) + 1; keep.traits = inheritTraits(keep, gone, G.rng); keep.traits.push(traitForLink(keep.link));
     keep.muts = [...new Set([...(keep.muts || []), ...(gone.muts || [])])].slice(0, MAX_MUTS); mutate(G, keep, 0.6);
     G.stats.links++;
     G.events.push({ type: 'link', id: keep.id, gone: gone.id, link: keep.link });
@@ -305,7 +306,7 @@ export function step(G, dt) {
   C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 25 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
-  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.35)));
+  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.22)));
   if (G.overwhelm >= 1) G.composure -= G.composureMax * 0.02 * dt;
   // the log is never quite silent: an idle line now and then, an overwhelm line when it is too much
   G.koanT = (G.koanT || 45) - dt;

@@ -130,7 +130,8 @@ export const BRACKETS = ['raw', 'grown', 'refined'];
 export const bracketOf = (link) => (link <= 4 ? 0 : link <= 8 ? 1 : 2);
 
 // ---- leaves ----
-const gradeLink = (link) => Math.round(4 + (link - 1) * 8 / 11);
+// colour grade: links 1..12 read grades 3..10, so refined forms stay luminous but keep their chroma
+const gradeLink = (link) => Math.round(3 + (link - 1) * 7 / 11);
 function leafColors(l, link) {
   const c = unitColors(l.f, gradeLink(link));
   const p = l.pole;
@@ -232,7 +233,7 @@ function unitSource(g, link, muts = [], salt = '', formOverride = null) {
   const twist = 3.6 * F.twist;
   const step = Math.max(0.5, 0.8 / (1 + 0.45 * F.twist + 0.25 * F.noise));
   const W = Math.max(0, 1 - (link - 1) / 5) * 0.06 + 0.01 * Math.min(4, ls.length);
-  const shrink = 1 - 0.1 * F.spikes - 0.06 * F.rings - 0.05 * Math.min(1, Math.floor(link / 3) / 4);
+  const shrink = 1 - 0.1 * F.spikes - 0.06 * F.rings - (link >= 8 ? 0.04 : 0);
   const R = 0.5 * shrink;
   let s = `setMaxIterations(48); setStepSize(${f3(step)});\n`;
   // body
@@ -263,8 +264,8 @@ union(); mixMat(smoothstep(-${t},0.0,d0)); color(${v3(head.c)}); ${PAINT}\n`;
     s += `shape(()=>{ rotateZ(${f3(0.5 + i * 1.1 + rng() * 0.4)}); rotateX(${f3(0.3 + i * 0.8)}+time*${f3((0.25 + i * 0.13) * (i % 2 ? -1 : 1))}); color(${c}); torus(${f3(0.47 + i * 0.03)},${f3(0.02 - i * 0.003)});${i === 0 ? ` rotateY(time*0.9); displace(${f3(0.47)},0.0,0.0); color(${PAPER}); sphere(0.03);` : ''} })();\n`;
   }
   // halos: paper rings for refinement
-  const halos = Math.floor(link / 3);
-  for (let i = 0; i < halos; i++) s += `shape(()=>{ rotateX(${f3(0.6 + i * 0.9)}+time*${f3(0.3 + i * 0.17)}); rotateZ(${f3(i * 0.7)}); color(${PAPER}); torus(${f3(0.5 + i * 0.04)},0.011); })();\n`;
+  const halos = link >= 8 ? Math.floor((link - 5) / 3) : 0;
+  for (let i = 0; i < halos; i++) s += `shape(()=>{ rotateX(${f3(0.6 + i * 0.9)}+time*${f3(0.3 + i * 0.17)}); rotateZ(${f3(i * 0.7)}); color(${PAPER}); torus(${f3(0.5 + i * 0.035)},0.009); })();\n`;
   return s;
 }
 
@@ -387,8 +388,8 @@ function material(k, srcFn, rim, glow) {
 // unitMaterial(g, link, muts, salt?): salt (e.g. the unit id) is optional; without it, units that
 // share genome key + mutations are identical twins, with it every unit is its own sibling.
 export function unitMaterial(g, link, muts = [], salt = '') {
-  const c = unitColors(leaves(g)[0].f, link);
-  return material(`u|${key(g)}|${link}|${[...muts].sort().join(',')}|${salt}`, () => unitSource(g, link, muts, salt), PALETTE.paper, c.glow || 0);
+  const c = unitColors(leaves(g)[0].f, gradeLink(link));
+  return material(`u|${key(g)}|${link}|${[...muts].sort().join(',')}|${salt}`, () => unitSource(g, link, muts, salt), PALETTE.paper, (c.glow || 0) * 0.6);
 }
 // stressorMaterial(defId, affix?): affix is an affix id or def ({ id, behavior }); affixed bodies get a magenta rim.
 export function stressorMaterial(defId, affix = null) {
