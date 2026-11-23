@@ -5,6 +5,12 @@ import {
 } from './data.js';
 import { leaf, node, key, prune, complexityOf, inheritTraits, traitForLink, aspectsOf, tierOf, nameOf, leafCount } from './genome.js';
 import { startWave, stepBattle, aspectTiers } from './battle.js';
+import { rollMutation, epithet } from './content/mutations.js';
+
+export const MAX_MUTS = 6;
+// A unit's full name: genome name plus the epithet of its rarest mutation.
+export const displayName = (u) => `${nameOf(u.g)} ${epithet(u.muts || [])}`.trim();
+function mutate(G, u, chance = 1) { if ((u.muts ||= []).length < MAX_MUTS && G.rng() < chance) { const m = rollMutation(G.rng, u); if (m) { u.muts.push(m.id); G.events.push({ type: 'mutation', id: u.id, mut: m.id }); } } }
 
 export const SAVE_KEY = 'non-mind-save-v1';
 export const BENCH = 8;
@@ -79,8 +85,8 @@ const bench = (G) => G.units.filter((u) => !u.seat && !u.busy);
 const seated = (G) => G.units.filter((u) => u.seat);
 const unitById = (G, id) => G.units.find((u) => u.id === id);
 
-function addUnit(G, g, link = 1, traits = ['ache'], seat = null, ghosts = 0) {
-  const u = { id: G.nextUid++, g, link, traits: traits.slice(), seat, ghosts, born: G.t };
+function addUnit(G, g, link = 1, traits = ['ache'], seat = null, ghosts = 0, muts = []) {
+  const u = { id: G.nextUid++, g, link, traits: traits.slice(), seat, ghosts, born: G.t, muts: muts.slice(0, MAX_MUTS) };
   G.units.push(u);
   G.events.push({ type: 'unitNew', id: u.id });
   fuse(G, u);
@@ -95,6 +101,7 @@ function fuse(G, u) {
     const keep = u.seat ? u : twin.seat ? twin : u, gone = keep === u ? twin : u;
     G.units.splice(G.units.indexOf(gone), 1);
     keep.link++; keep.traits = inheritTraits(keep, gone, G.rng); keep.traits.push(traitForLink(keep.link));
+    keep.muts = [...new Set([...(keep.muts || []), ...(gone.muts || [])])].slice(0, MAX_MUTS); mutate(G, keep, 0.6);
     G.stats.links++;
     G.events.push({ type: 'link', id: keep.id, gone: gone.id, link: keep.link });
     say(G, `${nameOf(keep.g)}: ${LINKS[keep.link - 1].pali}. ${LINKS[keep.link - 1].text}`, 'link');
@@ -174,8 +181,9 @@ export const actions = {
     G.units.splice(G.units.indexOf(u), 1);
     const link = u.g.t === 'node' ? u.link : u.link - 1;
     const half = Math.ceil(u.traits.length / 2);
-    const a = addUnit(G, parts[0], link, u.traits.slice(0, half).concat('ache').slice(0, half || 1), u.seat);
-    const b = addUnit(G, parts[1], link, u.traits.slice(half).length ? u.traits.slice(half) : ['ache'], null);
+    const a = addUnit(G, parts[0], link, u.traits.slice(0, half).concat('ache').slice(0, half || 1), u.seat, 0, (u.muts || []).filter((_, i) => i % 2 === 0));
+    const b = addUnit(G, parts[1], link, u.traits.slice(half).length ? u.traits.slice(half) : ['ache'], null, 0, (u.muts || []).filter((_, i) => i % 2 === 1));
+    mutate(G, a, 0.5); mutate(G, b, 0.5);
     G.stats.splits++; G.events.push({ type: 'split', id, a: a.id, b: b.id });
     return true;
   },
@@ -248,7 +256,8 @@ function combine(G, aId, bId, op) {
   const traits = op === 'blend' ? inheritTraits(a, b, G.rng) : a.traits.concat(b.traits[Math.floor(G.rng() * b.traits.length)]).slice(0, 10);
   const seat = a.seat || b.seat;
   G.units.splice(G.units.indexOf(a), 1); G.units.splice(G.units.indexOf(b), 1);
-  const u = addUnit(G, g, link, traits, seat, (a.ghosts || 0) + (b.ghosts || 0) + ghosts);
+  const u = addUnit(G, g, link, traits, seat, (a.ghosts || 0) + (b.ghosts || 0) + ghosts, [...new Set([...(a.muts || []), ...(b.muts || [])])]);
+  mutate(G, u, 0.8);
   G.stats[op === 'blend' ? 'integrations' : 'subtractions']++;
   G.events.push({ type: what, a: aId, b: bId, id: u.id });
   say(G, op === 'blend' ? `${nameOf(g)}. It was two.` : `${nameOf(g)}. Something is missing from it, usefully.`, 'op');
@@ -327,7 +336,7 @@ function finishVerb(G, id) {
     const pool = FAMILIES.filter((f) => f.tier <= t + 1 && f.aspects.some((a) => asp.includes(a)) && f.id !== firstFamily(u));
     const f = pool[Math.floor(G.rng() * pool.length)] || FAMILIES[0];
     G.units.splice(G.units.indexOf(u), 1);
-    const n = addUnit(G, leaf(f.id), u.link, u.traits);
+    const n = addUnit(G, leaf(f.id), u.link, u.traits, null, 0, u.muts || []); mutate(G, n, 1);
     say(G, `It slept as ${nameOf(u.g)}. ${nameOf(n.g)} woke.`, 'verb');
   }
   if (id === 'ruminate') { G.insight = Math.min(G.insightMax, G.insight + 45); addMood(G, G.rng() < 0.3 ? 'fascination' : 'dread'); }

@@ -3,6 +3,12 @@
 import { STRESSORS, STRESSOR, WAVE_ARC, ABILITIES, ASPECT_THRESHOLDS, ASPECTS, ASPECT_IDS, BEATS_PER_WAVE, DIRECTIONS, STANCES, FAMILY } from './data.js';
 import { baseStats, aspectsOf, abilityOf, echoAbilityOf, leaves } from './genome.js';
 import { LINKS } from './data.js';
+import { applyMutations } from './content/mutations.js';
+import { STRESSOR_EXTRA, STRESSOR_AFFIXES, affixChance } from './content/stressors.js';
+
+// every stressor the gates can send: the base six plus the extended roster
+export const ALL_STRESSORS = [...STRESSORS, ...STRESSOR_EXTRA];
+export const ANY_STRESSOR = Object.fromEntries(ALL_STRESSORS.map((d) => [d.id, d]));
 
 export const ARENA = { rings: [3.2, 5.4, 7.6], gate: 10.5, core: 1.3 };
 export const BEAT_TIME = 2.4;
@@ -39,7 +45,7 @@ export function aspectTiers(G, arc) {
 const av = (tiers, a) => (tiers[a] ? ASPECTS[a].v[tiers[a] - 1] : 0);
 
 export function unitStats(G, u, tiers) {
-  const s = baseStats(u.g);
+  const s = applyMutations(baseStats(u.g), u.muts || []);
   const m = LINKS[u.link - 1].mult;
   const stance = STANCES.find((x) => x.id === G.stance)?.mod || {};
   const asp = aspectsOf(u.g);
@@ -82,7 +88,8 @@ export function startWave(G) {
 function spawnBeat(G) {
   const B = G.battle, { arc, gw } = B, mod = arc.mod;
   const beat = B.beat;
-  const pool = STRESSORS.filter((s) => !s.boss).slice(0, Math.min(5, 1 + Math.floor((gw + 1) / 2)));
+  const pool = ALL_STRESSORS.filter((s) => !s.boss).slice(0, Math.min(16, 1 + Math.floor((gw + 1) / 2)));
+  const bosses = ALL_STRESSORS.filter((s) => s.boss);
   const scale = Math.pow(1.15, gw - 1) * (1 + 2 * G.overwhelm) * (1 + 0.5 * G.mirrors);
   let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
@@ -95,10 +102,14 @@ function spawnBeat(G) {
   const shadow = 1 - av(B.tiers, 'shadow') / 100;
   const mk = (def, gate, mulT = 1, mulS = 1, extra = {}) => {
     const [gx, gz] = gatePos(gate), j = () => (G.rng() - 0.5) * 1.6;
-    const tol = def.tol * scale * mulT * (mod.tolMul || 1) * shadow;
+    // affixes: named distortions of a stressor, more common the deeper the run goes
+    let ax = null;
+    if (!extra.boss && G.rng() < affixChance(gw)) { const ok = STRESSOR_AFFIXES.filter((a) => a.minWave <= gw); ax = ok[Math.floor(G.rng() * ok.length)] || null; }
+    const am = ax?.mod || {};
+    const tol = def.tol * scale * mulT * (mod.tolMul || 1) * shadow * (am.tol || 1);
     B.enemies.push({
-      id: B.nextId++, side: 1, def: def.id, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.1, gw - 1) * mulS * (mod.salMul || 1),
-      lat: def.lat, reach: def.reach, speed: def.speed, opa: mod.opa || 0, cd: G.rng(), alive: true, stun: 0, mark: 0, value: def.value,
+      id: B.nextId++, side: 1, def: def.id, affix: ax?.id || null, name: ax ? `${ax.name} ${def.name}` : def.name, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.1, gw - 1) * mulS * (mod.salMul || 1) * (am.sal || 1),
+      lat: def.lat * (am.lat || 1), reach: def.reach * (am.reach || 1), speed: def.speed * (am.speed || 1), opa: (mod.opa || 0) + (am.opa || 0), cd: G.rng(), alive: true, stun: 0, mark: 0, value: def.value,
       form: mod.mirrorForms && B.units.length ? { mirror: B.units[Math.floor(G.rng() * B.units.length)].uid } : null, flip: 0, ...extra,
     });
   };
@@ -107,7 +118,7 @@ function spawnBeat(G) {
     mk(def, mod.allGates ? Math.floor(G.rng() * DIRECTIONS) : (gate0 + (i % 3 === 2 ? 5 : 0)) % DIRECTIONS);
   }
   if (mod.fuse && beat === 0) B.enemies[B.enemies.length - 1] = Object.assign(B.enemies[B.enemies.length - 1], { hp: STRESSOR.shame.tol * scale * 6, max: STRESSOR.shame.tol * scale * 6, def: 'shame', fuse: 6 + Math.floor(gw / 2), speed: 0.5 });
-  if ((mod.boss || G.wave === 10) && beat === BEATS_PER_WAVE - 1) mk(STRESSOR.abandonment, gate0, 1 + G.cycle, 1, { boss: true });
+  if ((mod.boss || G.wave === 10) && beat === BEATS_PER_WAVE - 1) mk(bosses[(G.cycle + Math.floor(G.rng() * 2)) % bosses.length], gate0, 1 + G.cycle, 1, { boss: true });
   G.events.push({ type: 'beat', beat, gate: gate0 });
 }
 

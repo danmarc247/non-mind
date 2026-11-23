@@ -13,6 +13,7 @@ uniform vec3 uMagenta;
 uniform vec3 uUltra;
 uniform vec3 uViolet;
 uniform vec3 uCrimson;
+uniform float uDisplay;
 
 vec3 pp_ot(vec2 uv) {
   return texture2D(inputBuffer, uv).rgb;
@@ -191,10 +192,10 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   float pz = smoothstep(0.3, 0.85, o);
   if (pz > 0.0) {
     float lv = mix(12.0, 4.0, pz);
-    vec3 dcol = sqrt(max(col, 0.0));
+    vec3 dcol = uDisplay > 0.5 ? max(col, 0.0) : sqrt(max(col, 0.0));
     float dth = pp_vnoise(q * vec2(14.0, 50.0) + dir * 4.0) - 0.5;
     vec3 post = (floor(dcol * lv + 0.5 + dth * 0.35)) / lv;
-    col = mix(col, post * post, pz);
+    col = mix(col, uDisplay > 0.5 ? post : post * post, pz);
   }
 
   // whiteout toward canvas

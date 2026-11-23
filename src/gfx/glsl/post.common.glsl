@@ -50,3 +50,8 @@ vec2 pp_flowDir(vec2 q, float t) {
   float a = pp_fbm(q * 1.7 + vec2(t * 0.013, -t * 0.009)) * 9.0;
   return vec2(cos(a), sin(a));
 }
+
+// 0 on the arena (near), 1 on far sky pixels; d = positive view distance
+float pp_farK(float d, vec2 nearFar) {
+  return smoothstep(nearFar.x, nearFar.y, d);
+}

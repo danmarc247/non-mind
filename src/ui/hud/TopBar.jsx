@@ -130,7 +130,7 @@ export default function TopBar({ compact }) {
   const G = useGame();
   const fighting = unlocked(G, 'shop');
   return (
-    <div className="pointer-events-none absolute inset-x-3 top-3 flex items-start gap-3">
+    <div className="pointer-events-none flex items-start gap-3">
       <Shake seed={11} className="pointer-events-auto"><StageTracker G={G} compact={compact} /></Shake>
       <Shake seed={12} className="pointer-events-auto"><Resources G={G} compact={compact} /></Shake>
       <div className="flex-1" />

@@ -234,7 +234,7 @@ export default function Bottom({ compact }) {
   const G = useGame();
   const shop = unlocked(G, 'shop');
   return (
-    <div className="pointer-events-none absolute inset-x-3 bottom-3 flex items-end gap-3">
+    <div className="pointer-events-none flex items-end gap-3">
       {!shop && <div className="flex-1" />}
       <AnimatePresence initial={false}>
         {shop && (

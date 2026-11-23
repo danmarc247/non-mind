@@ -11,7 +11,8 @@ uniform float uCanvas;   // canvas weave amount
 uniform float uInk;      // ink edge amount
 uniform float uDab;      // dab tone breakup amount
 uniform float uTime;
-uniform vec3 uInkColor;  // linear
+uniform vec3 uInkColor;  // in the pipeline's colour space
+uniform vec2 uNearFar;
 
 vec3 pp_rt(vec2 uv) {
   return texture2D(inputBuffer, uv).rgb;
@@ -26,6 +27,10 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float asp = resolution.x / resolution.y;
   vec2 q = vec2(uv.x * asp, uv.y);
   vec3 col = inputColor.rgb;
+  float z0 = -getViewZ(depth);
+  float farK = pp_farK(z0, uNearFar);   // arena: no dabs, light relief
+  float dabK = uDab * farK;
+  float relK = uRelief * mix(0.4, 1.0, farK);
 
   // gradient of the filtered image -> stroke direction
   vec2 e = texelSize * 1.5 * max(1.0, scale);
@@ -92,32 +97,32 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   // stroke colour transport: a dab carries the paint picked up at its start,
   // but only where that paint is similar (object silhouettes stay put)
-  if (dabZ >= 0.0) {
+  if (dabZ >= 0.0 && dabK > 0.001) {
     vec2 src = (px - dir * (dabU * 0.6 + 0.25) * D * 0.6) * scale / resolution;
     vec3 sc = pp_rt(src);
     vec3 dd = pp_perc(sc) - pp_perc(col);
     float sim = exp(-dot(dd, dd) * 60.0);
-    col = mix(col, sc, 0.7 * sim * uDab);
+    col = mix(col, sc, 0.7 * sim * dabK);
   }
 
   // tone breakup: each dab carries a slightly different mix of paint
   float lum = pp_plum(col);
   float lv = 6.0;
   float lq = (floor(lum * lv + 0.5 + dabTone * 0.9) ) / lv;
-  float tone = mix(1.0, clamp((lq + 0.02) / (lum + 0.02), 0.75, 1.3), 0.55 * uDab * step(0.0, dabZ));
-  col *= tone * (1.0 + dabTone * 0.08 * uDab);
+  float tone = mix(1.0, clamp((lq + 0.02) / (lum + 0.02), 0.75, 1.3), 0.55 * dabK * step(0.0, dabZ));
+  col *= tone * (1.0 + dabTone * 0.08 * dabK);
 
-  float groove = dabZ >= 0.0 ? (dabG - 0.5) * 2.0 : lic;
-  float h = dabH * 0.22 + groove * 0.12 * uBristle + lum * 0.3;
-  vec3 n = normalize(vec3(-dFdx(h) * 4.0 * uRelief, -dFdy(h) * 4.0 * uRelief, 1.0));
+  float groove = mix(lic * 0.5, dabZ >= 0.0 ? (dabG - 0.5) * 2.0 : lic, farK);
+  float h = dabH * 0.22 * farK + groove * 0.12 * uBristle + lum * 0.3;
+  vec3 n = normalize(vec3(-dFdx(h) * 4.0 * relK, -dFdy(h) * 4.0 * relK, 1.0));
   vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
   float diff = dot(n, L) / L.z;
-  col *= mix(1.0, clamp(diff, 0.6, 1.35), 0.6);
+  col *= mix(1.0, clamp(diff, 0.6, 1.35), mix(0.3, 0.6, farK));
   // wet gloss on ridges (broad, not sparkly)
   vec3 hv = normalize(L + vec3(0.0, 0.0, 1.0));
   float spec = pow(max(dot(n, hv), 0.0), 18.0);
   float wet = smoothstep(0.3, 0.8, pp_vnoise(q * 5.0 + 2.0));
-  col += smoothstep(0.55, 1.0, spec) * uRelief * (0.05 + 0.14 * wet) * vec3(1.0, 0.97, 0.92) * (0.5 + lum);
+  col += smoothstep(0.55, 1.0, spec) * relK * (0.05 + 0.14 * wet) * vec3(1.0, 0.97, 0.92) * (0.5 + lum);
 
   // canvas weave (shows most in thin paint between dabs)
   vec2 cw = px / 2.4;
@@ -129,7 +134,6 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
 
   // ink edge where depth / colour jump
   vec2 de = texelSize * 1.5 * scale;
-  float z0 = -getViewZ(depth);
   float zl = pp_lz(uv - vec2(de.x, 0.0));
   float zr = pp_lz(uv + vec2(de.x, 0.0));
   float zd = pp_lz(uv - vec2(0.0, de.y));
@@ -138,7 +142,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float edgeD = smoothstep(0.03, 0.12, dz);
   float edgeC = smoothstep(0.1, 0.25, gm);
   float wob = 0.5 + 0.5 * pp_vnoise(px * 0.06 + dir * 3.0);
-  float ink = clamp(max(edgeD, edgeC * 0.45) * wob * uInk, 0.0, 1.0);
+  float ink = clamp(max(edgeD, edgeC * 0.45) * wob * uInk * mix(0.45, 1.0, farK), 0.0, 1.0);
   col = mix(col, uInkColor * (0.6 + 0.4 * col), ink * 0.8);
 
   outputColor = vec4(max(col, 0.0), inputColor.a);

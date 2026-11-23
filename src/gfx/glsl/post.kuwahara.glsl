@@ -7,6 +7,7 @@ uniform float uStrength;  // 0..1 blend
 uniform float uRadius;    // brush radius in px at 720p
 uniform float uTime;
 uniform float uComplexity;
+uniform vec2 uNearFar;   // view distances: light painting below .x, full beyond .y
 
 float pp_kl(vec2 uv) {
   return pp_plum(texture2D(inputBuffer, uv).rgb);
@@ -26,7 +27,8 @@ vec3 pp_tensor(vec2 uv, vec2 d) {
   return vec3(gx * gx, gy * gy, gx * gy);
 }
 
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
+  float farK = pp_farK(-getViewZ(depth), uNearFar);
   float scale = resolution.y / 720.0;
   float asp = resolution.x / resolution.y;
   vec2 q = vec2(uv.x * asp, uv.y);
@@ -51,7 +53,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   float structure = smoothstep(0.00004, 0.0025, l1);
   vec2 flow = pp_flowDir(q * (1.0 + uComplexity), uTime);
   vec2 dir = normalize(mix(flow, tng * sign(dot(tng, flow) + 1e-4), structure));
-  aniso = mix(0.55, aniso, structure);
+  aniso = mix(0.55 * farK, aniso, structure);
 
   // hand jitter of the stroke frame
   float jit = pp_vnoise(q * 14.0) - 0.5;
@@ -63,7 +65,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   // brush size varies across the canvas; shrinks on strong edges so small
   // game units survive (legibility at overwhelm 0)
   float edge = smoothstep(0.004, 0.03, l1);
-  float r = uRadius * scale * (0.7 + 0.6 * pp_vnoise(q * 3.3 + 11.0)) * mix(1.0, 0.55, edge);
+  float r = uRadius * scale * (0.7 + 0.6 * pp_vnoise(q * 3.3 + 11.0)) * mix(1.0, 0.55, edge) * mix(0.22, 1.0, farK);
   float ra = r * (1.0 + aniso);            // along stroke
   float rb = r / (1.0 + 0.8 * aniso);      // across stroke
   vec2 ax = dir * ra * texelSize;
@@ -104,5 +106,5 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   }
 
   vec3 k = sumC / max(sumW, 1e-6);
-  outputColor = vec4(mix(c0, k, uStrength), inputColor.a);
+  outputColor = vec4(mix(c0, k, uStrength * mix(0.6, 1.0, farK)), inputColor.a);
 }

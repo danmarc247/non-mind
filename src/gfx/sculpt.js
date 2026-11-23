@@ -29,7 +29,9 @@ const FORMS = {
   weight: (A, B) => `color(${A}); box(0.34,0.26,0.34); color(${B}); displace(0,0.3,0); torus(0.12,0.04);`,
   maw: (A, B) => `rotateY(time*0.4); color(${A}); sphere(0.46); difference(); displace(0,0,0.3); sphere(0.34); union(); displace(0,0,-0.3); mirrorXYZ(); color(${B}); line(vec3(0.2,0.2,0.2), vec3(0.42,0.42,0.42), 0.05);`,
 };
-import { FAMILY, STRESSOR } from '../game/data.js';
+import { FAMILY } from '../game/data.js';
+import { ANY_STRESSOR } from '../game/battle.js';
+import { formOf } from '../game/content/mutations.js';
 
 const OFF = [[0.2, 0.08, 0], [-0.16, 0.14, 0.1], [0.05, -0.2, 0.14], [-0.1, -0.08, -0.2], [0.14, 0.2, -0.12]];
 function treeSrc(g, link, ctx) {
@@ -46,15 +48,20 @@ function treeSrc(g, link, ctx) {
 }
 
 // Link refinement: low links are knotted (domain warp), high links gain halo rings.
-function unitSource(g, link) {
-  const W = Math.max(0, 1 - (link - 1) / 5) * 0.06 + 0.01 * Math.min(4, leaves(g).length);
-  const halos = Math.floor(link / 3);
+function unitSource(g, link, muts = []) {
+  // mutations deform the body: twist, noise, hollow, spikes, rings
+  const F = formOf(muts);
+  const W = Math.max(0, 1 - (link - 1) / 5) * 0.06 + 0.01 * Math.min(4, leaves(g).length) + 0.07 * F.noise;
+  const halos = Math.floor(link / 3) + Math.round(F.rings * 2);
   let halo = '';
   for (let i = 0; i < halos; i++) halo += `shape(()=>{ rotateX(${(0.6 + i * 0.9).toFixed(2)}+time*${(0.3 + i * 0.17).toFixed(2)}); color(${v3(PALETTE.paper)}); torus(${(0.5 + i * 0.045).toFixed(3)},0.012); })();`;
   return `setMaxIterations(48); setStepSize(0.8);
 let sp=getSpace(); displace(noise(sp*5.0+time*0.5)*${W.toFixed(3)}, noise(sp*5.0+vec3(7.0,1.0,3.0)-time*0.4)*${W.toFixed(3)}, 0);
-rotateY(time*0.25);
+rotateY(time*0.25${F.twist > 0 ? `+sp.y*${(F.twist * 4).toFixed(2)}` : ''});
+${F.stretch > 0 ? `displace(0, sp.y*${(-0.25 * F.stretch).toFixed(2)}, 0);` : ''}
 ${treeSrc(g, link, { i: 0 })}
+${F.hollow > 0 ? `difference(); sphere(${(0.12 + 0.2 * F.hollow).toFixed(2)}); union();` : ''}
+${F.spikes > 0 ? `shape(()=>{ mirrorXYZ(); color(${v3(PALETTE.ink)}); line(vec3(0.15,0.15,0.15), vec3(${(0.3 + 0.2 * F.spikes).toFixed(2)},${(0.3 + 0.2 * F.spikes).toFixed(2)},${(0.3 + 0.2 * F.spikes).toFixed(2)}), 0.02); })();` : ''}
 ${halo}`;
 }
 
@@ -106,12 +113,12 @@ function material(k, srcFn, rim, glow) {
   return m;
 }
 
-export function unitMaterial(g, link) {
+export function unitMaterial(g, link, muts = []) {
   const c = unitColors(leaves(g)[0].f, link);
-  return material(`u|${key(g)}|${link}`, () => unitSource(g, link), PALETTE.paper, c.glow || 0);
+  return material(`u|${key(g)}|${link}|${muts.join(',')}`, () => unitSource(g, link, muts), PALETTE.paper, c.glow || 0);
 }
 export function stressorMaterial(defId) {
-  const d = STRESSOR[defId] || STRESSOR.intrusion;
+  const d = ANY_STRESSOR[defId] || ANY_STRESSOR.intrusion;
   const A = v3(PALETTE[d.color] || PALETTE.ink), B = v3(PALETTE.ink);
   return material(`s|${d.id}`, () => `setMaxIterations(36); setStepSize(0.85); ${FORMS[d.form](A, B)}`, PALETTE.ink, 0);
 }
