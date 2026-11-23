@@ -35,8 +35,8 @@ vec4 veil(int id, vec2 p) {
     float wave = abs(fract(y) - 0.5 + 0.12 * sin(p.x * 5.0 + row * 3.0 + vl_n(p * 2.0) * 3.0));
     float word = step(0.45, vl_n(vec2(p.x * 1.3 - t * 0.35 * (mod(row, 2.0) * 2.0 - 1.0), row * 7.0)));
     float erase = smoothstep(0.2, 0.8, sin(t * 0.5 + row * 1.7) * 0.5 + 0.5);
-    float line = vl_aa(wave - 0.025, 0.012) * word * erase;
-    return vec4(mix(uInk, uPaper, 0.35), line * 0.32);
+    float line = vl_aa(wave - 0.035, 0.014) * word * erase;
+    return vec4(mix(uInk, uPaper, 0.3), line * 0.45);
   }
   if (id == 2 || id == 6) {
     // analogy: every stressor drags a faint likeness; same: your own forms mirrored through the core
@@ -54,7 +54,7 @@ vec4 veil(int id, vec2 p) {
     }
     if (id == 6) {
       float spokes = vl_aa(abs(fract(an / VL_TAU * 10.0) - 0.5) * r * 0.62 - 0.015, 0.01) * smoothstep(1.5, 3.0, r);
-      return vec4(mix(uA, uPaper, max(o, 0.6)), max(g * 0.22, max(o * 0.45, spokes * 0.18)));
+      return vec4(mix(uA, uPaper, max(o, 0.5)), max(g * 0.32, max(o * 0.6, spokes * 0.24)));
     }
     return vec4(mix(uInk, uPaper, o), max(g * 0.3, o * 0.4));
   }
@@ -71,7 +71,7 @@ vec4 veil(int id, vec2 p) {
     }
     float edge = vl_aa(second - best - 0.035, 0.02);
     float split = vl_aa(abs(fract(best * 3.0 - t * 0.2) - 0.5) - 0.03, 0.02) * smoothstep(0.1, 0.35, best);
-    return vec4(mix(uMagenta, uPaper, edge), max(edge * 0.32, split * 0.1));
+    return vec4(mix(uMagenta, uPaper, edge * 0.6), max(edge * 0.45, split * 0.16));
   }
   if (id == 4) {
     // counting: tallies near the rim, never the same count twice
@@ -87,16 +87,16 @@ vec4 veil(int id, vec2 p) {
   if (id == 5) {
     // placeless: a slow rotating moire from two offset gratings
     vec2 c1 = vec2(cos(t * 0.11), sin(t * 0.11)) * 2.2, c2 = vec2(cos(-t * 0.08 + 2.0), sin(-t * 0.08 + 2.0)) * 2.6;
-    float g1 = sin(length(p - c1) * 5.2), g2 = sin(length(p - c2) * 5.2);
-    float mo = smoothstep(0.55, 1.0, g1 * g2);
-    return vec4(mix(uUltra, uPaper, step(0.0, g1) * 0.6), mo * 0.2);
+    float g1 = sin(length(p - c1) * 3.4), g2 = sin(length(p - c2) * 3.4);
+    float mo = smoothstep(0.35, 0.95, g1 * g2);
+    return vec4(mix(uUltra, uPaper, step(0.0, g1) * 0.45), mo * 0.3);
   }
   if (id == 7) {
     // observer: rings around the core, quickened by your attention
     float ph = t * 0.12 + uPulse * 0.3;
     float rings = vl_aa(abs(fract(r * 0.32 - ph) - 0.5) - 0.035, 0.03) * smoothstep(1.6, 2.6, r);
     float iris = vl_aa(abs(r - 2.3 - uPulse * 0.4) - 0.12, 0.05);
-    return vec4(mix(uUltra, uPaper, rings), max(rings * (0.16 + 0.25 * uPulse), iris * (0.25 + 0.4 * uPulse)));
+    return vec4(mix(uUltra, uPaper, rings * 0.5), max(rings * (0.28 + 0.25 * uPulse), iris * (0.4 + 0.4 * uPulse)));
   }
   if (id == 8) {
     // cancel: a desaturating paper wash and a quiet grid

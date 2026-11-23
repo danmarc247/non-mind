@@ -48,3 +48,23 @@ export function choose(id) {
   game.pending = null; select(id);
 }
 export const start = () => { game.started = true; notify(); };
+
+// ---------- save export / import ----------
+export let lastSavedAt = null;   // ms epoch of the last saveNow(), or null
+export function saveNow() {
+  try { localStorage.setItem(SAVE_KEY, serialize(game.G)); lastSavedAt = Date.now(); notify(); return { ok: true, at: lastSavedAt }; }
+  catch { return { ok: false, error: 'storage unavailable' }; }
+}
+export function exportSave() { return encodeSave(serialize(game.G)); }
+export function importSave(str) {
+  try {
+    const r = decodeSave(str);
+    if (!r.ok) return { ok: false, error: r.error };
+    const G = deserialize(r.json);
+    step(deserialize(r.json), 0.1);               // a rejected save must fail here, not in the live loop
+    G.events = [];
+    game.G = G; game.selected = null; game.pending = null;
+    notify();
+    return { ok: true };
+  } catch { return { ok: false, error: 'save could not be read' }; }
+}
