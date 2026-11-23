@@ -91,7 +91,7 @@ function spawnBeat(G) {
   const pool = ALL_STRESSORS.filter((s) => !s.boss).slice(0, Math.min(16, 1 + Math.floor((gw + 1) / 2)));
   const bosses = ALL_STRESSORS.filter((s) => s.boss);
   // habituation: every loss on a wave makes its stressors a little more bearable, so no wall is permanent
-  const scale = Math.pow(1.15, gw - 1) * (1 + 2 * G.overwhelm) * (1 + 0.5 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
+  const scale = Math.pow(1.10, gw - 1) * (1 + 2 * G.overwhelm) * (1 + 0.5 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
   let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));
@@ -109,7 +109,7 @@ function spawnBeat(G) {
     const am = ax?.mod || {};
     const tol = def.tol * scale * mulT * (mod.tolMul || 1) * shadow * (am.tol || 1);
     B.enemies.push({
-      id: B.nextId++, side: 1, def: def.id, affix: ax?.id || null, name: ax ? `${ax.name} ${def.name}` : def.name, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.1, gw - 1) * mulS * (mod.salMul || 1) * (am.sal || 1),
+      id: B.nextId++, side: 1, def: def.id, affix: ax?.id || null, name: ax ? `${ax.name} ${def.name}` : def.name, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.06, gw - 1) * mulS * (mod.salMul || 1) * (am.sal || 1),
       lat: def.lat * (am.lat || 1), reach: def.reach * (am.reach || 1), speed: def.speed * (am.speed || 1), opa: (mod.opa || 0) + (am.opa || 0), cd: G.rng(), alive: true, stun: 0, mark: 0, value: def.value,
       form: mod.mirrorForms && B.units.length ? { mirror: B.units[Math.floor(G.rng() * B.units.length)].uid } : null, flip: 0, ...extra,
     });

@@ -4,7 +4,7 @@
 import { createGame, step, defaultBot, actions, STAGES, VERBS, unlocked, mirrorCost, attendantCost, habitCost, HABITS, UPGRADES } from '../../src/game/index.js';
 import { aspectTiers } from '../../src/game/battle.js';
 
-const DT = 0.1, SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], HORIZON = 5400, EVERY = 300;
+const DT = 0.1, SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].slice(0, +process.env.NM_SEEDS || 10), HORIZON = +process.env.NM_HORIZON || 5400, EVERY = 300; // env NM_SEEDS / NM_HORIZON shorten iteration runs
 const median = (a) => { if (!a.length) return NaN; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const maxLink = (G) => G.units.reduce((m, u) => Math.max(m, u.link), 0);
 const fmt = (n, d = 1) => (!Number.isFinite(n) ? '-' : Math.abs(n) >= 1e6 ? n.toExponential(1) : n.toFixed(d));
