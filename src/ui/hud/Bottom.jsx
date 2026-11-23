@@ -55,7 +55,7 @@ export function Shop({ G, compact, mobile }) {
         </div>
       </Head>
       <div className={mobile ? 'flex flex-col gap-2' : 'flex items-start gap-2.5'}>
-        <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-1.5 pt-2.5 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
+        <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-1.5 pt-4 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
           {G.shop.map((id, i) => {
             const f = id && FAMILY[id];
             const cost = f ? TIER_COST[f.tier - 1] : 0;
@@ -238,7 +238,7 @@ export function Bench({ G, compact }) {
         <Seated G={G} />
         {!G.units.some((u) => u.seat) && <span className="flex-1" />}
       </Head>
-      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1 pt-1.5 pb-2', compact ? 'min-h-[128px]' : 'min-h-[172px]')}>
+      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1.5 pt-4 pb-2', compact ? 'min-h-[128px]' : 'min-h-[172px]')}>
         <AnimatePresence initial={false} mode="popLayout">
           {bench.map((u) => (
             <Appear key={u.id} from="up" layout className="shrink-0" data-tut={`unit-${u.id}`}>

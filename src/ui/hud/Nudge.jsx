@@ -1,7 +1,7 @@
 // Idle nudges: when the player has been still for a while, one quiet suggestion at a time
 // (src/game/advisor.js decides what; this decides where and how softly). A hand-drawn arrow that
 // draws itself and bobs, a nearly transparent caption, pointer-events none, never over the target.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { IDLE_BEFORE_SUGGESTING, SUGGESTION_LIFETIME, SUGGESTION_GAP, nextSuggestion, suggestions } from '../../game/index.js';
 import { game, onEvent } from '../../game/store.js';
@@ -186,6 +186,18 @@ export default function Nudge({ blocked }) {
     left: Math.max(130, Math.min(window.innerWidth - 130, L.cap.left)), top: L.cap.top,
     transform: { bottom: 'translate(-50%, -100%)', top: 'translate(-50%, 0)', left: 'translate(0, -50%)', right: 'translate(-100%, -50%)' }[L.cap.anchor],
   } : { left: '50%', top: '24%', transform: 'translate(-50%, 0)' };
+  // keep the whole caption on screen: measure it where it landed and shift it back inside an 8 px margin
+  const capRef = useRef(null);
+  const [fit, setFit] = useState({ x: 0, y: 0 });
+  const fitKey = cur ? `${cur.s.id}|${capStyle.left}|${capStyle.top}` : '';
+  useLayoutEffect(() => {
+    const el = capRef.current; if (!el) { if (fit.x || fit.y) setFit({ x: 0, y: 0 }); return; }
+    const r = el.getBoundingClientRect(), m = 8;
+    const bx = r.left - fit.x, by = r.top - fit.y; // where it would be without the correction
+    const x = bx < m ? m - bx : bx + r.width > window.innerWidth - m ? window.innerWidth - m - (bx + r.width) : 0;
+    const y = by < m ? m - by : by + r.height > window.innerHeight - m ? window.innerHeight - m - (by + r.height) : 0;
+    if (Math.abs(x - fit.x) > 0.5 || Math.abs(y - fit.y) > 0.5) setFit({ x, y });
+  }, [fitKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const bob = L && { above: { y: [0, -5, 0] }, below: { y: [0, 5, 0] }, right: { x: [0, 5, 0] }, left: { x: [0, -5, 0] } }[L.side];
 
   return (
@@ -201,11 +213,16 @@ export default function Nudge({ blocked }) {
               </div>
             </motion.div>}
             {!cur.done && (
-              <motion.div className={(urgent ? 'border-magenta ' : 'border-ink ') + "absolute w-max max-w-[260px] rounded-[12px] border-[3px] bg-paper px-3 py-2 shadow-[3px_4px_0_0_color-mix(in_srgb,var(--color-ink)_100%,transparent)]"} style={capStyle}
-                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
-                <p className="font-body text-[15px] italic leading-snug text-ink-2">{cur.s.text}</p>
-                {cur.s.plain && <p className="mt-0.5 font-body text-[13px] leading-snug text-ink">{cur.s.plain}</p>}
-              </motion.div>
+              // Outer box: position and anchoring only. The animated box is a child, because motion writes its own
+              // `transform` and would otherwise erase the anchoring translate (the caption then sat away from the
+              // arrow's tail and could hang off the screen). `fit` nudges it back inside the viewport.
+              <div ref={capRef} className="absolute w-max" style={{ ...capStyle, maxWidth: 'min(260px, calc(100vw - 24px))', marginLeft: fit.x, marginTop: fit.y }}>
+                <motion.div className={(urgent ? 'border-magenta ' : 'border-ink ') + "rounded-[12px] border-[3px] bg-paper px-3 py-2 shadow-[3px_4px_0_0_color-mix(in_srgb,var(--color-ink)_100%,transparent)]"}
+                  initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
+                  <p className="font-body text-[15px] italic leading-snug text-ink-2">{cur.s.text}</p>
+                  {cur.s.plain && <p className="mt-0.5 font-body text-[13px] leading-snug text-ink">{cur.s.plain}</p>}
+                </motion.div>
+              </div>
             )}
           </motion.div>
         )}
