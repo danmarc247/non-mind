@@ -1,14 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
-import Scene from './gfx/Scene.jsx';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { lazyOnOpen } from './lib/lazyOnOpen.jsx';
+// The 3D scene (three, R3F, postprocessing, shader-park) loads behind the title: fetching starts at boot, not on Begin.
+const sceneModule = import('./gfx/Scene.jsx');
+const Scene = lazy(() => sceneModule);
 const hudMod = Object.values(import.meta.glob('./ui/Hud.jsx', { eager: true }))[0];
 import { start, useVersion, game } from './game/store.js';
 function Fallback() { useVersion(); return game.started ? null : <button className="fixed inset-0 m-auto h-24 w-72 rounded-full border-4 border-ink bg-yolk font-title text-4xl text-ink" onClick={() => { try { getAudio().unlock(); } catch { /* optional */ } start(); }}>NON-MIND</button>; }
 const Hud = hudMod?.default || Fallback;
 import { onEvent, wipe, useGame } from './game/store.js';
-import Manual from './ui/Manual.jsx';
-import SaveMenu from './ui/SaveMenu.jsx';
-import Lineage from './ui/Lineage.jsx';
-import { getAudio } from './audio/engine.js';
+// Modals load on first open; the stubs keep their events and hotkeys working before that.
+const Manual = lazyOnOpen(() => import('./ui/Manual.jsx'), 'nonmind:manual', (e) => e.target?.tagName !== 'INPUT' && (e.key === 'm' || e.key === 'M'));
+const SaveMenu = lazyOnOpen(() => import('./ui/SaveMenu.jsx'), 'nonmind:save');
+const Lineage = lazyOnOpen(() => import('./ui/Lineage.jsx'), 'nonmind:lineage', (e) => {
+  const tag = e.target?.tagName;
+  return !(tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) && (e.key === 'l' || e.key === 'L');
+});
+import { getAudio } from './lib/audio.js';
 
 // game event -> spatial sound. y is fixed at unit height; x/z come from the sim.
 const SFX = { attend: 'attend', waveStart: 'waveStart', waveWin: 'waveWin', waveLose: 'waveLose', link: 'merge', integrate: 'integrate', subtract: 'subtract', split: 'split', repurpose: 'repurpose', death: 'death', enemyDeath: 'enemyDeath', cast: 'cast', stage: 'unlock', level: 'upgrade', verbStart: 'verbStart', verbDone: 'verbDone', mood: 'decay', stance: 'stanceChoose', ending: 'unlock', mirror: 'unlock', spell: 'cast', mutation: 'mutation', miss: 'miss', coreHit: 'coreHit' };
@@ -107,7 +114,7 @@ export default function App() {
   }, []);
   return (
     <div className="fixed inset-0 bg-paper">
-      <Scene audioRef={audioRef} />
+      <Suspense fallback={null}><Scene audioRef={audioRef} /></Suspense>
       <Hud />
       <Manual />
       <Restart />

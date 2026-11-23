@@ -28,7 +28,9 @@ export function anchorRect(anchor) {
   if (!el) return null;
   const r = el.getBoundingClientRect();
   if (r.width < 2 || r.height < 2) return null;
-  return { left: r.left, top: r.top, width: r.width, height: r.height };
+  // the panel the anchor lives in, so captions can be placed outside it
+  const pr = el.closest('[data-panel]')?.getBoundingClientRect();
+  return { left: r.left, top: r.top, width: r.width, height: r.height, panel: pr ? { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom } : null };
 }
 const same = (a, b) => (!a && !b) || (a && b && Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
@@ -111,6 +113,11 @@ export default function Tutorial() {
   const G = useGame();
   const [tut, setTut] = useState(loadTut);
   const step = game.started ? activeStep(G, tut) : null;
+  // a hint that is showing has the floor: the guide's card steps aside until it is gone
+  const [yielding, setYielding] = useState(false);
+  useEffect(() => onHud((e) => { if (e.type === 'nudge') setYielding(!!e.on); }), []);
+  // a wiped or restarted game is a first game: read the guide's state again
+  useEffect(() => { setTut(loadTut()); }, [G]);
   const stepRef = useRef(step);
   stepRef.current = step;
 
@@ -162,7 +169,7 @@ export default function Tutorial() {
 
   return (
     <AnimatePresence>
-      {step && (
+      {step && !yielding && (
         <motion.div key={step.id} className="pointer-events-none fixed inset-0 z-30"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={{ duration: 0.2 }}>
           <svg className="absolute inset-0 h-full w-full" aria-hidden="true">

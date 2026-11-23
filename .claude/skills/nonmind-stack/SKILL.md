@@ -1,6 +1,6 @@
 ---
 name: nonmind-stack
-description: Use when writing or reviewing NON-MIND code that touches a library or rendering approach - React 19, React Three Fiber, drei, Three.js ShaderMaterial, Shader Park, lygia, postprocessing, OGL/React Bits backgrounds, PixiJS v8, GSAP, Motion, Tailwind v4, Pretext, three-text, @pmndrs/glyph, kinetic-type-engine, Web Audio - or when deciding whether and how to add a new dependency. Lists what each library is for here, file pointers, how to add one, and gotchas. Web technologies only.
+description: Use when writing or reviewing NON-MIND code that touches a library or rendering approach - React 19, React Three Fiber, drei, Three.js ShaderMaterial, Shader Park, lygia, postprocessing, React Bits backgrounds, PixiJS v8, GSAP, marked, Motion, Tailwind v4, Pretext, three-text, @pmndrs/glyph, kinetic-type-engine, Web Audio - or when deciding whether and how to add a new dependency. Lists what each library is for here, file pointers, how to add one, and gotchas. Web technologies only.
 ---
 
 # NON-MIND stack
@@ -22,18 +22,19 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 | Shader Park (`shader-park-core`) | SDF sculpting of unit bodies | `src/gfx/sculpt.js` |
 | lygia | GLSL noise/colour/math library | `src/gfx/glsl/*.glsl` (`sky.frag.glsl`, `sea.frag.glsl`) |
 | postprocessing + @react-three/postprocessing | post stack (kuwahara, grade, overwhelm, relief) | `src/gfx/PainterPost.jsx`, `src/gfx/glsl/post.*` |
-| OGL | React Bits shader backgrounds (own tiny GL context per background) | `src/ui/bits/backgrounds/**` |
-| PixiJS v8 | 2D overlay / particle layers where DOM or R3F is wrong (installed; wire in through the mediator) | none yet |
-| GSAP | timelines for sequenced UI/camera moves | installed; use for multi-step sequences |
+| React Bits backgrounds (raw WebGL2, no OGL dependency) | shader backgrounds, one tiny GL context each | `src/ui/bits/backgrounds/**` |
+| PixiJS v8 | the Lineage map, one lazy Application only while the modal is open | `src/ui/lineage/scene.js`, `src/ui/Lineage.jsx` |
+| GSAP | timelines for the Ceremony overlays (built, not yet mounted) | `src/ui/Ceremony.jsx` |
+| marked | renders `README.md` as the in-game Manual | `src/ui/Manual.jsx` |
 | Motion (`motion`) | React component transitions, presence, layout animation | `src/ui/hud/Inspector.jsx`, `Title.jsx`, `TopBar.jsx` |
 | Tailwind v4 (`@tailwindcss/vite`) | utility classes; tokens live in `src/index.css` | `src/index.css`, HUD components |
 | Pretext (`@chenglou/pretext`) | measure and flow text around shapes without DOM reflow | `src/ui/type/PretextFlow.jsx` |
 | three-text | real 3D extruded text in the scene | `src/ui/type/Type3D.jsx`, `type3dEngine.js` |
 | @pmndrs/glyph | GPU glyph ticker | `src/ui/type/GlyphTicker.jsx`, `glyphTickerRuntime.js` |
-| kinetic-type-engine | rhythmic text reveal (ORP timing) | `src/ui/type/KoanFlash.jsx`, `orp.js` |
+| kinetic-type-engine | rhythmic text reveal (ORP timing) | `src/ui/type/KoanFlash.jsx` (component name kept), `orp.js` |
 | Web Audio API | adaptive music, SFX, offline renders | `src/audio/{engine,instruments,music,sfx,lab,util}.js` |
 | simplex-noise | cheap CPU noise | `src/ui/bits/WavyBackground.jsx` |
-| zustand | game store | `src/game/store.js` |
+| `useSyncExternalStore` (React) | game store: a plain mutable `game` object plus a version counter, no store library | `src/game/store.js` |
 | harfbuzzjs, woff-lib, @fontsource/* | font baking and self-hosted fonts | `scripts/bake-fonts.mjs`, `public/fonts/` |
 | vite-plugin-glsl | `#include` resolution for `.glsl` imports | `vite.config.js` |
 
@@ -46,6 +47,8 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 ## Gotchas
 
 **Three / R3F**
+- The Canvas is `linear legacy flat`: every shader writes display sRGB itself (convert palettes with `linearToSrgb`).
+- R3F 9 `applyProps` copies a `uniforms` prop into new uniform objects, so writing `u.uTime.value` on the object you passed never reaches the GPU. Write to `material.uniforms.*.value` on the live material (keep a ref, or build the `ShaderMaterial` yourself and pass `material={...}`).
 - Use `ShaderMaterial` on the classic WebGLRenderer. Do not move the main scene to WebGPU.
 - Per-frame work goes in `useFrame` and mutates uniforms (`mat.uniforms.uTime.value = ...`); React state per frame will tank the frame rate.
 - Dispose geometries, materials and render targets on unmount; galleries get remounted by HMR.
@@ -59,13 +62,13 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 - It generates GLSL from a JS function. Keep the sculpt function pure and cache the compiled result per genome; recompiling every frame stalls.
 
 **postprocessing**
-- Effects are merged into one pass by `EffectComposer`; custom effects need unique uniform names. Test with the post gallery (`post-gallery.html`).
+- The chain is one `EffectPass` per effect with `mergeMode="none"` (Kuwahara, Relief with the detachment stage inside it, Bloom, Grade, Overwhelm); custom effects need unique uniform names. Test with the post gallery (`post-gallery.html`).
 
-**OGL / React Bits backgrounds**
-- Each background owns a WebGL context. Mount at most one or two at a time; unmount on route change. Respect `src/ui/bits/backgrounds/README.md` (license note).
+**React Bits backgrounds**
+- Each background owns a raw WebGL2 context. Mount at most one or two at a time; unmount on route change. Respect `src/ui/bits/backgrounds/README.md` (license note).
 
 **PixiJS v8**
-- Async init (`await app.init({...})`); create the app in an effect, destroy on cleanup (`app.destroy(true)`), and guard the double-mount in React StrictMode.
+- Async init (`await app.init({...})`); create the app in an effect, destroy on cleanup (`app.destroy(true)`), and guard the double-mount in React StrictMode. The Lineage scene is imported lazily (about 600 kB raw, 180 kB gzip) so it never enters the entry chunk.
 
 **GSAP / Motion**
 - GSAP for imperative timelines, Motion for declarative React transitions; do not animate the same property with both. Kill timelines on unmount.
@@ -88,7 +91,8 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 
 **Vite**
 - `base: './'`: no leading-slash asset URLs in JS, CSS or HTML. `public/` files are referenced relatively.
-- Multi-page galleries are plain root HTML files served by the dev server; production build only needs `index.html` unless the mediator adds more inputs.
+- Multi-page galleries are plain root HTML files served by the dev server (`npm run dev`, then open `/<name>-gallery.html`). `vite build` uses only `index.html`, so the galleries are development-only and absent from the deployed site.
+- `vite-plugin-singlefile` is installed but not enabled in `vite.config.js`.
 - `server.host: true`, default port 5173; lanes override with `--port <n> --strictPort` and `NM_CACHE_DIR`.
 
 ## How to add a library (mediator checklist)
@@ -104,8 +108,8 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 
 - 3D object with its own shading: R3F mesh + `ShaderMaterial` (+ lygia).
 - Full-screen look: postprocessing pass, not a CSS filter.
-- Decorative moving backdrop behind UI: OGL background from `src/ui/bits/backgrounds`.
-- Dense 2D particles over the HUD: PixiJS layer.
+- Decorative moving backdrop behind UI: a background from `src/ui/bits/backgrounds`.
+- 2D graph or dense particles over the HUD: a lazy PixiJS layer (see Lineage).
 - Text that must read: DOM + Pretext. Text that is a spectacle: three-text or glyph, with DOM fallback.
 - UI enter/exit: Motion. Multi-step choreography: GSAP.
 - Anything audible: Web Audio through `src/audio/engine.js`; add instruments in `instruments.js`, one-shots in `sfx.js`.
@@ -120,6 +124,8 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 | `type-gallery.html` | `src/ui/type/gallery.jsx` | Pretext, three-text, glyph, kinetic type |
 | `bits-gallery.html`, `bits-backgrounds.html` | `src/ui/bits/gallery.jsx` | HUD kit and React Bits backgrounds |
 | `audio-lab.html` | `src/audio/lab.js` | audio lab and offline render page |
+| `arena-`, `fx-`, `drift-`, `sea-`, `sculpt-gallery.html` | `src/gfx/galleries/*.jsx` | arena parts, paint fx, floating bodies, the contained sea, every sculpture form |
+| `lineage-gallery.html`, `save-gallery.html`, `hud-gallery.html` | `src/ui/galleries/*.jsx`, `src/ui/hud/gallery.jsx` | Lineage map, save menu, HUD panels |
 
 New lane: copy `sky-gallery.html` (it is 10 lines: root div + one module script), point it at `src/<area>/galleries/<lane>.jsx`, and in the entry expose `window.__frames` and any state object you want the screenshot script to drive.
 

@@ -115,7 +115,7 @@ function Word({ frame, accent, innerRef, preRef, postRef, hidden, style }) {
 }
 
 /**
- * Kinetic RSVP koan: one chunk at a time, pinned on its optimal recognition letter.
+ * Kinetic RSVP ambient line: one chunk at a time, pinned on its optimal recognition letter.
  *
  * @param {object} props
  * @param {string} props.text

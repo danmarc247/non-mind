@@ -1,6 +1,6 @@
 ---
 name: nonmind-team
-description: Use when planning, delegating, briefing, reporting or coordinating work on NON-MIND (/home/user/non-mind) with more than one agent or lane; when choosing which model (Fable, Opus, Sonnet, Haiku) gets a task; when writing a lane brief, a hand-back report, or a docs/team-log.md entry; when deciding commit/push rhythm or when to re-research the reference game wikis. Not for single-file edits done alone.
+description: Use when planning, delegating, briefing, reporting or coordinating work on NON-MIND (/home/user/non-mind) with more than one agent or lane; when choosing which model (Fable, Opus, Sonnet, Haiku) gets a task; when writing a lane brief, a hand-back report, or a docs/team-log.md entry; when deciding commit/push rhythm or when to re-research systems of other games. Not for single-file edits done alone.
 ---
 
 # NON-MIND team protocol
@@ -23,7 +23,7 @@ Agents can and should inform each other. The boss is the mediator, and that must
 3. **Commit regularly and push**: mediator commits after every integrated lane, not at the end of the day (see rhythm below).
 4. **Test the deployment early**: the first push gets a GitHub Pages check (see `nonmind-verify`), not the last. Base is `./` and hosting is under a sub-path, so absolute URLs break only in production.
 5. **Reuse skills**: before writing a brief, check `.claude/skills/`. Point the agent at `nonmind-voice`, `nonmind-verify`, `nonmind-stack` by name instead of restating them.
-6. **Remix, never copy**: reference games supply systems only. No names, art or text.
+6. **Remix, never copy**: other games supply systems only. No names, art or text, and none of them is named anywhere in the repo (README aside, which tells the story of the build).
 
 ## Model choice table
 
@@ -34,10 +34,10 @@ Agents can and should inform each other. The boss is the mediator, and that must
 | Web Audio engine, adaptive music, offline-render harness | Opus | stateful, measured |
 | HUD (`src/ui/hud/**`), UI kit | Opus | many components, motion + layout |
 | Vitest suites, balance probe, `simulate` bot reports | Sonnet | mechanical, report-heavy |
-| Koan pools, stage hints, unit text tables (with `nonmind-voice` loaded) | Sonnet | volume, rule-bound |
+| Ambient line pools (`content/koans.js`), stage hints, unit text tables (with `nonmind-voice` loaded) | Sonnet | volume, rule-bound |
 | Port a React Bits component into `src/ui/bits/backgrounds/` | Sonnet | mechanical port |
 | 14 colour palettes, one sound effect (a blip, a bell), a small JSON table | Haiku | tiny, checkable |
-| "Does the Underlords wiki say X about economy?" re-read | Haiku | cheap, factual |
+| "Does the public wiki of an auto-battler say X about economy?" re-read | Haiku | cheap, factual |
 | Deciding whether a stat needs a new contract field | Fable | arbitration |
 
 Rule of thumb: if wrong output would silently break other lanes, Fable or Opus. If a failing test or a glance catches it, Sonnet or Haiku.
@@ -102,16 +102,9 @@ The mediator verifies a claim by opening one screenshot or rerunning one command
 - Contract change = log line first, code second.
 - A log line is the ONLY inter-lane channel. Do not paste another lane's work into your brief unless the mediator routed it.
 
-## Wiki re-reads (inspiration)
+## System re-reads (inspiration)
 
-When new inspiration is needed (Dota Underlords, Realm Grinder, Cultist Simulator fandom wikis), spawn a cheap Haiku checker. Plain page fetches are blocked; use the MediaWiki API with a browser User-Agent:
-
-```bash
-UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36'
-curl -sA "$UA" 'https://underlords.fandom.com/api.php?action=parse&page=Gold&prop=wikitext&format=json' | head -c 4000
-```
-
-Wiki hosts: underlords / realmgrinder / cultistsimulator `.fandom.com` (verify the subdomain once; a 404 JSON means wrong host). Instruct the checker: return a digest of SYSTEMS (numbers, loops, rules), no names, no flavour text, no quotes. The digest goes in the report, not in the repo.
+When a system needs checking against how similar games work (auto-battler drafting, idle/incremental layering, card-table occultism with timed verbs), spawn a cheap Haiku checker. Plain page fetches of fan wikis are often blocked; the MediaWiki API with a browser User-Agent usually works. Instruct the checker: return a digest of SYSTEMS (numbers, loops, rules), no names, no flavour text, no quotes. The digest goes in the report, not in the repo, and the game's public text, code comments and docs never name the source games.
 
 ## Commit / push rhythm (mediator only)
 

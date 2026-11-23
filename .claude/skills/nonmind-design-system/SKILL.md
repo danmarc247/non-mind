@@ -115,13 +115,13 @@ It should also respond to at least one of `mood.complexity`, `mood.stage` or `mo
 | headings, labels, buttons | Londrina Solid (400/900) | `font-head` | Uppercase button labels (InkButton does this for you). |
 | outlined display | Londrina Outline | `font-outline` | Ghost numbers and the echo of a heading layered behind a solid one. |
 | stats, numbers, costs, hotkeys | Hypermonosaturation | `font-stat` | **Lowercase only.** The face has no capitals: `.font-stat` forces `text-transform: lowercase`. Write `x1.7`, `tol 520`, `lat 1.0s`, never `TOL`. In Type3D pass `font="hyper"` (it lowercases). |
-| body, flavour, koans, tooltips | Fraunces 400/400i/600 | `font-body` (default) | Italic for koans and the hints from `STAGES[].hint`. |
+| body, flavour, ambient lines, tooltips | Fraunces 400/400i/600 | `font-body` (default) | Italic for ambient lines and the hints from `STAGES[].hint`. |
 
 Typography libraries, already wired in `src/ui/type/` (import from `src/ui/type/index.js`):
 - `PretextFlow` / `usePretextLines` (@chenglou/pretext): text layout that flows around shapes. Use it for long flavour text that wraps around a unit thumbnail.
 - `Type3D` (three-text + harfbuzz, lazily loaded): extruded 3D words inside the R3F scene, for stage names and floating numbers.
 - `GlyphTicker` (@pmndrs/glyph, MSDF, WebGPU canvas with a DOM fallback): ticking glyph numbers.
-- `KoanFlash` (@andyed/kinetic-type-engine): RSVP-style kinetic flashes of koans, chunked at the ORP (`orp.js`).
+- `KoanFlash` (@andyed/kinetic-type-engine): RSVP-style kinetic flashes of ambient log lines, chunked at the ORP (`orp.js`).
 
 Copy is confusing on purpose, but the type is always legible: the minimum size is 11px for `font-stat` and 13px for `font-head`. Overwhelm scrambles the *letters* (`Scr`), never the layout grid.
 
@@ -193,7 +193,7 @@ Preferred UI libraries (owner list): **Motion** (`motion/react`, default for Rea
 - Slow animation: anything over 0.35 s on UI, spinners, or long fades that block input.
 - Uppercase in `font-stat`, Kablammo in body text, and system fonts showing through.
 - Static, unmorphing colour on a world element, and jumping palettes on integer stage changes.
-- Using names, art or text from the reference games (Cultist Simulator, Dota Underlords, Realm Grinder, Book of Hours). Only their systems are remixed.
+- Using names, art or text from any other game. Only systems are borrowed, and they are remixed.
 
 ## 8. Review checklist
 

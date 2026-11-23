@@ -9,7 +9,7 @@ Every lane proves its work. "It should work" is not a report. The proof is: scre
 
 ## 0. Lane checklist
 
-- [ ] Own gallery page exists at repo root (`<lane>-gallery.html` -> `src/.../galleries/<lane>.jsx` or `src/ui/<lane>/gallery.jsx`)
+- [ ] Own gallery page exists at repo root (galleries are development-only: `vite build` ships `index.html` alone, so never link to them from the game or the README) (`<lane>-gallery.html` -> `src/.../galleries/<lane>.jsx` or `src/ui/<lane>/gallery.jsx`)
 - [ ] Dev server on YOUR port with YOUR cache dir
 - [ ] Screenshots taken and opened (Read the PNG), described in the report
 - [ ] Console errors: 0 (page errors and `console.error`)

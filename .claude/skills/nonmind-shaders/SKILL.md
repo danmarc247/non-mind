@@ -17,12 +17,14 @@ Owner intent:
 | piece | files | what it does |
 |---|---|---|
 | Sky | `PainterSky.jsx`, `glsl/sky.{vert,frag}.glsl` | A painting on the inside of a sphere of radius 400, which follows the camera. Flow field, three palette-knife stroke layers, scratches, white-outlined rings, flecks, overwhelm splashes and drips, canvas weave, impasto lighting. |
-| Sea | `Scene.jsx` `Sea()`, `glsl/sea.{vert,frag}.glsl` | A disc (R 12.5) and a cylinder cut face inside a glass rim and wall. Flow-warped bands of the stage palette, foam rings plus 10 spokes, strata on the cut face. |
+| Sea | `sea/ContainedSea.jsx`, `glsl/sea2.*.glsl` | A disc (R 12.5) and a tapered cut wall inside the glass vessel (`arena/GlassVessel.jsx`). Seven movements (canvas, marbling, kaleidoscope, colonies, reaction, fold, flood) cross-fade with `mood.stage` (`movementWeights`); events drop ripples into a 16-slot buffer. |
+| Arena | `arena/*.jsx`, `glsl/arena.*.glsl` | Gate portals, seat rings, core aura, sea caustics, glass vessel. |
+| Drift | `drift/*.jsx`, `glsl/drift.*.glsl` | Things that touch nothing: floating bodies (Mobiles), paint slices below the vessel (Strata), rising Motes, Tethers between them. Never writes `mood`, never raycasts. |
 | Units / stressors / core | `sculpt.js` | Shader Park SDF programs compiled per genome. Raymarched inside a BackSide sphere. |
-| Post | `PainterPost.jsx`, `glsl/post.*.glsl` | Kuwahara, then Relief, Bloom, Grade, Overwhelm. |
-| Fx | `Scene.jsx` `Fx()` | One instanced circle mesh (N=220) for stroke, splat and ring paint marks. |
+| Post | `PainterPost.jsx`, `glsl/post.*.glsl` | Kuwahara, then Relief (with the detachment stage: soft focus, cut-out halo, aerial perspective, from `post.detach.glsl`), Bloom, Grade, Overwhelm. One pass each. |
+| Fx | `fx/PaintFx.jsx`, `fx/ArcVeil.jsx`, `glsl/fx.*.glsl` | Instanced paint marks per game event (pools: ground 192, ribbon 64, air 640, invert 16) and one veil per wave-arc modifier (ten). |
 
-Preferred stack (owner list): **Three.js + React Three Fiber + drei** for the scene, **Shader Park** for SDF sculptures, **lygia** for GLSL building blocks, **postprocessing** for the post chain, **OGL** (React Bits backgrounds) and **PixiJS v8** only for 2D or UI-side canvases. Do not add another 3D engine.
+Preferred stack (owner list): **Three.js + React Three Fiber + drei** for the scene, **Shader Park** for SDF sculptures, **lygia** for GLSL building blocks, **postprocessing** for the post chain, **PixiJS v8** only for 2D or UI-side canvases (the Lineage map). React Bits backgrounds use raw WebGL2. Do not add another 3D engine.
 
 ## 2. The mood contract (`src/gfx/mood.js`)
 
@@ -42,8 +44,9 @@ There is one plain mutable object. It is written once per frame by `Loop` in `Sc
 Rules:
 - Every uniform is refreshed from `mood` inside `useFrame` (or postprocessing `update()`).
 - Allocate `ShaderMaterial`s and uniform objects once (`useMemo`), then mutate `.value`.
+- R3F 9 copies a `uniforms` prop into new objects, so a `<shaderMaterial uniforms={u} />` never sees later writes to `u`. Build the `ShaderMaterial` yourself and pass `material={...}`, or write to `material.uniforms.*.value` on the live material.
 - If you need a speed-up that must not jump, integrate your own clock (as PainterSky does: `c.t += dt * (1 + overwhelm*2.5 + audio.low*0.4)`).
-- Never write to `mood` from a shader component. The one exception is `Fx`, which sets `flash` on events.
+- Never write to `mood` from a shader component. The one exception is `PaintFx`, which sets `flash` on events.
 
 ## 3. Palette uniforms
 
@@ -53,7 +56,7 @@ Rules:
   - arrays as `uPal[8]`
 - Get colours from `PALETTE` (sRGB 0..1), from `mixStagePalette(...)` plus `linearToSrgb` (the sea), or from `unitColors()`.
 - Colour space:
-  - The R3F/postprocessing *input* is linear, so post effects convert with `linearToSrgb (Canvas is `linear legacy flat`: write display sRGB)` (`pow(c, 2.2)`; see `PainterPost.jsx`).
+  - The Canvas is `linear legacy flat`: scene shaders write display sRGB themselves, so convert linear palette values with `linearToSrgb` (see `PainterPost.jsx` for the post side).
   - Raw `ShaderMaterial`s on scene meshes write sRGB-ish values directly. Sky and sea do this.
   - Match whatever the neighbouring code does. Do not mix conventions inside a file.
 - Never hardcode a colour literal in GLSL. The existing exceptions are `vec3(1.0)` for white flash, the sea's overwhelm magenta (which should become `uMagenta` if touched), and the sky's dark splash core (`vec3(0.42,0.04,0.16)`, crimson family). New code adds a uniform.
@@ -75,7 +78,7 @@ Rules:
 A unit's genome tree (`src/game/genome.js`) becomes a Shader Park program, which becomes GLSL. A hybrid is literally the CSG of its parents, so every new combination is a new form.
 
 1. **Leaf**:
-   - The family's `form` (from `FAMILY[f].form` in `data.js`) is looked up in `FORMS`.
+   - The family's `form` (from `FAMILY[f].form` in `data.js`) is looked up in `FORMS`, which holds three growth stages per family (`BRACKETS`: raw for links 1-4, grown 5-8, refined 9-12). Siblings differ by a seeded jitter kit `k` (genome key, mutations and the unit id as salt).
    - Its colours come from `unitColors(f, grade)`, and the pole tints them.
    - It is wrapped in `shape(()=>{ ... })();`.
    - A crown marks the pole: a paper sphere on top for +1, an ink slab under it for -1.
@@ -94,10 +97,11 @@ A unit's genome tree (`src/game/genome.js`) becomes a Shader Park program, which
    - `uFlash` to white
    - a hash-dither `discard` for `uFade` (dissolve)
    - correct `gl_FragDepth`, so the SDFs intersect the sea and each other
-5. **Caching**: there is one compiled material per key, `u|${key(g)}|${link}`, `s|id` or `core|stage`, and each instance gets a `.clone()`. `Bodies` rebuilds a mesh when `${id}|${link}|${leaves}` changes, which is when a merge or split visibly re-forms. On a compile error it falls back to `sphere(0.35)`; check the console for `sculpt error`.
+5. **Look**: sculptures reflect a painted environment (`sculptEnv`, three stage-palette colours shared by every material, strength `uReflect`) with a hard specular glint, and `uSpark` brightens a body under the pointer (hover sparkle).
+6. **Caching**: there is one compiled material per key, `u|${key(g)}|${link}|${muts}|${salt}`, `s|...` or `core|stage` (bounded at 96), and each instance gets a `.clone()`. `Bodies` rebuilds a mesh when `${id}|${link}|${leaves}` changes, which is when a merge or split visibly re-forms. On a compile error it falls back to `sphere(0.35)`; check the console for `sculpt error`.
 
 ### Add a family form
-1. Add `FORMS.myform = (A, B) => \`...\`` in `sculpt.js`. A and B are `vec3(...)` strings. Rules for the form:
+1. Add `FORMS.myform = [raw, grown, refined]` in `sculpt.js`: three `(k) => \`...\`` functions using the kit (`k.A/B/C` colours, `k.L(x, i)` jittered lengths, `k.W(x)` speeds, `k.P` phase). Rules for each:
    - Stay inside radius ~0.5. The bounding sphere discards at `length(p) > 1.02` after scale.
    - Use `time` for at least one living motion (rotate, breathe or flicker).
    - Use both colours.
@@ -107,7 +111,7 @@ A unit's genome tree (`src/game/genome.js`) becomes a Shader Park program, which
 
 ```js
 // example: a "spiral" form (two counter-rotating ribbons around a seed)
-spiral: (A, B) => `color(${A}); sphere(0.14); rotateY(time*0.9); color(${B}); torus(0.3,0.03); rotateX(1.2); torus(0.38,0.022); rotateZ(time*0.6); color(${A}); torus(0.45,0.015);`,
+spiral: [(k) => `color(${k.A}); sphere(${k.L(0.14)}); rotateY(time*${k.W(0.9)}+${k.P}); color(${k.B}); torus(${k.L(0.3)},${k.L(0.03)}); rotateX(1.2); torus(${k.L(0.38)},${k.L(0.022)});`, /* grown */, /* refined */],
 ```
 
 ### Hybrid composition rules
@@ -196,12 +200,12 @@ Ideas that are welcome, if they stay on-palette and on-mood:
 - Sky noise per pixel: 1 psrdnoise + 3 snoise, +1 only when O > 0. Everything else is hash or analytic. Keep that header comment true.
 - Post taps per quality preset are in `PAINTER_QUALITY`; Kuwahara taps = 4·RINGS·ANGLES + 1. Never add a full-screen pass that is not in that chain. Extend an existing effect instead.
 - SDF units: 48 iterations, up to about 30 seated units plus stressors (14 per beat cap). Do not raise iterations globally.
-- Caps: Fx is one instanced mesh with 220 slots. Avoid per-frame allocation in `useFrame` (reuse `Vector3`/`Color`, as `tmpV` and `dummy` do).
+- Caps: PaintFx pools are fixed (ground 192, ribbon 64, air 640, invert 16). Avoid per-frame allocation in `useFrame` (reuse `Vector3`/`Color`, as `tmpV` and `dummy` do).
 - `CanvasRevealEffect`/`ShaderLensBlur` each own a GL context. Keep that to two at most.
 
 ## 9. Headless screenshot loop (always run it before handing back)
 
-Galleries: `sky-gallery.html`, `post-gallery.html` (`?bypass=1&q=low|med|high&ow=&tension=&flash=&cx=&ui=0`), and `scene-gallery.html` (`?ff=<seconds>` fast-forwards the bot; exposes `window.__ff`, `__act`, `__tick`, `__mood`). The full recipe (private port, `NM_CACHE_DIR`, software WebGL flags, console capture) is in the **nonmind-verify** skill. In short:
+Galleries (dev server only, not in the deployed build; open as `http://localhost:<port>/<name>.html`): `sky-gallery.html`, `post-gallery.html` (`?bypass=1&q=low|med|high&ow=&tension=&flash=&cx=&ui=0`), and `scene-gallery.html` (`?ff=<seconds>` fast-forwards the bot; exposes `window.__ff`, `__act`, `__tick`, `__mood`). The full recipe (private port, `NM_CACHE_DIR`, software WebGL flags, console capture) is in the **nonmind-verify** skill. In short:
 ```bash
 NM_CACHE_DIR=$SCRATCH/vite-shaders npx vite --port 5191 --strictPort &   # your own port
 ```

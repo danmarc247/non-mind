@@ -1,11 +1,11 @@
 ---
 name: nonmind-voice
-description: Use whenever writing or editing any player-visible text in NON-MIND - unit and family descriptions, stat or trait explanations, ability text, stage hints, wave and koan lines, log/event lines, tooltips, titles, error toasts - or when naming a unit, system or stat. Also for reviewing text written by another agent. Encodes the cryptic-but-true voice and the sentence templates.
+description: Use whenever writing or editing any player-visible text in NON-MIND - unit and family descriptions, stat or trait explanations, ability text, stage hints, wave and ambient lines, log/event lines, tooltips, titles, error toasts - or when naming a unit, system or stat. Also for reviewing text written by another agent. Encodes the cryptic-but-true voice and the sentence templates.
 ---
 
 # NON-MIND voice
 
-Reference files: `src/game/data.js` (STAGES hints, LINKS, TRAITS, ASPECTS, FAMILIES, ABILITIES) and `src/game/content/koans.js`. Read 20 lines of each before writing, to calibrate.
+Reference files: `src/game/data.js` (STAGES hints, LINKS, TRAITS, ASPECTS, FAMILIES, ABILITIES) and `src/game/content/koans.js` (the ambient line pools; the file name is historical). Read 20 lines of each before writing, to calibrate.
 
 ## The rule
 
@@ -14,9 +14,9 @@ Text is **cryptic and oblique, more confusing than helpful, but it all works.** 
 1. **Every sentence must be TRUE to the mechanic.** Before writing, state the mechanic in numbers (e.g. "heals the lowest-tolerance ally for 2.5x salience"). The line may hide it, but never contradict, exaggerate or invent it. If the mechanic changes, the text changes in the same commit.
 2. **Oblique, not wrong.** Use an image that is literally accurate (a lid keeps something in and releases it later = Lid stores harm and returns it).
 3. **Never jokey.** No puns, no winks, no "oops", no exclamation marks, no emoji, no second-person nagging. Dry understatement is allowed; punchlines are not. (Existing family texts such as "a career" are deadpan, not jokes; stay at that level or below.)
-4. **Short.** Hints and tooltips: under 12 words. Koans: 10-18 words. Family text: one or two sentences.
+4. **Short.** Hints and tooltips: under 12 words. Ambient lines: 10-18 words. Family text: one or two sentences.
 5. **Plain words, concrete nouns.** Lamp, tide, frost, door, knot, ledge. No jargon in flavour lines, no stat abbreviations.
-6. **Never copy text from any game or scripture.** Reference games and traditions supply STRUCTURE only. Do not paste, lightly reword, or "translate" a line you remember. Write from the mechanic outward, using the templates below.
+6. **Never copy text from any game, book or tradition.** Other works supply STRUCTURE only, and none is named in the repo. Do not paste, lightly reword, or "translate" a line you remember. Write from the mechanic outward, using the templates below.
 
 ## Naming
 
@@ -24,7 +24,7 @@ Text is **cryptic and oblique, more confusing than helpful, but it all works.** 
 - Home fields: `Field of <Material> Weather`. Witnesses: `<Adjective> Witness`.
 - Stressors are plain nouns of pressure (Intrusion, Deadline, Shame). Stats keep the established words: tolerance, salience, latency, reach, opacity, lability, recursion.
 - Aspects: one clinical-ish adjective (Vagal, Limbic, Cortical, Somatic, Shadow, Relational, Void, Mythic).
-- Links keep their Pali name plus an English gloss in data; the player-facing `text` line is oblique English.
+- Links have English names only (Unsatisfactoriness, Confidence, Gladness ... Knowing The Ending); the player-facing `text` line is oblique English. The prestige currency is called **residue** everywhere the player can see it (`G.mu` in code).
 
 ## Sentence templates (structure only)
 
@@ -39,7 +39,7 @@ Fill with your own images. Each template has a slot for a TRUE mechanic fact.
 | `If one [small act], one certainly [large result].` | scaling, compounding, thresholds |
 | `One sees [N], equal in number to one's [faculty].` | counts that equal a real variable |
 
-For the last template, N must be a number the game could actually show (units seated, clicks, links). If N is decorative, the line is false: do not use it in mechanical text, only in pure ambient koans.
+For the last template, N must be a number the game could actually show (units seated, clicks, links). If N is decorative, the line is false: do not use it in mechanical text, only in pure ambient lines.
 
 ## Good / bad pairs
 
@@ -73,15 +73,15 @@ Mechanic first, then BAD (what to avoid) and GOOD.
 
 ### Log and event lines (state what happened, obliquely, in past/present tense)
 21. Wave cleared: BAD "Wave 4 complete! +120 affect." GOOD "The wave is not gone; nor is it still here." (the +120 shows in the numeric HUD, not the prose)
-22. Unit fused to link 3: BAD "Merge success: Pamojja unlocked." GOOD "A small yes, repeated."
+22. Unit fused to link 3: BAD "Merge success: Gladness unlocked." GOOD "A small yes, repeated."
 23. Unit fell: BAD "Your unit died." GOOD "It is no longer held. The place keeps its shape a moment."
 24. Boss arrives: BAD "Warning: boss incoming!!" GOOD "Something that was always coming has the shape of arriving."
 25. Overwhelm threshold: BAD "Overwhelm at 100%, careful." GOOD "Too many to count, equal in number to one's open hands."
 26. Cannot afford: BAD "Not enough affect." GOOD "Not yet enough has been felt for this." (still true: it costs affect)
 27. Seat taken: BAD "Slot occupied." GOOD "Something already stands there."
 
-### Koans (ambient; use the templates)
-28. BAD (copied cadence from a text): "Form is emptiness." GOOD "The knot is not the rope; nor is it the hand that pulled."
+### Ambient lines (the log pools; use the templates)
+28. BAD (a remembered line, lightly reworded): "Everything is something else." GOOD "The knot is not the rope; nor is it the hand that pulled."
 29. BAD (false number): "One sees a hundred, equal in number to one's gold." GOOD "One sees three, equal in number to one's unanswered questions."
 30. BAD (jokey): "If one clicks twice, one certainly gets carpal tunnel." GOOD "If one stays one moment longer, one certainly leaves lighter."
 
@@ -89,9 +89,9 @@ Mechanic first, then BAD (what to avoid) and GOOD.
 
 - [ ] I wrote the mechanic in numbers first and the line does not contradict it
 - [ ] No joke, pun, exclamation mark, emoji, imperative nagging, or meme register
-- [ ] Not derived from any remembered line from a game or scripture; template structure only
+- [ ] Not derived from any remembered line from a game or book; template structure only
 - [ ] Concrete image is accurate to the thing (a lid, a tide, a door), not decorative
-- [ ] Length limits: hint < 12 words, koan 10-18 words
+- [ ] Length limits: hint < 12 words, ambient line 10-18 words
 - [ ] Names follow the regulation-term pattern; stats use the established words
 - [ ] If a number appears, it is exact and read from data (`%v%` placeholders as in ASPECTS)
 - [ ] Spelling and glyphs are inside the baked fonts (check `src/ui/type`; avoid exotic Unicode)
@@ -100,7 +100,7 @@ Mechanic first, then BAD (what to avoid) and GOOD.
 ## Where text lives
 
 - Game data text: `src/game/data.js` (only the mediator edits; content lanes propose rows).
-- Pools: `src/game/content/**` (content lanes). Keep pools as arrays of strings per key, like `KOANS.attend`.
+- Pools: `src/game/content/**` (content lanes). Keep pools as arrays of strings per key, like `KOANS.attend` (identifier kept).
 - Never hard-code player-visible prose in JSX; import it from data so voice review is one grep.
 
 ## Worked rewrite (how to go from mechanic to line)
@@ -113,7 +113,7 @@ Mechanic: `Mend` heals the ally with the lowest tolerance for 2.5x the caster's 
 4. Shipped ability text states the plain mechanic ("Mends the ally who needs it most.") while the family text carries the oblique voice. Both must be true.
 
 Two registers, keep them separate:
-- **Flavour** (family `text`, links, koans, stage hints): oblique.
+- **Flavour** (family `text`, links, ambient lines, stage hints): oblique.
 - **Ability and trait `text`** (what the number does): short, literal about WHAT, silent about HOW MUCH unless it reads exact (`%v%`). Cryptic is for flavour; the rules sentence may be confusing in what it omits but never in what it states.
 
 ## Anti-patterns seen in drafts

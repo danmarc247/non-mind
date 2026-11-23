@@ -1,14 +1,14 @@
 ---
 name: nonmind-audio
-description: Use when adding, changing or reviewing any NON-MIND sound or music in src/audio. That includes the generative score (Eno-style Airports loops, Glass-style Floe arpeggios), mood-to-music mapping, instruments, SFX recipes and names, mapping game events to sounds in src/App.jsx, HRTF spatialisation, loudness and voice budgets, the reset collapse, and offline-render measurement in tests/audio.
+description: Use when adding, changing or reviewing any NON-MIND sound or music in src/audio. That includes the generative score (asynchronous ambient loops, interlocking minimalist arpeggios), mood-to-music mapping, instruments, SFX recipes and names, mapping game events to sounds in src/App.jsx, HRTF spatialisation, loudness and voice budgets, the reset collapse, and offline-render measurement in tests/audio.
 ---
 
 # NON-MIND audio
 
 Owner intent:
 - All audio is procedural Web Audio and spatial, with no samples, no libraries and no network.
-- The simple state sounds like early Brian Eno (*Music for Airports*: asynchronous loops of different lengths).
-- As complexity rises it turns into Philip Glass's *Floe*: interlocking arpeggios and horn swells.
+- The simple state is a bed of asynchronous ambient loops of different lengths.
+- As complexity rises it turns into interlocking minimalist arpeggios and horn swells.
 - "The sounds should fit, the music should be great."
 
 Every SFX is pitched to the current mode, so the whole game is one harmony.
@@ -18,14 +18,14 @@ Every SFX is pitched to the current mode, so the whole game is one harmony.
 | file | role |
 |---|---|
 | `engine.js` | `createAudioEngine(ctx, {seed})`: graph, mood smoothing, lookahead scheduler, `reset()`, `getLevels()`, `at()`. `getAudio()` is the lazy singleton with `unlock()`. |
-| `music.js` | `createMusic(E)`: Airports loops, Floe voices and horns, drone, breath, heartbeat, Shepard. `schedule(tEnd, now)` and `control(T, dt)`. |
+| `music.js` | `createMusic(E)`: ambient loops, arpeggio voices and horns, drone, breath, heartbeat, Shepard. `schedule(tEnd, now)` and `control(T, dt)`. |
 | `instruments.js` | `createKit`, `makeImpulse`, and the instruments `piano, voice, horn, pluck, thump`. |
 | `sfx.js` | `SFX_NAMES`, `createSfx(E)` with the `begin()` helper (`X.tone`, `X.noise`, `X.hz`), `HIT`/`CAST_TINT` aspect flavours, `resetGesture`. |
 | `util.js` | `mulberry32`, `approach`, `MODES`, `VOWELS`, per-depth `PALETTES`, `makeScale`, `degHz`, `VoiceBudget`. |
 | `lab.js` + `/audio-lab.html` | Manual test bench: sliders for every mood field, every SFX, a spectrum, debug output. |
 
 The signal flow (from the header of engine.js):
-- Music voices go through per-voice HRTF panners into `airDry/airRev` or `floeDry/floeRev`, then into the convolver (5.6 s impulse).
+- Music voices go through per-voice HRTF panners into `airDry/airRev` (ambient) or `floeDry/floeRev` (arpeggio), then into the convolver (5.6 s impulse).
 - Drone, breath and Shepard go to `musicDry`. The relational ping-pong delay feeds back into the music sum.
 - The music sum then runs: clean or tanh drive → tilt shelves (220 Hz / 3.2 kHz) → collapse lowpass → duck → `musicGain`.
 - SFX go through an optional HRTF panner into `sfxDry` plus their own 2.4 s reverb, then `sfxGain`. SFX are never ducked by the music collapse.
@@ -49,8 +49,8 @@ Before `start()`, values snap, which keeps offline renders deterministic. A **de
 
 | parameter | effect (in `music.control` / `schedule`) |
 |---|---|
-| complexity 0 | **Airports only**. 8 loops with incommensurate periods `17.3 … 33.7 s` (±3% jitter, × `periodScale`). Each holds 1-3 piano notes or 1-2 voice notes from `FAVOURED` degrees. Each orbits the listener on its own 45-135 s period, at radius 6-14. |
-| complexity ↑ | Airports gain `1 - 0.5·smoothstep(.3,1,c) - .25·o` fades. Floe bus `smoothstep(.05,.3,c)`. **Horns** enter at c > 0.06-0.28 on each chord start. **5 arpeggio voices** enter at thresholds `0.22, 0.36, 0.5, 0.64, 0.78`, with pattern lengths 6/8/5/7/9 (+0..3 additive process every M cycles), so they phase against each other. |
+| complexity 0 | **Ambient loops only**. 8 loops with incommensurate periods `17.3 … 33.7 s` (±3% jitter, × `periodScale`). Each holds 1-3 piano notes or 1-2 voice notes from `FAVOURED` degrees. Each orbits the listener on its own 45-135 s period, at radius 6-14. |
+| complexity ↑ | Ambient gain `1 - 0.5·smoothstep(.3,1,c) - .25·o` fades. Arpeggio bus `smoothstep(.05,.3,c)`. **Horns** enter at c > 0.06-0.28 on each chord start. **5 arpeggio voices** enter at thresholds `0.22, 0.36, 0.5, 0.64, 0.78`, with pattern lengths 6/8/5/7/9 (+0..3 additive process every M cycles), so they phase against each other. |
 | overwhelm | Tempo `30/(132+36·o)` s per eighth (132 to 168 bpm). Detune and doubled plucks. Filter cut `2400+5200·o`. Saturation mix `0.6·o²`. Two **extra 16th voices** (11 and 13 notes) at o > 0.22/0.5 when c > 0.4. **Shepard-Risset rise** (6 sines, gain `0.06·o^1.4`), killed after 4 s at o ≈ 0. The heartbeat speeds up. Horn cutoff and spread grow. |
 | tension | Drone (root + fifth, -1 oct) gain `0.045·ten`, LP `300+500·ten`. |
 | depth | `PALETTES[depth % 8]`: F dorian, Db lydian, Ab mixolydian, C aeolian, Eb ionian, G phrygian, E lydian, D aeolian. Each sets vowel, brightness, inharmonicity, pluck wave, 4-chord `prog` and `beats`. After 8 depths it transposes by fifths, gets brighter and more detuned. |
@@ -69,7 +69,7 @@ Before `start()`, values snap, which keeps offline renders deterministic. A **de
 **Reset** (`engine.reset()`, the "non-mind" collapse):
 - Duck to -70 dB (τ 0.42), and the collapse LP falls to 160 Hz by 1.7 s.
 - `resetGesture`: a 6 kHz → 150 Hz whoosh, a sub implosion at 70 → 38 Hz, then **one pure sine** at the tonic.
-- At 4.2 s the duck recovers. Airports regrow from a single piano loop at +4.4 s, then the others one by one (every 5.5 s plus jitter). The Floe is silenced and its additive state reset.
+- At 4.2 s the duck recovers. The ambient loops regrow from a single piano loop at +4.4 s, then the others one by one (every 5.5 s plus jitter). The arpeggio layer is silenced and its additive state reset.
 
 ## 4. Instrument recipes (`instruments.js`)
 
@@ -84,7 +84,7 @@ A new instrument follows the same signature, `(kit, dest, t, freq, o) → boolea
 
 ## 5. SFX: names, recipes, event map
 
-`SFX_NAMES`: attend, buy, sell, reroll, pickup, place, merge, integrate, subtract, split, repurpose, hit, cast, death, enemyDeath, waveStart, waveWin, waveLose, upgrade, verbStart, verbDone, decay, unlock, error, hover, overwhelmPulse, stanceChoose, reset.
+`SFX_NAMES`: attend, buy, sell, reroll, pickup, place, merge, integrate, subtract, split, repurpose, hit, cast, death, enemyDeath, waveStart, waveWin, waveLose, upgrade, verbStart, verbDone, decay, unlock, error, hover, overwhelmPulse, stanceChoose, mutation, miss, coreHit, gate, reset (32 names).
 
 Naming: camelCase verbs or events, named after **what happened in the game**, not after the sound ("merge", not "chime2"). Adding one means:
 1. Add it to `SFX_NAMES`.
@@ -118,15 +118,17 @@ Event map (`src/App.jsx`). Game events come from `G.events`, delivered through `
 ```js
 const SFX = { attend:'attend', waveStart:'waveStart', waveWin:'waveWin', waveLose:'waveLose', link:'merge', integrate:'integrate',
   subtract:'subtract', split:'split', repurpose:'repurpose', death:'death', enemyDeath:'enemyDeath', cast:'cast', stage:'unlock',
-  level:'upgrade', verbStart:'verbStart', verbDone:'verbDone', mood:'decay', stance:'stanceChoose', ending:'unlock', mirror:'unlock', spell:'cast' };
+  level:'upgrade', verbStart:'verbStart', verbDone:'verbDone', mood:'decay', stance:'stanceChoose', ending:'unlock', mirror:'unlock', spell:'cast', mutation:'mutation', miss:'miss', coreHit:'coreHit' };
 ```
 Special cases:
 - `reset` calls `a.reset()`.
+- `beat` plays `gate` with the gate index.
+- The sound ring in the HUD toggles mute through the window event `nonmind:mute`; `App.jsx` keeps the choice in `localStorage` and calls `getAudio().setMuted()`.
 - `{type:'sfx', name}` (emitted by the engine for buy/reroll/place/upgrade/error/decay) plays that name directly.
 - `hit` is throttled to one per **45 ms** with `intensity = min(1, 0.3 + amt·2)` plus the aspect.
 
 Unmapped today, and candidates if a sound would help:
-- `strike`, `beat`, `miss`, `coreHit`, `unitNew`, `unitGone`
+- `strike`, `unitNew`, `unitGone`
 - the HUD-only names `sell`, `pickup`, `hover`, `overwhelmPulse`
 
 Every call is wrapped in `try`, because sound must never break the game.
@@ -137,8 +139,8 @@ Every call is wrapped in `try`, because sound must never break the game.
 - Positional SFX pass `position: [e.x, 0.75, e.z]` (sim x/z, fixed unit height). Only events that carry `x` are spatial. UI and economy sounds stay non-positional, centred.
 - SFX panner: HRTF, inverse distance, refDistance 4, rolloff 0.8.
 - Music panner: refDistance 6, maxDistance 200.
-- Airports loops orbit the listener slowly, each on its own period.
-- Floe voices sit on a ring of radius 5.5 (0.8× for the extra voices) and drift. Height follows octave.
+- Ambient loops orbit the listener slowly, each on its own period.
+- Arpeggio voices sit on a ring of radius 5.5 (0.8× for the extra voices) and drift. Height follows octave.
 - The two horns sit left-front and right-front at radius 7, breathing ±0.15 rad.
 - Away and void widen every orbit (`rMul`).
 - Never hard-pan with StereoPanner for world sounds. Use `PannerNode` so it follows the camera orbit.
@@ -190,4 +192,4 @@ Don't:
 - Duck SFX with the music.
 - Use abrupt gain jumps (always ramp or setTarget).
 - Use loud stingers on frequent events.
-- Copy recognisable melodies from Eno or Glass. Remix the *process* (loop phasing, additive arpeggios), never the notes.
+- Copy recognisable melodies from anywhere. Use the *process* (loop phasing, additive arpeggios), never someone else's notes.

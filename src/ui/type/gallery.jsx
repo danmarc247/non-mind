@@ -128,7 +128,7 @@ function Gallery() {
       </Panel>
 
       <footer className="col-span-2 font-stat text-sm text-ink-2">
-        src/ui/type · koanflash / pretextflow / type3d / glyphticker
+        src/ui/type · kinetic flash / pretextflow / type3d / glyphticker
       </footer>
     </div>
   );

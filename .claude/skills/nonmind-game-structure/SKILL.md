@@ -12,19 +12,19 @@ description: Use when changing or reasoning about NON-MIND gameplay and data. Th
 
 Unit stats are quirky and weird, and the explanations are more confusing than helpful, **but every number really works**.
 
-The design remixes the *systems* (never the names, art or text) of four games:
-- **Cultist Simulator**: timed verbs that take a card, decaying moods (Dread/Contentment/Fascination), seasons that demand something, and the cryptic, overwhelmed edge.
-- **Dota Underlords**: shop odds by level, tiers, 3-of-a-kind style fusion (here, 2 of the same at the same link), aspect alliances at thresholds 2/4/6, interest, and streaks.
-- **Realm Grinder**: habits with ×1.15 cost growth, odd upgrades scaling on run state, prestige currency `mu`, and mirrors (deep multipliers).
-- **Book of Hours**: slow-season pressure and named fields and witnesses.
+The design remixes *systems* (never names, art or text) from four kinds of game:
+- **Card-table occultism with timed verbs**: verbs that take a card, decaying moods (Dread/Contentment/Fascination), seasons that demand something, and the cryptic, overwhelmed edge.
+- **Auto-battler drafting**: shop odds by level, tiers, merge-by-copies fusion (here, 2 of the same genome at the same link), aspect alliances at thresholds 2/4/6, interest, and streaks.
+- **Idle/incremental layering**: habits with ×1.15 cost growth, odd upgrades scaling on run state, a prestige currency (`G.mu` in code, shown to the player as **residue**), and mirrors (deep multipliers).
+- **Slow-season pressure** with named fields and witnesses.
 
-Owner: "Don't forget the Cultist Simulator edge, the incremental/overwhelmed fact, stages, progression, upgrades."
+Owner: "Don't forget the card-table occultism edge, the incremental/overwhelmed fact, stages, progression, upgrades."
 
 The game lives in `src/game/`. It is pure JS with no DOM, and it is deterministic given the seed (`mulberry` in `game.js`). `index.js` is the only API the UI, gfx, audio and tests import. UI code calls `act(name, ...args)` from `store.js` and never mutates `G`.
 
 ## 1. Structural skeleton (structure only, never content)
 
-The skeleton comes from a sutra chapter. Only its shape is used:
+The skeleton is a formal ten-fold structure. Only its shape is used:
 - **One center**: the core (composure), which you click to `attend`.
 - **10 directions**: `DIRECTIONS = 10` gates on a disc (`gatePos`). Seats are in 3 rings × 10 directions (`ARENA.rings [3.2, 5.4, 7.6]`), with odd rings offset by half a step.
 - **10 leaders**: the 10 families, one per gate (`dir 0..9`). Each fills a **5-slot tuple** (direction, name, home field, witness, retinue):
@@ -50,7 +50,7 @@ The skeleton comes from a sutra chapter. Only its shape is used:
   | 9 | self-cancelling | cancel | noAspects |
   | 10 | return to action | return | boss, oneShot 3% |
 
-- **Simultaneity/mirroring**: the `mirror` purchase says "The same assembly, in every direction, under the same names". Each mirror gives ×2 affect, +2 unit cap, a third ring, and ×1.5 stressor scale.
+- **Simultaneity/mirroring**: the `mirror` purchase says "The same assembly, in every direction, under the same names". Each mirror gives ×2 affect, +2 unit cap, a third ring, +70 complexity and +20% stressor tolerance (`mirrorCost(G)` in game.js).
 - **"Small enters great"**: the stage 15 hint. Small (a leaf) enters great (a hybrid) through integrate; great enters small through split.
 - **Text templates** (see the nonmind-voice skill): "X is not A; nor is it B", "X has no P, yet fills every P", "Just as …, so …".
 
@@ -73,9 +73,9 @@ The skeleton comes from a sutra chapter. Only its shape is used:
 | 10 | evoke | verbs | cycle ≥ 1 or wave ≥ 9 | dream, ruminate, rest, confide |
 | 11 | interchange | exchange | verbsDone ≥ 2 | 4 currency exchange routes |
 | 12 | evoke | echo | exchanges ≥ 3 | second-heaviest family's ability casts at half power |
-| 13 | inhabit | stance | echoes ≥ 5 | toward / away / against |
+| 13 | inhabit | stance | echoes ≥ 20 | toward / away / against |
 | 14 | sustain | seasons | stance chosen | every 60 s the season takes 3 attention, or adds a Dread |
-| 15 | penetrate | mirror | seasons ≥ 3 | mirror, 1e6·40^n affect |
+| 15 | penetrate | mirror | seasons ≥ 5 | mirror, `mirrorCost` (×25 per mirror) |
 | 16 | embrace | wildcard | mirrors ≥ 1 | +1 count to every aspect (`aspectTiers`) |
 | 17 | overwhelm | nonmind | overwhelm ≥ 1 | the reset |
 
@@ -108,7 +108,7 @@ Each stage also:
   - `baseStats` is the weighted blend of the leaves' stats.
   - Poles skew them: idealized gives tol ×0.6, sal ×1.7, lat ×0.85; devalued gives tol ×1.5, sal ×0.7; and any pole adds lab +0.25.
   - Synergy is `1 + 0.12·(leaves-1)`.
-  - `unitStats` then multiplies by `LINKS[link-1].mult`, stance, aspect tiers, `crowd`, and endings.
+  - `unitStats` then multiplies by `LINKS[link-1].mult`, stance, aspect tiers, `crowd` (`1 + C/60`), endings, and a momentum term from lifetime earnings and residue.
 - **Aspects** (8): vagal, limbic, cortical, somatic, shadow, relational, void, mythic.
   - A unit has its top 2 by weighted vote, or 3 if it has 4 or more leaves.
   - A tier activates at 2/4/6 *distinct head families* seated (`aspectTiers`).
@@ -119,28 +119,32 @@ Each stage also:
 
 ## 4. The 12-link ladder ("VERY genetic, be smart, evolve")
 
-The 12 links are the upgrade track, from `LINKS` in `data.js`. They follow the transcendental dependent origination sequence:
+The 12 links are the upgrade track, from `LINKS` in `data.js`. Names are English only (in data and in every player-visible string):
 
-| link | name | gloss | stat mult | trait |
-|---|---|---|---|---|
-| 1 | Dukkha | unsatisfactoriness | ×1 | ache |
-| 2 | Saddhā | confidence | ×1.7 | trust |
-| 3 | Pāmojja | gladness | ×2.8 | glad |
-| 4 | Pīti | rapture | ×4.5 | rapture |
-| 5 | Passaddhi | tranquillity | ×7 | calm |
-| 6 | Sukha | ease | ×11 | ease |
-| 7 | Samādhi | collectedness | ×17 | gather |
-| 8 | Yathābhūta(ñāṇadassana) | seeing things as they are | ×26 | see |
-| 9 | Nibbidā | disenchantment | ×40 | tire |
-| 10 | Virāga | dispassion | ×62 | fade |
-| 11 | Vimutti | release | ×95 | release |
-| 12 | Khaye ñāṇa | knowledge of the ending | ×150 | end |
+| link | name | stat mult | trait |
+|---|---|---|---|
+| 1 | Unsatisfactoriness | ×1 | ache |
+| 2 | Confidence | ×1.7 | trust |
+| 3 | Gladness | ×2.8 | glad |
+| 4 | Rapture | ×4.5 | rapture |
+| 5 | Tranquillity | ×7 | calm |
+| 6 | Ease | ×11 | ease |
+| 7 | Collectedness | ×17 | gather |
+| 8 | Seeing As It Is | ×26 | see |
+| 9 | Disenchantment | ×40 | tire |
+| 10 | Dispassion | ×62 | fade |
+| 11 | Release | ×95 | release |
+| 12 | Knowing The Ending | ×150 | end |
 
 Mechanics in `game.js`:
-- **`fuse`**: whenever a unit is added, any other non-busy unit with the **same genome key and the same link** fuses with it. The kept unit is the seated one. It gets `link++`, inherited traits, and the new link's trait. Fusion chains automatically.
+- **`fuse`**: whenever a unit is added, any other non-busy unit with the **same genome key and the same link** fuses with it. From link 4 up (`FUSE_NEAR`) it also fuses with a copy one link away (that neighbour must be link 3 or more), so the climb turns from doubling to Fibonacci. The kept unit is the seated one. It gets `max(link)+1`, inherited traits, the new link's trait, a 60% mutation roll. Fusion chains automatically.
 - **Link 12** removes the unit and adds `G.endings++`. Each ending is a permanent +10% affect and +10% salience that survives the reset.
 - Visually, the link grade runs from muddy and knotted to saturated to pale and luminous, and halos appear (see nonmind-shaders).
 - Evolution stays genetic because hybrids are trees, traits are heritable genes, split recovers parents, dream mutates toward related families, and pruning leaves `ghosts`. Any new mechanic should act on the genome or the traits, not on a flat "level".
+
+## 4b. Advisor (`advisor.js`)
+
+Pure functions over `G` for idle hints: `suggestions(G)` lists every valid, TRUE nudge (each has a `target` the HUD anchors to, an oblique `text` and a `plain` line); `nextSuggestion(G, memory, now)` rotates them with a 90 s cooldown. Constants `IDLE_BEFORE_SUGGESTING` (25 s), `SUGGESTION_LIFETIME` (15 s), `SUGGESTION_GAP` (6 s). The HUD (`hud/Nudge.jsx`) draws the arrow; the `?` button and the keys `?` / `H` ask for the next hint at once. A new rule must only fire when the thing can be done right now.
 
 ## 5. Operations
 
@@ -148,8 +152,8 @@ Mechanics in `game.js`:
 |---|---|---|---|---|---|
 | integrate | `integrate(a,b)` | 20 insight (free before insight unlocks) | `node('blend', a, b, k)` | max(a,b) | inherited |
 | subtract | `subtract(a,b)` | 35 insight | `node('carve', a, b, k)`, so b is carved out of a | a.link | a's + one of b's |
-| split | `split(id)` | 10 insight | a node splits into its 2 children; a whole leaf at link > 1 splits into its +1 and -1 poles, one link lower | node keeps link | halves |
-| repurpose | `repurpose(id)` | none | the unit becomes `tier·link·(1+leaves)` habits of index `FAMILY.dir` | n/a | n/a |
+| split | `split(id)` | 10 insight | a node splits into its 2 children, each returning at the link its parent brought to the integrate (`u.parentLinks`; no link is minted by joining then parting). A whole leaf at link > 1 splits into its +1 and -1 poles, one link lower | per parent | halves |
+| repurpose | `repurpose(id)` | none | the unit becomes `max(1, round(link·(1+leaves)/2))` habits; the habit is picked by worth: index `min(9, tier-1 + floor((link-1)/3))` | n/a | n/a |
 | fuse | automatic | none | same key and link | +1 | inherited + new |
 
 Details:
@@ -160,17 +164,19 @@ Details:
 ## 6. Economy layers
 
 - **Affect** (main incremental currency):
-  - Sources: clicks (`clickValue`), habits (`habitYield · affectMul` per second), kills, wave wins (`20·1.35^(cycle·10+wave-1)`), and some traits and abilities.
-  - `affectMul` multiplies mu, complexity (`1 + C/25`, so **complexity pays**), endings, `2^mirrors`, mythic tier, upgrades, fascination, and the away stance.
+  - Sources: clicks (`clickValue`), habits (`habitYield · affectMul` per second), kills (`value·3·1.18^(gw-1)`), wave wins (`20·1.35^(gw-1)`), and some traits and abilities.
+  - `affectMul` multiplies residue (`1 + 0.04·mu`), complexity (`1 + C/25`, so **complexity pays**), endings, `2^mirrors`, mythic tier, upgrades, fascination, and the away stance.
 - **Attention** (auto-battler gold):
   - It buys units (`TIER_COST [1..5]`), rerolls (2) and XP (5 for 4 XP).
-  - A win pays 4 + interest (1 per 10 held, capped at 5, or 10 with `thrift`) + a streak bonus. A loss pays +2.
+  - A win pays 7 + interest (1 per 10 held, capped at 5, or 10 with `thrift`) + a streak bonus (`min(3, floor(streak/3))`). A loss pays +3 and refills composure. A boss kill pays +2.
+  - The shop leans toward the family you are climbing: from stage 3, each slot has a 30% chance (`SHOP_FOCUS`) to show the highest-link leaf unit's family.
+  - **Mercy**: in prep, with the shop unlocked, nothing usable held and too little attention for the cheapest slot or a reroll, a tier-1 family appears in slot 0 and attention is lifted to 1. A mind is never left with nothing.
 - **Insight**: capped at 100. It regenerates at `1 + 0.15·level` per second and pays for ops and spells (`exhale`, `label`, `recollect`).
-- **Level/XP**: `XP_TO_LEVEL`, max 10. Unit cap is `min(30, level + 1 + 2·mirrors)`. Shop odds by level come from `SHOP_ODDS`.
+- **Level/XP**: `XP_TO_LEVEL = [2, 3, 6, 10, 16, 26, 40, 60, 90]`, max 10; a win gives 2 xp, a loss 1. Unit cap is `min(30, level + 1 + 2·mirrors)`. Shop odds by level come from `SHOP_ODDS`.
 - **Habits**: 10 of them (Breath to Identity), with cost `base·1.15^owned`.
 - **Upgrades**: odd scalers gated by stage: noticing, counting_breaths, old_wound, long_view, crowd, thrift, second_arrow, lending.
 - **Attendants**: auto-clickers at 0.5× click value and 0.25 clicks per second each.
-- **Verbs** (Cultist-style timed slots that hold a unit, aspect-gated):
+- **Verbs** (timed slots that hold a unit, aspect-gated):
   - dream: the unit is replaced by a related family
   - ruminate: +45 insight and a Dread (30% Fascination instead)
   - rest: removes a Dread and restores full composure
@@ -190,15 +196,18 @@ Details:
 
 Each `step`:
 ```
-C = Σ complexityOf(u) + √habitsOwned·1.2 + upgrades·1.5 + moods + mirrors·12 + attendants·0.6 + (stance ? 3 : 0)
+C = Σ complexityOf(u) + √habitsOwned·1.2 + upgrades·1.5 + moods + mirrors·70 + attendants·0.6 + (stance ? 3 : 0)
+    + 2.5·log10(1 + earned) + 1.5·(cycle·10 + wave)
 complexityOf(u) = (leaves + depth·0.5 + ghosts·0.5)·(1 + (link-1)·0.35) + traits·0.25
-capacity = 40·(1 + 0.3·mu^0.6)·(1 + 0.3·stage)
-overwhelm = clamp((C - capacity) / (capacity·0.6), 0, 1)
+capacity = 40·(1 + 0.3·stage)          (residue no longer widens it)
+overwhelm = clamp((C - capacity) / (capacity·0.12), 0, 1)
 ```
-- At overwhelm 1, composure drains 2% per second. Overwhelm also scales stressors by up to ×3 and speeds beats by ×0.7 above 0.5.
+- At overwhelm 1, composure drains 2% per second. Overwhelm also scales stressor tolerance by `1 + 1.2·overwhelm` (up to ×2.2) and speeds beats by ×0.7 above 0.5.
+- Stressor tolerance per global wave `gw`: `3.4 · 1.1^min(gw-1,18) · 1.04^clamp(gw-19,0,10) · 1.015^max(0,gw-29) · (1+1.2·overwhelm) · (1+0.2·mirrors) · 0.88^habituation` (habituation: +1 per loss on a wave, max 12, reset by a win). Salience `1.04^(gw-1)`.
+- Wave 10 of a cycle (arc `return`): each regulator strike has a 3% chance to deal the target's whole remaining tolerance (the one-strike rule).
 - `mood.complexity = C/capacity` (eased) is what makes the visuals and the music richer.
-- **nonMind** (the reset): `muGain = floor((peak/8)^0.8 · (1 + stage/17) · (overwhelm ≥ 1 ? 2 : 1))`. A new game keeps `mu, endings, depth+1, bestStage, totalT`. Everything else becomes simple again. It emits a `reset` event, which triggers the audio collapse and a flash of 1.
-- Known gap (team-log): `actions.nonMind` is not stage-gated in the engine. Only the UI gates it. Do not rely on that.
+- **nonMind** (the reset): `muGain = floor((peak/8)^0.8 · (1 + stage/17) · (overwhelm ≥ 1 ? 2 : 1) · (1 + 0.15·depth))`, shown as **residue**. A new game keeps `mu, endings, depth+1, bestStage, totalT`; it starts with `3 + min(20, floor(√mu))` attention. Everything else becomes simple again. It emits a `reset` event, which triggers the audio collapse and a flash of 1.
+- `actions.nonMind` refuses below stage 1 (returns the same game); the UI gate is stricter.
 
 ## 8. How to add things (each one is a mediator-lane edit in src/game unless you own it)
 

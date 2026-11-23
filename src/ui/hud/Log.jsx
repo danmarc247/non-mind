@@ -1,7 +1,7 @@
 // The log of arcane messages (with its arrival choreography) + centre-screen stage flash.
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
-import { KoanFlash } from '../type/index.js';
+import { KoanFlash } from '../type/KoanFlash.jsx';
 import { STAGES } from '../../game/index.js';
 import { onEvent, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';

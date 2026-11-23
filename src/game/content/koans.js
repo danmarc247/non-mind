@@ -1,4 +1,4 @@
-// NON-MIND koans: original short text pools. Each line 10-18 words at most.
+// NON-MIND ambient lines: original short text pools. Each line 10-18 words at most.
 
 export const KOANS = {
   attend: [

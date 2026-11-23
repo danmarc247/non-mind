@@ -44,7 +44,7 @@ export const VOWELS = {
 /**
  * One palette per prestige depth (cycles every 8). Each shifts key, mode and
  * timbre so later runs sound different. root = MIDI note of "octave 0" tonic.
- * prog = 4 scale degrees for the Floe chord cycle; beats = chord lengths.
+ * prog = 4 scale degrees for the arpeggio chord cycle; beats = chord lengths.
  */
 export const PALETTES = [
   { name: 'F dorian', root: 53, mode: 'dorian', vowel: 'a', bright: 0.8, inharm: 0.0005, pluck: 'triangle', prog: [0, 6, 3, 4], beats: [16, 8, 8, 8], periodScale: 1.0 },

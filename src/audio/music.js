@@ -1,10 +1,10 @@
 // NON-MIND audio — generative music.
 //
-//  * "Airports" layer (after Eno, Music for Airports 1/1, 2/1): 8 loops with
+//  * Ambient layer (asynchronous loops of different lengths; internal names `air*`): 8 loops with
 //    incommensurate periods (~17-34 s), each holding one note or a 2-3 note
 //    phrase played by a felt piano or a wordless voice. Each loop sits in its
 //    own HRTF panner that slowly orbits the listener on its own period.
-//  * "Floe" layer (after Glass, Glassworks/Floe): horn swells outlining a
+//  * Arpeggio layer (interlocking minimalist arpeggios): horn swells outlining a
 //    4-chord cycle, then 1-5 arpeggio ostinati whose pattern lengths differ
 //    (5..9 notes) and grow/shrink by one note every few cycles (additive
 //    process) so they phase against each other; two extra sixteenth-note
@@ -55,7 +55,7 @@ export function createMusic(E) {
     } else p.setPosition(x, y, z);
   }
 
-  // ---- Airports loops ---------------------------------------------------------
+  // ---- ambient loops ---------------------------------------------------------
   const PERIODS = [17.3, 19.7, 22.1, 23.9, 26.3, 28.6, 31.1, 33.7];
   const INST = ['piano', 'voice', 'piano', 'piano', 'voice', 'piano', 'voice', 'piano'];
   const FAVOURED = [0, 2, 4, 0, 4, 1, 5, 3, 6, 2];
@@ -123,7 +123,7 @@ export function createMusic(E) {
     }
   }
 
-  // ---- Floe layer -----------------------------------------------------------
+  // ---- arpeggio layer -----------------------------------------------------------
   const TONES = [0, 2, 4, 7, 9, 11]; // chord tones as scale-degree offsets (1.5 octaves)
   function makeSeq(style, L) {
     const n = L + 3;
@@ -201,7 +201,7 @@ export function createMusic(E) {
     const chordDur = F.chordLen * F.stepDur;
     const dur = clamp(chordDur * 1.15, 4, 8);
     const d = sc.prog[F.chordIdx];
-    // mid register (root/fifth at octave 0, third above) so the Floe brightens the mix
+    // mid register (root/fifth at octave 0, third above) so the arpeggio layer brightens the mix
     const notes = [[d, 0], [d + 4, 0], [d + 2, 1]];
     if (S.asp.mythic > 0.3) notes.push([d + 7, 1]);
     const o = S.o;
@@ -365,7 +365,7 @@ export function createMusic(E) {
     const cut = 2400 + 5200 * o + 2200 * S.against + 900 * A.cortical + 300 * sc.bright;
     for (const v of fVoices) v.filt.frequency.linearRampToValueAtTime(cut * (1 + 0.15 * v.oct), T);
 
-    // orbits: every Airports loop circles the listener on its own period
+    // orbits: every ambient loop circles the listener on its own period
     const rMul = 1 + 0.5 * S.away + 0.3 * A.void;
     for (const L of loops) {
       const ob = L.orbit;
@@ -421,7 +421,7 @@ export function createMusic(E) {
   /**
    * Depth changed (E.scale already replaced): fade every sustained note of the
    * old key over ~1 s; everything scheduled from now on uses the new key. The
-   * Floe restarts its chord cycle so horns re-swell in the new key.
+   * the arpeggio layer restarts its chord cycle so horns re-swell in the new key.
    */
   function keyChange(now) {
     keyAt = now;
@@ -436,7 +436,7 @@ export function createMusic(E) {
     F.chordIdx = -1;
   }
 
-  /** Non-mind collapse: silence the Floe, regrow Airports from one loop. */
+  /** Non-mind collapse: silence the arpeggio layer, regrow the ambient loops from one loop. */
   function reset(t) {
     const order = loops.slice().sort((a, b) => (a.inst === 'piano' ? 0 : 1) - (b.inst === 'piano' ? 0 : 1));
     order.forEach((L, k) => {

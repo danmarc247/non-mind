@@ -5,8 +5,8 @@
 //   eng.start(); eng.setMood({ complexity: 0.4 }); eng.sfx('attend', { position: [1, 0, -2] });
 //
 // Signal graph
-//   music voices -> per-voice HRTF panners -> airDry / floeDry ─┐
-//                \-> airRev / floeRev -> reverbIn -> Convolver ─┤
+//   music voices -> per-voice HRTF panners -> ambient bus / arpeggio bus (dry) ─┐
+//                \-> per-bus reverb sends -> reverbIn -> Convolver ─┤
 //   drone / breath / shepard -> musicDry ───────────────────────┤
 //   relational ping-pong delay ─────────────────────────────────┤
 //        musicSum -> [clean | tanh drive] -> tilt shelves -> collapse LP -> duck -> musicGain ─┐

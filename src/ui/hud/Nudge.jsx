@@ -53,11 +53,13 @@ function layout(r) {
   const vw = window.innerWidth, vh = window.innerHeight;
   const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
   const side = cy > vh * 0.62 ? 'above' : cy < vh * 0.25 ? 'below' : cx < vw * 0.5 ? 'right' : 'left';
-  const L = 58, gap = 8;
-  if (side === 'above') return { side, x: cx, y: r.top - gap, rot: 90, cap: { left: cx, top: r.top - gap - L - 6, anchor: 'bottom' } };
-  if (side === 'below') return { side, x: cx, y: r.top + r.height + gap, rot: -90, cap: { left: cx, top: r.top + r.height + gap + L + 6, anchor: 'top' } };
-  if (side === 'right') return { side, x: r.left + r.width + gap, y: cy, rot: 180, cap: { left: r.left + r.width + gap + L + 8, top: cy, anchor: 'left' } };
-  return { side, x: r.left - gap, y: cy, rot: 0, cap: { left: r.left - gap - L - 8, top: cy, anchor: 'right' } };
+  const L = 58, gap = 8, p = r.panel, out = 10;
+  // the arrow points at the target; the caption sits beyond the edge of the panel the target is in,
+  // so it never lies over panel text
+  if (side === 'above') return { side, x: cx, y: r.top - gap, rot: 90, cap: { left: cx, top: Math.min(r.top - gap - L - 6, p ? p.top - out : Infinity), anchor: 'bottom' } };
+  if (side === 'below') return { side, x: cx, y: r.top + r.height + gap, rot: -90, cap: { left: cx, top: Math.max(r.top + r.height + gap + L + 6, p ? p.bottom + out : -Infinity), anchor: 'top' } };
+  if (side === 'right') return { side, x: r.left + r.width + gap, y: cy, rot: 180, cap: { left: Math.max(r.left + r.width + gap + L + 8, p ? p.right + out : -Infinity), top: cy, anchor: 'left' } };
+  return { side, x: r.left - gap, y: cy, rot: 0, cap: { left: Math.min(r.left - gap - L - 8, p ? p.left - out : Infinity), top: cy, anchor: 'right' } };
 }
 
 // arrow drawn pointing right (+x), tip at (60, 20): rotate around the tip
@@ -88,6 +90,8 @@ export default function Nudge({ blocked }) {
   const st = useRef({ idleSince: now(), nextAt: 0, mem: {}, cur: null });
   st.current.cur = cur;
 
+  // a new run forgets what was already suggested
+  useEffect(() => onEvent((e) => { if (e.type === 'reset') st.current.mem = {}; }), []);
   useEffect(() => onHud((e) => {
     if (e.type === 'nudges') setOn(e.on);
     if (e.type === 'ask') {
@@ -168,6 +172,10 @@ export default function Nudge({ blocked }) {
     const iv = setInterval(upd, 200);
     return () => clearInterval(iv);
   }, [cur?.s.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // tell the guide when a hint has the floor
+  const showing = !!cur;
+  useEffect(() => { emitHud({ type: 'nudge', on: showing }); return () => { if (showing) emitHud({ type: 'nudge', on: false }); }; }, [showing]);
 
   const L = rect && layout(rect);
   const urgent = cur && cur.s.weight >= 90;

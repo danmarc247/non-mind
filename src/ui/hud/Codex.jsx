@@ -1,6 +1,6 @@
 // Codex: the systems, in the game's voice, one section per stage. Locked sections stay scrambled.
 import { motion } from 'motion/react';
-import { PretextFlow } from '../type/index.js';
+import { PretextFlow } from '../type/PretextFlow.jsx';
 import { STAGES } from '../../game/index.js';
 import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
@@ -74,6 +74,9 @@ export default function Codex({ onClose }) {
   const G = useGame();
   return (
     <motion.div
+      aria-modal="true"
+      role="dialog"
+      data-modal="codex"
       className="pointer-events-auto fixed inset-0 z-40 flex items-center justify-center bg-ink/45"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

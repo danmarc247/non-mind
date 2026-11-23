@@ -1,9 +1,10 @@
 // Ported from Aceternity UI "Card Spotlight" (ui.aceternity.com), restyled for NON-MIND.
 // A pointer-following spotlight; the CanvasRevealEffect (one WebGL context) is mounted
 // only while the card is hovered, so dozens of cards cost no GL contexts at rest.
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { motion, useMotionTemplate, useMotionValue } from 'motion/react';
-import { CanvasRevealEffect } from './CanvasRevealEffect';
+// R3F + three load on first hover, not at boot (the reveal is hover-only anyway).
+const CanvasRevealEffect = lazy(() => import('./CanvasRevealEffect').then((m) => ({ default: m.CanvasRevealEffect })).catch(() => ({ default: () => null })));
 import { cn } from '../../lib/cn';
 import { toneRgb, toneRgba } from './tones';
 
@@ -52,13 +53,13 @@ export const CardSpotlight = ({
         style={{ backgroundColor: color ?? toneRgba(tone, 0.16), maskImage, WebkitMaskImage: maskImage }}
       >
         {reveal && isHovering && (
-          <CanvasRevealEffect
+          <Suspense fallback={null}><CanvasRevealEffect
             animationSpeed={5}
             containerClassName="bg-transparent absolute inset-0 pointer-events-none"
             colors={revealColors ?? [toneRgb(tone), toneRgb('ultra')]}
             dotSize={3}
             showGradient={false}
-          />
+          /></Suspense>
         )}
       </motion.div>
       {children}

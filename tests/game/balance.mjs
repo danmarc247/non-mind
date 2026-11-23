@@ -67,9 +67,13 @@ for (const seed of SEEDS) {
       m.win[w] = (m.win[w] || 0) + tally.win - w0; m.lose[w] = (m.lose[w] || 0) + tally.lose - l0;
       if (Math.round(G.t * 10) % 100 === 0) { const tp = topPrice(G); if (tp > 0) m.ratio[w] = Math.max(m.ratio[w] || 0, G.affect / tp); }
       m.maxLink = Math.max(m.maxLink, maxLink(G));
-      if (G.stage >= 16 && Math.round(G.t * 10) % 100 === 0) { const a = aspectTiers(G), b = aspectTiers({ ...G, stage: 15 }); m.tiersAfter.push(Object.keys(a).filter((k) => !k.endsWith('_n')).reduce((n, k) => n + a[k], 0)); m.tiersBefore.push(Object.keys(b).filter((k) => !k.endsWith('_n')).reduce((n, k) => n + b[k], 0)); }
-      if (G.stage >= 16) { m.wildW += tally.win - w0; m.wildL += tally.lose - l0; } else if (G.stage >= 14) { m.preW += tally.win - w0; m.preL += tally.lose - l0; }
+      if (G.stage < 16 && G.stage >= 14) { m.preW += tally.win - w0; m.preL += tally.lose - l0; }
     } else if (m.mirrorsAt17 === null) m.mirrorsAt17 = G.mirrors;
+    // wildcard probe samples every stage >= 16 (16 and 17 can arrive in one tick, so it must not depend on `live`); first 10 min of it
+    if (G.stage >= 16 && G.t < (m.t16 ??= G.t) + 600) {
+      m.wildW += tally.win - w0; m.wildL += tally.lose - l0;
+      if (Math.round(G.t * 10) % 100 === 0) { const a = aspectTiers(G), b = aspectTiers({ ...G, stage: 15 }); const sum = (x) => Object.keys(x).filter((k) => !k.endsWith('_n')).reduce((n, k) => n + (+x[k] || 0), 0); m.tiersAfter.push(sum(a)); m.tiersBefore.push(sum(b)); }
+    }
     if (G.t >= next) { (rows[next] ||= []).push(snap(G, tally)); next += EVERY; }
   }
   if (m.mirrorsAt17 === null) m.mirrorsAt17 = G.mirrors;
@@ -88,6 +92,11 @@ function stageTable(first, seeds, label) {
   }
 }
 stageTable(first1, SEEDS, 'extended bot');
+{ // which gate stalls: per stage, the longest wait after minute 5 across seeds
+  const w = []; for (let s = 2; s <= 17; s++) { const d = SEEDS.map((k) => (first1[k][s] ?? Infinity) - (first1[k][s - 1] ?? 0)).filter(Number.isFinite); if (d.length) w.push(`${s}:${Math.round(Math.max(...d))}s`); }
+  console.log('  longest wait per stage (s):', w.join(' '));
+  if (process.env.NM_SEEDLINES) for (const s of [6, 7, 10, 13, 15, 16, 17]) console.log(`  stage ${s} per seed:`, SEEDS.map((k) => Math.round(first1[k][s])).join(' '));
+}
 
 // ---------- 2 ----------
 console.log('\n== 2. Three consecutive runs with resets (extended bot; nonMind on reaching stage 17 or after 5400 s) ==');

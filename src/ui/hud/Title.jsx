@@ -1,12 +1,12 @@
 // Title overlay: shown while the game has not started.
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Balatro } from '../bits/backgrounds';
+import Balatro from '../bits/backgrounds/Balatro.jsx';
 import { Cryptic, InkButton, toneHex } from '../bits';
 import { GRAIN_URL } from '../bits/NoiseBackground';
 import { SAVE_KEY } from '../../game/index.js';
 import { start, wipe, game } from '../../game/store.js';
-import { getAudio } from '../../audio/engine.js';
+import { getAudio } from '../../lib/audio.js';
 import { POP } from './shared.jsx';
 
 function hasSave() {

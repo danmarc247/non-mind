@@ -14,22 +14,31 @@ One mediator, many specialists. Nobody edits outside their lane; everything cros
 | Agent | Model | Owns (may edit) | Status |
 |---|---|---|---|
 | Mediator | Fable | `src/game/**`, `src/gfx/units*`, `src/gfx/Scene*`, `src/App.jsx`, config, integration | active |
-| Sky | Opus | `src/gfx/PainterSky.jsx`, `src/gfx/glsl/sky.*` | done |
-| Post | Opus | `src/gfx/PainterPost.jsx`, `src/gfx/glsl/post.*` | done |
+| Sky | Opus | `src/gfx/PainterSky.jsx`, `src/gfx/glsl/sky.*` (ten per-wave compositions) | done |
+| Post | Opus | `src/gfx/PainterPost.jsx`, `src/gfx/glsl/post.*` (five passes, detachment stage inside Relief) | done |
 | HUD kit | Opus | `src/ui/bits/*` (not `backgrounds/`) | done |
 | Backgrounds | Sonnet | `src/ui/bits/backgrounds/**` | done |
-| Audio | Opus | `src/audio/**`, `tests/audio/**` | running |
+| Audio | Opus | `src/audio/**`, `tests/audio/**` | done |
 | Type | Fable | `src/ui/type/**`, `public/fonts/**` | done |
-| HUD | Opus | `src/ui/Hud.jsx`, `src/ui/hud/**` | running |
-| Tests + balance | Sonnet | `tests/game/**`, `vitest.config.js` | running |
-| Content x2 | Sonnet | `src/game/content/**` | done |
+| HUD | Opus | `src/ui/Hud.jsx`, `src/ui/hud/**` (includes idle nudges and the ask button) | running |
+| Tests + balance | Sonnet | `tests/game/**` | running |
+| Content x2 | Sonnet | `src/game/content/**` (mutations, stressor affixes, names, ambient line pools) | done |
+| Arena | Opus | `src/gfx/arena/**`, `src/gfx/glsl/arena.*` (portals, seat rings, core aura, caustics, glass vessel) | done |
+| Fx | Opus | `src/gfx/fx/**`, `src/gfx/glsl/fx.*` (paint fx, ten arc veils) | done |
+| Drift | Opus | `src/gfx/drift/**`, `src/gfx/glsl/drift.*` (mobiles, strata, motes, tethers) | done |
+| Sea | Opus | `src/gfx/sea/**`, `src/gfx/glsl/sea2.*` (seven-movement contained sea) | done |
+| Forms | Opus | `src/gfx/sculpt.js` (three growth stages per family, siblings, mutation deformation) | done |
+| Lineage | Opus | `src/ui/Lineage.jsx`, `src/ui/lineage/**`, `src/ui/Ceremony.jsx` (PixiJS map; Ceremony is built but not mounted) | done |
+| Save | Sonnet | `src/ui/SaveMenu.jsx`, `src/game/savecode.js` (export, import) | done |
+| Advisor | Fable | `src/game/advisor.js` (idle suggestions; the HUD side is in `hud/Nudge.jsx`) | done |
 | Palettes x2 | Haiku | `src/gfx/palettes/**` | done |
 | Research x4 | Opus | none (reports only) | done |
 
 ## Shared contracts (the only coupling points)
 
-- `src/gfx/mood.js`: mutable render mood, written by the game loop, read by every shader and by audio.
-- `src/game/index.js`: game API (state shape, `actions`, `step`). UI and gfx read state, call actions, never mutate.
+- `src/gfx/mood.js`: mutable render mood, written by the game loop, read by every shader and by audio. Nothing but the loop (and PaintFx for `flash`) writes it.
+- Rendering: the Canvas is `linear legacy flat`, so shaders write display sRGB. R3F copies a `uniforms` prop into new objects: write to `material.uniforms` on the live material, not to the object you passed in.
+- `src/game/index.js`: game API (state shape, `actions`, `step`, `advisor`). UI and gfx read state, call actions, never mutate. The prestige currency is `G.mu` in code and **residue** on screen; links carry English names only.
 - `src/index.css`: palette and font tokens.
 
 ## Protocol
@@ -43,5 +52,6 @@ One mediator, many specialists. Nobody edits outside their lane; everything cros
 ## Rules
 
 - No `npm install`, no git, no config edits by specialists. Mediator only.
-- Each lane has its own gallery page and dev-server port, so parallel verification never collides.
+- Each lane has its own gallery page and dev-server port, so parallel verification never collides. Galleries are development-only (`npm run dev`, then `/<lane>-gallery.html`); the production build ships `index.html` alone.
+- Nothing in the repo names the games, music or traditions that inspired the work. Describe the system instead (see `nonmind-team`).
 - Contracts change only through the mediator, announced in the log.

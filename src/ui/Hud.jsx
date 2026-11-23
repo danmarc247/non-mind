@@ -99,8 +99,7 @@ export default function Hud() {
   useEffect(() => {
     const onKey = (e) => {
       if (!game.started || e.metaKey || e.ctrlKey || e.altKey) return;
-      const tag = e.target?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      // typing in fields and open modals are handled by App.jsx's capture-phase guard
       const G = game.G;
       const k = e.key.toLowerCase();
       if (e.key === ' ' || e.code === 'Space') {

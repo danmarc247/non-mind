@@ -39,7 +39,7 @@ function BrushStroke({ tone, className }) {
 
 export function Panel({ title, tone = 'magenta', children, className, glow = false, bodyClassName, actions }) {
   return (
-    <div className={cn('relative rounded-[18px]', className)}>
+    <div data-panel="" className={cn('relative rounded-[18px]', className)}>
       {glow && (
         <GlowingEffect
           disabled={false}
