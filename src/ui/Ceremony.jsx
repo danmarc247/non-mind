@@ -45,7 +45,7 @@ export default function Ceremony() {
 
     function play(kind, o = {}) {
       const cur = run.current;
-      if (cur.tl && performance.now() < cur.end && WEIGHT[kind] < cur.w) return null;
+      if (!o.force && cur.tl && performance.now() < cur.end && WEIGHT[kind] < cur.w) return null;
       if (cur.tl) cur.tl.kill();
       gsap.set(layers(), { autoAlpha: 0, clearProps: 'transform' });
       const calm = o.reduced ?? reduced();
@@ -124,6 +124,7 @@ export default function Ceremony() {
         R.arc.current.textContent = arc.name;
         R.arc.current.style.color = `var(--color-${DARK.has(tone) ? 'paper' : 'ink'})`;
         R.wnum.current.textContent = `wave ${o.wave || 1}`;
+        R.wnum.current.style.color = R.arc.current.style.color;
         const sw = R.swipe.current, len = sw.getTotalLength();
         sw.style.stroke = `var(--color-${tone})`;
         tl.set(R.wave.current, { autoAlpha: 1 });
@@ -168,7 +169,7 @@ export default function Ceremony() {
       else if (e.type === 'reset') play('reset');
     });
     const demo = { stage: { stage: 6 }, ladder: { link: 7, family: 'sublimation' }, ending: {}, wave: { wave: 3 }, reset: {} };
-    window.__ceremony = (kind, o = {}) => (BUILD[kind] ? !!play(kind, { ...demo[kind], ...o }) : false);
+    window.__ceremony = (kind, o = {}) => (BUILD[kind] ? !!play(kind, { force: true, ...demo[kind], ...o }) : false);
     return () => { off(); run.current.tl?.kill(); delete window.__ceremony; };
   }, []);
 

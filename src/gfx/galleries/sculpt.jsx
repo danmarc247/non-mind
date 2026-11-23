@@ -149,5 +149,6 @@ function App() {
 }
 document.body.style.margin = '0';
 document.body.style.background = 'var(--color-paper)';
-createRoot(document.getElementById('root')).render(<App />);
+window.__root = window.__root || createRoot(document.getElementById('root'));
+window.__root.render(<App />);
 window.__size = { W, H };

@@ -533,6 +533,9 @@ export async function createLineageScene(host, { getGame, getSelected, onHover, 
     destroy() {
       cv.removeEventListener('wheel', onWheel); cv.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); window.removeEventListener('pointercancel', onUp);
+      app.ticker.stop();
+      world.filters = null; ghostLayer.filters = null;
+      wobble.destroy(); drain.destroy();
       app.destroy(true, { children: true, texture: true, textureSource: true });
     },
   };
