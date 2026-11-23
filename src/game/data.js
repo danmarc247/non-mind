@@ -24,7 +24,7 @@ export const STAGES = [
   { id: 'sustain', unlock: 'seasons', hint: 'Everything kept is kept against something.', need: (g) => !!g.stance },
   { id: 'penetrate', unlock: 'mirror', hint: 'Small enters great, softly. Great enters small, and stays.', need: (g) => g.stats.seasons >= 5 },
   { id: 'embrace', unlock: 'wildcard', hint: 'No aspect is a stranger to any aspect.', need: (g) => g.mirrors >= 1 },
-  { id: 'overwhelm', unlock: 'nonmind', hint: 'It is too much. It was always this much.', need: (g) => g.overwhelm >= 1 },
+  { id: 'overwhelm', unlock: 'awakening', hint: 'It is too much. It was always this much.', need: (g) => g.overwhelm >= 1 },
 ];
 
 // 12-link ladder: the genetic upgrade track (English names only). Two units of one family at the same link fuse into the next.

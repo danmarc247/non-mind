@@ -13,7 +13,7 @@ describe('progression: stages', () => {
   it('the stage table is the documented 18-stage loop', () => {
     expect(STAGES).toHaveLength(18);
     expect(STAGES[0].unlock).toBe('attend');
-    expect(STAGES[17].unlock).toBe('nonmind');
+    expect(STAGES[17].unlock).toBe('awakening');
     expect(new Set(STAGES.map((s) => s.unlock)).size).toBe(18);
   });
 
@@ -60,7 +60,7 @@ describe('progression: stages', () => {
     expect(unlocked(G, 'attend')).toBe(true);
     expect(unlocked(G, 'shop')).toBe(false);
     G.stage = 1; expect(unlocked(G, 'shop')).toBe(true);
-    G.stage = 17; expect(unlocked(G, 'nonmind')).toBe(true);
+    G.stage = 17; expect(unlocked(G, 'awakening')).toBe(true);
   });
 
   it('the last stage needs overwhelm >= 1', () => {

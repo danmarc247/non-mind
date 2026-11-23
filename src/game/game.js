@@ -51,7 +51,7 @@ function mulberry(seed) {
 export function createGame(seed = 1, meta = {}) {
   const G = {
     v: 1, seed, t: 0,
-    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], cardMisses: 0, ...meta,
+    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], cardMisses: 0, awakenings: 0, ...meta,
     cardOffer: null, cardT: 70,
     gift: null, giftT: 150,
     affect: 0, attention: 3 + Math.min(20, Math.floor(Math.sqrt(meta.mu || 0))), insight: 0, insightMax: 100,
@@ -89,6 +89,9 @@ export const unitCap = (G) => Math.min(30, G.level + 1 + 2 * G.mirrors);
 export const ringsOpen = (G) => 1 + (unlocked(G, 'ring2') ? 1 : 0) + (G.mirrors > 0 ? 1 : 0);
 const moodN = (G, k) => G.moods.filter((m) => m.kind === k).length;
 
+// Awakening: what the last stage opens. Each one adds a small share of yield that outlasts everything.
+export const AWAKENING_BONUS = 0.05;
+export const awakeningBonus = (G) => AWAKENING_BONUS * (G.awakenings || 0);
 export function affectMul(G) {
   const tiers = G.battle?.tiers || aspectTiers(G);
   let m = (1 + 0.04 * G.mu) * (1 + G.complexity / 25) * (1 + 0.1 * G.endings) * Math.pow(2, G.mirrors);
@@ -97,6 +100,7 @@ export function affectMul(G) {
   if (G.upgrades.long_view) m *= 1 + Math.pow(G.t, 0.45) / 40;
   if (moodN(G, 'fascination')) m *= 1.5;
   m *= 1 + cardBoon(G, 'affect') / 100;
+  m *= 1 + awakeningBonus(G);
   if (G.stance === 'away') m *= 0.8;
   return m;
 }
@@ -319,10 +323,20 @@ export const actions = {
   nonMind(G) {
     if (G.stage < 1) return G;
     const gain = muGain(G);
-    const meta = { cards: (G.cards || []).slice(), cardMisses: G.cardMisses || 0, mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
+    const meta = { cards: (G.cards || []).slice(), cardMisses: G.cardMisses || 0, awakenings: G.awakenings || 0, mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
     const N = createGame(G.seed, meta);
     N.events.push({ type: 'reset', gain, depth: N.depth });
     say(N, 'Simple again.', 'reset'); koan(N, 'reset', 'reset');
+    return N;
+  },
+  // Awakening. Returns a first game: residue, depth, endings and every bit of progress are gone.
+  // Only the count of awakenings (a small lasting yield bonus) and the book remain.
+  awaken(G) {
+    if (!unlocked(G, 'awakening')) return false;
+    const n = (G.awakenings || 0) + 1;
+    const N = createGame(G.seed, { awakenings: n, cards: (G.cards || []).slice(), cardMisses: G.cardMisses || 0 });
+    N.events.push({ type: 'awaken', n });
+    say(N, `Awakening ${n}. Nothing was carried here, and it is lighter for that.`, 'reset');
     return N;
   },
 };

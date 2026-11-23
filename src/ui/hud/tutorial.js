@@ -79,7 +79,7 @@ export const INTROS = [
   { id: 'mirror', key: 'mirror', anchor: 'tab-mirror', tab: 'mirror', voice: 'The whole of it can be reflected.', plain: 'In MIRROR, REFLECT doubles affect and opens a third ring. Stressors grow too.' },
   { id: 'wildcard', key: 'wildcard', anchor: 'tab-bonds', tab: 'bonds', voice: 'Every aspect counts one more than is there.', plain: 'Nothing to press: every aspect counts one extra regulator, so its tiers come sooner.' },
   { id: 'overwhelm', when: (G) => G.overwhelm > 0, anchor: 'complexity', voice: 'It is getting to be too much.', plain: 'Complexity is past capacity: waves press harder. Repurpose a regulator, or subtract from one, to bring it down.' },
-  { id: 'nonmind', key: 'nonmind', anchor: 'reset', voice: 'It is too much. It can be let go.', plain: 'Press NON-MIND to start over with residue, which speeds up the next run. Right now it keeps twice the residue.' },
+  { id: 'awakening', key: 'awakening', anchor: 'awaken', voice: 'It is too much. It was always this much. There is one more way out.', plain: 'AWAKENING starts from the very beginning: residue, endings and every stage go. Only the book stays, with a small yield bonus for good. NON-MIND is still there, and right now it keeps twice the residue.' },
 ].map((s) => ({ ...s, ack: true, intro: true, when: s.when || ((G) => unlocked(G, s.key)) }));
 
 export const STEPS = [...CORE, ...INTROS];

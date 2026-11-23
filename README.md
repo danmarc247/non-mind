@@ -164,9 +164,11 @@ From stage 3 the arrivals lean toward the family you are already climbing: each 
 | 14 | sustain | seasons | Choose a stance |
 | 15 | penetrate | mirror | Survive 5 seasons |
 | 16 | embrace | wildcard aspect | Own a mirror |
-| 17 | overwhelm | nothing new to press | Overwhelm reaches 1 |
+| 17 | overwhelm | Awakening | Overwhelm reaches 1 |
 
-Non-mind itself is available from stage 1. Stage 17 adds nothing to press: it marks the first time overwhelm is full, and whenever overwhelm is full the residue you get is doubled.
+Non-mind itself is available from stage 1, and whenever overwhelm is full the residue you get is doubled.
+
+Stage 17 opens **Awakening**, a button under NON-MIND numbered Awakening 1, 2, 3 and so on. It is the one thing in the game that takes more than it gives back at once, and it says so before it acts. **Awakening starts from the very beginning**: all residue, every reset and its depth, every ending, every stage, regulator and habit are gone, and it cannot be undone. Only the book stays, with `+5%` yield for good per awakening. Non-mind remains the gentler way.
 
 ### The 10 families
 

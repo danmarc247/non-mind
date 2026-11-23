@@ -119,7 +119,7 @@ export default function App() {
       if (!a) { try { a = audioRef.current = getAudio(); } catch { return; } }
       try {
         const pos = e.x !== undefined ? [e.x, 0.75, e.z] : undefined;
-        if (e.type === 'reset') return a.reset();
+        if (e.type === 'reset' || e.type === 'awaken') return a.reset();
         if (e.type === 'sfx') return a.sfx(e.name, {});
         if (e.type === 'beat') return a.sfx('gate', { gate: e.gate });
         if (e.type === 'hit') { const now = performance.now(); if (now - last < 45) return; last = now; return a.sfx('hit', { position: pos, intensity: Math.min(1, 0.3 + e.amt * 2), aspect: e.aspect }); }

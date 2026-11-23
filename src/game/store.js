@@ -23,7 +23,7 @@ export const useVersion = () => useSyncExternalStore(subscribe, () => version);
 // act('buy', 2) -> runs the action, swaps G if the action returns a new game (reset), notifies.
 export function act(name, ...args) {
   const r = actions[name](game.G, ...args);
-  if (name === 'nonMind') { const ev = r.events; game.G = r; game.selected = null; game.pending = null; game.G.events = ev; }
+  if (name === 'nonMind' || (name === 'awaken' && r)) { const ev = r.events; game.G = r; game.selected = null; game.pending = null; game.G.events = ev; }
   notify();
   return r;
 }

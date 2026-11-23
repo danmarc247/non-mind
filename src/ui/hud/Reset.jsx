@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { InkButton, Tooltip } from '../bits';
 import { RingButton } from '../bits/kit.jsx';
-import { muGain } from '../../game/index.js';
+import { muGain, unlocked, AWAKENING_BONUS } from '../../game/index.js';
 import { act, useGame } from '../../game/store.js';
 import { fmt } from './fmt.js';
 import { POP } from './shared.jsx';
@@ -11,6 +11,10 @@ import { POP } from './shared.jsx';
 export default function Reset({ compact, small }) {
   const G = useGame();
   const [confirm, setConfirm] = useState(false);
+  const [wake, setWake] = useState(false);
+  const canWake = unlocked(G, 'awakening');
+  const nextWake = (G.awakenings || 0) + 1;
+  const pct = Math.round(AWAKENING_BONUS * 100);
   const gain = muGain(G);
   const full = G.overwhelm >= 1;
   return (
@@ -28,7 +32,7 @@ export default function Reset({ compact, small }) {
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Residue remains, and makes the next time wider.'}>
-          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 84 : compact ? 100 : 116} onClick={() => setConfirm((c) => !c)} label="non-mind">
+          <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 84 : compact ? 100 : 116} onClick={() => { setWake(false); setConfirm((c) => !c); }} label="non-mind">
             {/* two short lines in the heading face: large enough to read at a glance, and it fits inside the inner ring */}
             {/* ink on a paper plate: the rings of the button never cross the letters */}
             <span className={(small ? 'px-1.5 py-[3px] text-[15px]' : compact ? 'px-2 py-1 text-[18px]' : 'px-2 py-1 text-[21px]') + ' rounded-full border-2 border-ink bg-paper font-head font-black uppercase leading-none tracking-wide whitespace-nowrap text-ink [text-shadow:none]'}>non-mind</span>
@@ -36,6 +40,43 @@ export default function Reset({ compact, small }) {
           </RingButton>
         </Tooltip>
       </motion.div>
+      {/* how many times one has woken, and, once the last stage is reached, the way to wake again */}
+      {(canWake || G.awakenings > 0) && (
+        <div className="mt-2 flex flex-col items-end gap-1.5" data-tut="awaken">
+          {G.awakenings > 0 && (
+            <Tooltip side="left" content={`Awakened ${G.awakenings} ${G.awakenings === 1 ? 'time' : 'times'}: all yield +${pct * G.awakenings}%, for good.`}>
+              <span className="rounded-full border-2 border-ink bg-paper px-2 py-[3px] font-head text-[12px] leading-none tracking-wide text-ink uppercase nm-tab">awake {G.awakenings} · +{pct * G.awakenings}%</span>
+            </Tooltip>
+          )}
+          {canWake && <InkButton size="sm" tone="yolk" onClick={() => { setConfirm(false); setWake((w) => !w); }}>Awakening {nextWake}</InkButton>}
+        </div>
+      )}
+      <AnimatePresence>
+        {wake && canWake && (
+          <motion.div
+            key="w"
+            role="alertdialog"
+            aria-label={`Awakening ${nextWake}`}
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.12 } }}
+            transition={POP}
+            className="absolute top-full right-0 z-30 mt-3 w-[300px] rounded-[16px] border-[3px] border-ink bg-paper p-3 shadow-[3px_4px_0_0_var(--color-ink)]"
+          >
+            <p className="font-head text-[17px] leading-tight tracking-wide text-magenta uppercase">Warning: this starts from the very beginning</p>
+            <p className="mt-2 font-body text-[14px] leading-snug text-ink">
+              Awakening {nextWake} takes <b className="font-stat">everything</b>: all {fmt(G.mu, { int: true })} residue, every reset and its depth, every ending, every stage, every regulator and habit. It cannot be undone.
+            </p>
+            <p className="mt-2 font-body text-[14px] leading-snug text-ink">
+              You keep only the book, and <b className="font-stat">+{pct}% yield</b> for good ({pct * nextWake}% in all). It is a small gift for a long way.
+            </p>
+            <div className="mt-3 flex justify-end gap-2">
+              <InkButton size="sm" tone="paper" onClick={() => setWake(false)}>not yet</InkButton>
+              <InkButton size="sm" tone="magenta" onClick={() => { setWake(false); act('awaken'); }}>begin again, awake</InkButton>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {confirm && (
           <motion.div

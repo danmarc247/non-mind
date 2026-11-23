@@ -72,7 +72,7 @@ const hitsFrom = (G, c) => G.events.filter((e) => e.type === 'hit' && e.from ===
 
 // ======================================================================================= STAGE GATES 5..17
 describe('high stages: each system appears exactly at its stage', () => {
-  const GATES = { insight: 5, split: 6, ring2: 7, subtract: 8, attendants: 9, verbs: 10, exchange: 11, echo: 12, stance: 13, seasons: 14, mirror: 15, wildcard: 16, nonmind: 17 };
+  const GATES = { insight: 5, split: 6, ring2: 7, subtract: 8, attendants: 9, verbs: 10, exchange: 11, echo: 12, stance: 13, seasons: 14, mirror: 15, wildcard: 16, awakening: 17 };
   it('the unlock order of stages 5..17 is the documented one', () => {
     for (const [what, s] of Object.entries(GATES)) {
       expect(stageOf(what), what).toBe(s);
