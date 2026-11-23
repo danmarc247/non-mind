@@ -82,8 +82,8 @@ export default function Mobile({ w, h }) {
   const shopOn = unlocked(G, 'shop');
   useEffect(() => { if (shopOn) setOpen((o) => o ?? 'shop'); }, [shopOn]);
 
-  const top = 'calc(env(safe-area-inset-top, 0px) + 54px)'; // room for the Manual / Save controls at the top centre
-  const sheetMax = portrait ? '46vh' : '58vh';
+  const top = 'calc(env(safe-area-inset-top, 0px) + 8px)';
+  const sheetMax = portrait ? '46vh' : '50vh';
   const attendSize = portrait ? (w >= 700 ? 112 : 92) : 76;
 
   const sheetBody = () => {
@@ -108,8 +108,8 @@ export default function Mobile({ w, h }) {
   return (
     <div className="pointer-events-none absolute inset-0" style={{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }}>
       {/* top strip */}
-      <div className={cn('pointer-events-none absolute inset-x-2 flex flex-col gap-1.5', NO_PINCH)} style={{ top: portrait ? top : 'calc(env(safe-area-inset-top, 0px) + 8px)' }}>
-        <div className={cn('flex items-start gap-2', !portrait && 'pr-[calc(50%+150px)]')}>
+      <div className={cn('pointer-events-none absolute inset-x-2 flex flex-col gap-1.5', NO_PINCH)} style={{ top }}>
+        <div className="flex items-start gap-2">
           <Shake seed={11} className="pointer-events-auto min-w-0 flex-1"><StageWave G={G} /></Shake>
           <div className="pointer-events-auto flex shrink-0 items-start gap-1.5">
             {G.stage >= 1 && <Reset compact small />}
@@ -123,7 +123,7 @@ export default function Mobile({ w, h }) {
 
       {/* tool rings down the right edge (codex, manual, save, lineage) */}
       {!cur && (
-        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 130}px)` : 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
+        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 84}px)` : 'calc(env(safe-area-inset-top, 0px) + 130px)' }}>
           <Tools size={46} layout={portrait ? 'col' : 'grid'} hotkeys={false} />
         </div>
       )}

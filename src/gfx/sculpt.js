@@ -232,8 +232,8 @@ function unitSource(g, link, muts = [], salt = '', formOverride = null) {
   const rng = rngOf(`${key(g)}|${[...muts].sort().join(',')}|${salt}`);
   const head = leafColors(ls[0], link);
   const stH = 1 + 0.75 * F.stretch, stW = 1 / Math.sqrt(stH);
-  const twist = 3.6 * F.twist;
-  const step = Math.max(0.5, 0.8 / (1 + 0.45 * F.twist + 0.25 * F.noise));
+  const twist = 4.5 * F.twist;
+  const step = Math.max(0.45, 0.8 / (1 + 0.7 * F.twist + 0.25 * F.noise));
   const W = Math.max(0, 1 - (link - 1) / 5) * 0.045 + 0.008 * Math.min(4, ls.length);
   const shrink = 1 - 0.1 * F.spikes - 0.06 * F.rings - (link >= 8 ? 0.04 : 0);
   const R = 0.5 * shrink;
@@ -242,13 +242,14 @@ function unitSource(g, link, muts = [], salt = '', formOverride = null) {
   s += `shape(()=>{ let sp=getSpace();\n`;
   s += `rotateY(time*${f3(0.2 + rng() * 0.12)}+${f3(rng() * 6.28)}); rotateX(${f3((rng() - 0.5) * 0.3)});\n`;
   if (F.stretch > 0) s += `displace(sp.x*${f3(1 - stW)}, sp.y*${f3(1 - 1 / stH)}, sp.z*${f3(1 - stW)});\n`;
-  if (F.twist > 0) s += `rotateY(sp.y*${f3(twist)}+${f3(0.3 * F.twist)}*sin(time*0.7));\n`;
+  // twist: a helical domain twist plus a corkscrew spine, so the whole body winds
+  if (F.twist > 0) s += `rotateY(sp.y*${f3(twist)}+${f3(0.3 * F.twist)}*sin(time*0.7)); displace(${f3(0.075 * F.twist)}*sin(sp.y*7.0+time*0.8), 0.0, ${f3(0.075 * F.twist)}*cos(sp.y*7.0+time*0.8));\n`;
   if (W > 0.004) s += `displace(noise(sp*5.0+time*0.5)*${f3(W)}, noise(sp*5.0+vec3(7.0,1.0,3.0)-time*0.4)*${f3(W)}, 0);\n`;
   s += treeSrc(g, link, R, rng, 0) + '\n';
   if (F.noise > 0) s += `expand(noise(getSpace()*${f3(9 + 4 * F.noise)}+vec3(0.0,time*0.6,0.0))*${f3(0.012 + 0.03 * F.noise)}+noise(getSpace()*23.0-time*0.4)*${f3(0.008 * F.noise)});\n`;
   if (F.hollow > 0) {
-    const t = f3(0.016 + 0.008 * (1 - F.hollow)), wr = f3(0.1 + 0.14 * F.hollow), wp = f3(0.3);
-    s += `let d0=getSDF()+0.0; shell(${t}); difference(); shape(()=>{ mirrorXYZ(); displace(${wp},${wp},${wp}); sphere(${wr}); })(); shape(()=>{ mirrorXYZ(); displace(${f3(0.46)},0.0,0.0); sphere(${f3(0.05 + 0.12 * F.hollow)}); })();
+    const t = f3(0.016 + 0.008 * (1 - F.hollow)), wr = f3(0.13 + 0.15 * F.hollow), wp = f3(0.24);
+    s += `let d0=getSDF()+0.0; shell(${t}); difference(); shape(()=>{ mirrorXYZ(); displace(${wp},${wp},${wp}); sphere(${wr}); })(); shape(()=>{ mirrorXYZ(); displace(${f3(0.4)},0.0,0.0); sphere(${f3(0.08 + 0.14 * F.hollow)}); })(); shape(()=>{ mirrorXYZ(); displace(0.0,0.0,${f3(0.4)}); sphere(${f3(0.08 + 0.14 * F.hollow)}); })();
 union(); mixMat(smoothstep(-${t},0.0,d0)); color(${v3(head.c)}); ${PAINT}\n`;
   }
   s += `})();\n`;
@@ -291,16 +292,17 @@ const SFORMS = {
   blob: [
     (k) => `let q=getSpace(); color(${k.A}); sphere(${k.L(0.3, 0)}+${k.L(0.07)}*sin(q.x*9.0+time*2.0)*sin(q.y*8.0+time)); blend(${k.L(0.2)}); displace(${k.L(0.22, 1)},${k.L(0.1)},0.0); color(${k.B}); sphere(${k.L(0.17, 2)});`,
     (k) => `color(${k.A}); sphere(${k.L(0.2, 0)}); blend(${k.L(0.08)}); displace(${k.L(0.2)}+${k.L(0.03)}*sin(time*2.1),${k.L(0.1)},0.0); color(${k.B}); sphere(${k.L(0.14, 1)}); displace(${k.L(-0.36)},${k.L(0.06)}+${k.L(0.03)}*sin(time*1.7),${k.L(0.12)}); color(${k.A}); sphere(${k.L(0.13, 2)}); displace(${k.L(0.14)},${k.L(-0.3)},${k.L(-0.16)}); color(${k.B}); sphere(${k.L(0.12, 3)});`,
-    (k) => `let q=getSpace(); displace(0.0,q.y*0.6,0.0); color(${k.A}); sphere(${k.L(0.34, 0)}+${k.L(0.02)}*sin(time*${k.W(0.8)})); difference(); displace(0.0,${k.L(0.3)},0.0); sphere(${k.L(0.2, 1)}); union(); reset(); displace(0.0,${k.L(-0.02)},0.0); color(${k.B}); torus(${k.L(0.2)},${k.L(0.02)});`,
+    (k) => `let q=getSpace(); displace(0.0,q.y*-0.5,0.0); color(${k.A}); sphere(${k.L(0.34, 0)}+${k.L(0.02)}*sin(time*${k.W(0.8)})); difference(); displace(0.0,${k.L(0.3)},0.0); sphere(${k.L(0.2, 1)}); union(); reset(); displace(0.0,${k.L(-0.02)},0.0); color(${k.B}); torus(${k.L(0.2)},${k.L(0.02)});`,
   ],
   weight: [
     (k) => `color(${k.A}); box(${k.L(0.34, 0)},${k.L(0.26, 1)},${k.L(0.34, 0)}); color(${k.B}); displace(0.0,${k.L(0.3)},0.0); torus(${k.L(0.12)},${k.L(0.04)});`,
     (k) => `rotateY(0.15*sin(time*${k.W(0.6)})); color(${k.A}); displace(0.0,${k.L(-0.26)},0.0); box(${k.L(0.36, 0)},${k.L(0.1)},${k.L(0.3)}); displace(${k.L(0.03)},${k.L(0.22)},0.0); color(${k.B}); box(${k.L(0.3, 1)},${k.L(0.09)},${k.L(0.26)}); displace(${k.L(-0.04)},${k.L(0.2)},0.0); color(${k.A}); box(${k.L(0.24, 2)},${k.L(0.08)},${k.L(0.22)});`,
     (k) => `color(${k.A}); sphere(${k.L(0.33, 0)}); difference(); rotateY(time*${k.W(0.3)}); displace(${k.L(0.3)},${k.L(0.3)},0.0); box(${k.L(0.3)},${k.L(0.3)},${k.L(0.5)}); union(); reset(); displace(0.0,${k.L(-0.4)},0.0); color(${k.B}); torus(${k.L(0.1)},${k.L(0.03)});`,
+    (k) => `color(${k.B}); box(${k.L(0.07)},${k.L(0.3)},${k.L(0.07)}); displace(0.0,${k.L(-0.3)},0.0); box(${k.L(0.2)},${k.L(0.03)},${k.L(0.2)}); reset(); displace(0.0,${k.L(0.3)}+${k.L(0.04)}*sin(time*${k.W(0.9)}),0.0); rotateY(time*${k.W(0.4)}); color(${k.A}); box(${k.L(0.3, 0)},${k.L(0.14)},${k.L(0.3, 0)});`,
   ],
   maw: [
     (k) => `rotateY(time*${k.W(0.4)}); color(${k.A}); sphere(${k.L(0.46, 0)}); difference(); displace(0.0,0.0,${k.L(0.3)}); sphere(${k.L(0.34, 1)}); union(); displace(0.0,0.0,${k.L(-0.3)}); mirrorXYZ(); color(${k.B}); line(vec3(${k.L(0.2)},${k.L(0.2)},${k.L(0.2)}), vec3(${k.L(0.42)},${k.L(0.42)},${k.L(0.42)}), ${k.L(0.05)});`,
-    (k) => `rotateY(time*${k.W(0.3)}); color(${k.A}); sphere(${k.L(0.45, 0)}); shell(${k.L(0.03)}); difference(); displace(0.0,0.0,${k.L(0.42)}); sphere(${k.L(0.26, 1)}); union(); reset(); rotateY(time*${k.W(0.3)}); color(${k.B}); sphere(${k.L(0.07)}+${k.L(0.02)}*sin(time*1.1)); mirrorXYZ(); roundCone(vec3(${k.L(0.25)},${k.L(0.25)},0.0), vec3(${k.L(0.14)},${k.L(0.14)},${k.L(0.1)}), ${k.L(0.04)}, ${k.L(0.005)});`,
+    (k) => `rotateY(0.5*sin(time*${k.W(0.3)})); color(${k.A}); sphere(${k.L(0.45, 0)}); shell(${k.L(0.03)}); difference(); displace(0.0,${k.L(0.1)},${k.L(0.4)}); sphere(${k.L(0.3, 1)}); union(); reset(); rotateY(0.5*sin(time*${k.W(0.3)})); color(${k.B}); sphere(${k.L(0.07)}+${k.L(0.02)}*sin(time*1.1)); mirrorXYZ(); roundCone(vec3(${k.L(0.25)},${k.L(0.25)},0.0), vec3(${k.L(0.14)},${k.L(0.14)},${k.L(0.1)}), ${k.L(0.04)}, ${k.L(0.005)});`,
   ],
 };
 // variant index: position of the def among defs of the same form, so siblings never repeat until wrap
@@ -340,7 +342,7 @@ function stressorSource(defId, affix = null) {
 }
 
 const MAIN = `
-uniform float uFlash; uniform float uFade; uniform vec3 uRim; uniform float uGlow;
+uniform float uFlash; uniform float uFade; uniform vec3 uRim; uniform float uGlow; uniform float uSpark;
 void main() {
   vec3 ro = (cameraPosition - sculptureCenter) / _scale;
   vec3 rd = getRayDirection();
@@ -357,6 +359,15 @@ void main() {
   float fr = pow(1.0 - max(dot(n, -rd), 0.0), 2.2);
   c = mix(c, uRim, fr * (0.35 + uGlow * 0.5));
   c = mix(c, vec3(1.0), uFlash);
+  // hover sparkle: pinpoint glints that twinkle across the surface, plus a faint lift
+  if (uSpark > 0.001) {
+    vec3 cell = floor(p * 24.0);
+    float hsh = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float tw = pow(max(0.0, sin(time * 8.0 + hsh * 40.0)), 12.0);
+    float glint = step(0.8, hsh) * tw * smoothstep(0.5, 0.0, length(fract(p * 24.0) - 0.5));
+    c = mix(c, vec3(1.0, 0.98, 0.86), clamp(glint * 1.6, 0.0, 1.0) * uSpark);
+    c += vec3(0.07, 0.06, 0.03) * uSpark + fr * 0.25 * uSpark;
+  }
   float dz = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
   if (dz < uFade) discard;
   gl_FragColor = vec4(c, 1.0);
@@ -378,7 +389,7 @@ function material(k, srcFn, rim, glow) {
     try { sh = compile(srcFn()); } catch (e) { console.warn('sculpt failed', k, e); sh = compile('sphere(0.35);'); }
     base = new THREE.ShaderMaterial({
       vertexShader: sh.vert, fragmentShader: sh.frag, side: THREE.BackSide,
-      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
+      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
     });
     cache.set(k, base);
   }

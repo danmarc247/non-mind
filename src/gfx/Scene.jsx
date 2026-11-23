@@ -113,6 +113,7 @@ const DISC = new THREE.CircleGeometry(1, 28);
 function Bodies() {
   const root = useRef();
   const map = useRef(new Map());
+  const hover = useRef(null);
   const { camera } = useThree();
   useEffect(() => onEvent((e) => {
     const hit = (id, v) => { const b = map.current.get(id); if (b) b.flash = Math.max(b.flash, v); };
@@ -161,11 +162,16 @@ function Bodies() {
       }
       b.g.scale.setScalar(b.s);
       const u = b.mesh.material.uniforms;
-      u.time.value = mood.time + b.g.id * 3.7; u._scale.value = b.s; u.uFlash.value = b.flash; u.uFade.value = b.fade;
+      b.spark = ease(b.spark || 0, hover.current === id ? 1 : 0, dt, hover.current === id ? 14 : 5);
+      u.time.value = mood.time + b.g.id * 3.7; u._scale.value = b.s * (1 + 0.06 * b.spark); u.uFlash.value = b.flash; u.uFade.value = b.fade; if (u.uSpark) u.uSpark.value = b.spark;
+      if (b.spark > 0.01) b.g.scale.setScalar(b.s * (1 + 0.06 * b.spark));
     }
     void camera;
   });
-  return <group ref={root} onClick={(e) => { const id = e.object.userData.pick; if (id && id[0] === 'u') { e.stopPropagation(); choose(+id.slice(1)); } }} />;
+  return <group ref={root}
+    onClick={(e) => { const id = e.object.userData.pick; if (id && id[0] === 'u') { e.stopPropagation(); choose(+id.slice(1)); } }}
+    onPointerOver={(e) => { const id = e.object.userData.pick; if (id) { e.stopPropagation(); hover.current = id; if (id[0] === 'u') document.body.style.cursor = 'pointer'; } }}
+    onPointerOut={(e) => { if (hover.current === e.object.userData.pick) { hover.current = null; document.body.style.cursor = ''; } }} />;
 }
 
 function Core() {
@@ -264,7 +270,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <ArcVeil />
       <PaintFx />
       <GlassVessel />
-      <OrbitControls makeDefault enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
+      <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}
     </Canvas>
   );
