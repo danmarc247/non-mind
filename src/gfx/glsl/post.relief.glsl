@@ -3,7 +3,9 @@
 // random z-order) + bristle noise line-integrated along the stroke (LIC) +
 // a little perceptual luminance; lit as wet impasto. Each dab also nudges
 // the local tone so smooth shading breaks into discrete strokes.
-// defines: LIC_TAPS (half length)
+// Ends with the detachment stage (post.detach.glsl, prepended): soft focus
+// first, cut-out halo/ink and aerial perspective last.
+// defines: LIC_TAPS (half length), FOCUS_TAPS, HALO_TAPS
 
 uniform float uRelief;   // impasto lighting amount
 uniform float uBristle;  // bristle groove amount
@@ -18,16 +20,12 @@ vec3 pp_rt(vec2 uv) {
   return texture2D(inputBuffer, uv).rgb;
 }
 
-float pp_lz(vec2 uv) {
-  return -getViewZ(readDepth(uv));
-}
-
 void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth, out vec4 outputColor) {
   float scale = max(resolution.y / 720.0, 0.5);
   float asp = resolution.x / resolution.y;
   vec2 q = vec2(uv.x * asp, uv.y);
-  vec3 col = inputColor.rgb;
   float z0 = -getViewZ(depth);
+  vec3 col = pp_softFocus(uv, inputColor.rgb, z0, scale);
   float farK = pp_farK(z0, uNearFar);   // arena: no dabs, light relief
   float dabK = uDab * farK;
   float relK = uRelief * mix(0.4, 1.0, farK);
@@ -42,7 +40,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float gm = length(g);
   vec2 flow = pp_flowDir(q, uTime);
   vec2 tng = gm > 1e-5 ? vec2(-g.y, g.x) / gm : flow;
-  vec2 dir = normalize(mix(flow, tng * sign(dot(tng, flow) + 1e-4), smoothstep(0.003, 0.03, gm)));
+  vec2 dir = normalize(mix(flow, tng * sign(dot(tng, flow) + 1e-4), smoothstep(0.003, 0.03, gm) * mix(0.3, 1.0, farK)));
   vec2 nrm = vec2(-dir.y, dir.x);
 
   // --- palette-knife dabs (3x3 cells, topmost dab wins)
@@ -140,18 +138,16 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float thin = dabZ < 0.0 ? 1.0 : 0.45;
   col *= 1.0 - uCanvas * thin * ((0.5 - weave) * mix(0.2, 0.12, blank) + 0.012);
 
-  // ink edge where depth / colour jump
-  vec2 de = texelSize * 1.5 * scale;
-  float zl = pp_lz(uv - vec2(de.x, 0.0));
-  float zr = pp_lz(uv + vec2(de.x, 0.0));
-  float zd = pp_lz(uv - vec2(0.0, de.y));
-  float zu = pp_lz(uv + vec2(0.0, de.y));
-  float dz = max(max(abs(zl - z0), abs(zr - z0)), max(abs(zd - z0), abs(zu - z0))) / max(z0, 1e-3);
-  float edgeD = smoothstep(0.03, 0.12, dz);
+  // detachment: ink on the near side of a depth edge, paper halo behind it
+  vec2 cut = pp_cutout(uv, z0, scale);
   float edgeC = smoothstep(0.1, 0.25, gm);
-  float wob = 0.5 + 0.5 * pp_vnoise(px * 0.06 + dir * 3.0);
-  float ink = clamp(max(edgeD, edgeC * 0.45 * farK) * wob * uInk * mix(0.45, 1.0, farK), 0.0, 1.0);
+  float wob = 0.55 + 0.45 * pp_vnoise(px * 0.06);
+  float ink = clamp(max(cut.y, edgeC * 0.45 * farK) * wob * uInk * mix(0.5, 1.0, farK), 0.0, 1.0);
   col = mix(col, uInkColor * (0.6 + 0.4 * col), ink * 0.8);
+  col = mix(col, uHaloColor, cut.x * (1.0 - cut.y) * uHalo * 0.85);
+
+  // aerial perspective last, so paint texture recedes with the rest
+  col = pp_aerial(col, z0, uNearFar.x * 0.55);
 
   outputColor = vec4(max(col, 0.0), inputColor.a);
 }
