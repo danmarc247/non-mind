@@ -125,5 +125,5 @@ void main() {
 
   acc = mix(acc, uPaper * A, uFlash * 0.4);
   // alpha lags colour: additive-looking, still paint
-  gl_FragColor = vec4(acc, A * 0.82);
+  gl_FragColor = vec4(acc, clamp(A * 1.05, 0.0, 1.0));
 }

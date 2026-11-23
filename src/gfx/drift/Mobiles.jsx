@@ -51,7 +51,7 @@ function common() {
   };
 }
 
-export function Mobiles({ count = 14, scale = 1, clearCone = true }) {
+export function Mobiles({ count = 14, scale = 1, clearCone = true, instant = false }) {
   const root = useRef();
   const { camera } = useThree();
   const controls = useThree((s) => s.controls);
@@ -120,7 +120,7 @@ export function Mobiles({ count = 14, scale = 1, clearCone = true }) {
     for (const it of items.list) {
       const d = it.d, u0 = it.meshes[0].material.uniforms;
       const want = mood.stage >= d.unlock - 0.35 ? 1 : 0;
-      it.a = ease(it.a, want, dt, want ? 0.9 : 2.5);
+      it.a = instant ? want : ease(it.a, want, dt, want ? 0.9 : 2.5);
       const detail = smooth(d.unlock, d.unlock + 6, mood.stage) * 0.75 + mood.complexity * 0.25;
       const reg = driftState.mobiles[it.i];
       if (it.a < 0.003 && !want) { it.g.visible = false; if (reg) reg.vis = 0; continue; }
@@ -156,7 +156,7 @@ export function Mobiles({ count = 14, scale = 1, clearCone = true }) {
       tmpP.z += Math.cos(t * it.w[2] * 6.28 + it.ph * 0.5) * 1.6;
       // clear view: fade out and side-step when between the camera and the arena
       const clear = clearCone ? clearOfArena(camera.position, target, tmpP, size) : 1;
-      it.clear = ease(it.clear, clear, dt, 3);
+      it.clear = instant ? clear : ease(it.clear, clear, dt, 3);
       if (clearCone && clear < 1) {
         // side-step perpendicular to the view axis, away from it
         tmpC.copy(target).sub(camera.position).normalize();

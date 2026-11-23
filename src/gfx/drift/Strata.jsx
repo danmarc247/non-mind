@@ -20,7 +20,7 @@ export const STRATA_DEFS = [
 const GEO = new THREE.CircleGeometry(1, 96);
 const SHADOW_LIGHT = new THREE.Vector3(0.38, 1, 0.22).normalize();
 
-export function Strata({ count = 5, scale = 1 }) {
+export function Strata({ count = 5, scale = 1, instant = false }) {
   const sheets = useMemo(() => STRATA_DEFS.slice(0, count).map((d, i) => {
     const m = new THREE.ShaderMaterial({
       vertexShader: vert, fragmentShader: frag, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
@@ -44,7 +44,7 @@ export function Strata({ count = 5, scale = 1 }) {
     const dt = Math.min(dtRaw, 0.1), O = mood.overwhelm;
     for (const s of sheets) {
       const want = mood.stage >= s.d.unlock - 0.35 ? 1 : 0;
-      s.a = ease(s.a, want, dt, want ? 0.8 : 2.5);
+      s.a = instant ? want : ease(s.a, want, dt, want ? 0.8 : 2.5);
       s.mesh.visible = s.a > 0.004;
       if (!s.mesh.visible) continue;
       s.spin += dt * s.d.spin * (1 + O * 3 + mood.audio.low * 0.5);

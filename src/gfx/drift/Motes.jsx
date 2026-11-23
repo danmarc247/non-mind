@@ -8,7 +8,7 @@ import { ease, smooth, tok, stagePalette } from './shared.js';
 import vert from '../glsl/drift.motes.vert.glsl';
 import frag from '../glsl/drift.motes.frag.glsl';
 
-export function Motes({ max = 420, yMin = -32, yMax = 24, rMin = 15, rMax = 62, size = 0.32 }) {
+export function Motes({ instant = false, max = 420, yMin = -32, yMax = 24, rMin = 15, rMax = 62, size = 0.32 }) {
   const { mesh, mat } = useMemo(() => {
     const g = new THREE.InstancedBufferGeometry();
     const base = new THREE.PlaneGeometry(1, 1);
@@ -38,7 +38,7 @@ export function Motes({ max = 420, yMin = -32, yMax = 24, rMin = 15, rMax = 62, 
   useFrame((_, dtRaw) => {
     const dt = Math.min(dtRaw, 0.1), u = mat.uniforms;
     const want = max * (0.18 + 0.62 * mood.complexity + 0.2 * smooth(0, 16, mood.stage)) * (1 + 0.3 * mood.overwhelm);
-    st.count = ease(st.count, Math.min(max, want), dt, 1.2);
+    st.count = instant ? Math.min(max, want) : ease(st.count, Math.min(max, want), dt, 1.2);
     if (mood.flash > st.last + 0.05) st.flare = Math.max(st.flare, mood.flash);
     st.last = mood.flash; st.flare = ease(st.flare, 0, dt, 3);
     u.uTime.value = mood.time * (1 + mood.overwhelm * 0.6); u.uCount.value = st.count;

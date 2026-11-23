@@ -22,6 +22,13 @@ uniform vec4  uMotifA;       // wash, scratch, flecks, giant strokes
 uniform vec4  uMotifB;       // ring cells, knife smear, impasto, small strokes
 uniform vec4  uMotifC;       // swirl, ink accents, clustered discs, drips
 uniform vec4  uMotifD;       // tear, chord, collapse (stage 17), stroke density
+// Wave compositions (10 direction fields), cross-faded prev -> cur by uBlend:
+uniform vec4  uCompA;        // prev: id 0..9, stroke scale mul, warp, cross-hatch
+uniform vec4  uCompB;        // cur
+uniform vec3  uFocA;         // prev focal direction (burst / vortex / ring centre)
+uniform vec3  uFocB;
+uniform float uBlend;
+float gHatch = 0.0;          // set in main, read by strokeLayer
 uniform vec3  uPaper;
 uniform vec3  uInk;
 uniform vec3  uMagenta;
@@ -78,7 +85,7 @@ void strokeLayer(
     if (off > 0.55) continue;
 
     // rotate frame a little per stroke
-    float a = (k.x - 0.5) * 0.9;
+    float a = (k.x - 0.5) * 0.9 * (1.0 - gHatch) + gHatch * (k.x > 0.5 ? 0.75 : -0.75);
     float ca = cos(a), sa = sin(a);
     vec3 t = T * ca + B * sa;
     vec3 b = B * ca - T * sa;
@@ -117,7 +124,7 @@ void strokeLayer(
 
     // colour: regional palette, knife-smeared with a second colour / white
     vec3 cA = palBiased(k.z, region + seed * 0.13);
-    vec3 cB = (k.w > 0.55) ? uPaper : pal(k.z * 0.75 + region + 0.37);
+    vec3 cB = (k.w > 0.78) ? uPaper : pal(k.z * 0.75 + region + 0.37);
     if (h.w > 1.0 - uMotifC.y * (scale > 1.5 ? 0.12 : 0.02) && scale > 0.9) cA = mix(uInk, uPal[1], 0.2);
     float smear = smoothstep(0.35, 0.85, br2 * 0.7 + 0.3 * vnoise1(along * 6.0 + k.x * 5.0))
                 * mix(0.25, 0.8, k.y) * (0.15 + 0.85 * uMotifB.y);
@@ -136,6 +143,32 @@ void strokeLayer(
   }
 }
 
+// Ten direction fields, one per wave. Every field is a 3D vector projected on the
+// tangent plane, plus a soft swirl term so singular points become small eddies.
+vec3 compFlow(float id, vec3 d, vec3 g, vec3 F, float t) {
+  vec3 sw = cross(d, g);
+  sw /= length(sw) + 0.35;
+  vec3 gs = g / (length(g) + 0.35);
+  vec3 up = vec3(0.0, 1.0, 0.0);
+  vec3 V;
+  if (id < 0.5)      V = sw * 1.6;                                            // swirl
+  else if (id < 1.5) V = (d - F) / (dot(d - F, d - F) + 0.15);                // radial burst
+  else if (id < 2.5) V = cross(up, d) + up * sin(d.y * 7.0 + t * 0.15) * 0.3; // horizontal bands
+  else if (id < 3.5) V = vec3(0.5, -1.0, 0.3);                                // diagonal rain
+  else if (id < 4.5) {                                                       // vortex pair
+    vec3 F2 = normalize(vec3(-F.x, F.y + 0.35, -F.z) + cross(F, up) * 0.9);
+    V = cross(d, F) / (dot(d - F, d - F) + 0.12) - cross(d, F2) / (dot(d - F2, d - F2) + 0.12);
+    V *= 0.4;
+  }
+  else if (id < 5.5) V = cross(d, F) * 1.5;                                   // concentric rings
+  else if (id < 6.5) V = cross(up, d) * 0.8 + vec3(0.0, 0.0, 0.0);            // woven cross-hatch
+  else if (id < 7.5) V = gs * 1.4;                                            // drifting islands
+  else if (id < 8.5) V = up;                                                  // vertical drips
+  else V = sw + gs * sin(dot(d, vec3(9.0, 7.0, 5.0)) + t * 0.4) * 1.4;        // turbulent storm
+  V += sw * 0.45;
+  return V - d * dot(V, d);
+}
+
 void main() {
   vec3 d = normalize(vDir);
   float t = uTime;
@@ -143,19 +176,23 @@ void main() {
   float O = uOverwhelm;
   float px = length(fwidth(d));                 // pixel footprint in direction units
 
-  // ------------------------------------------------- flow field + domain warp
+  // ------------------------------------------------- flow field: wave composition, cross-faded
   vec3 g;
   float n0 = psrdnoise(d * 1.35 + vec3(0.0, t * 0.015, 0.0), vec3(0.0),
                        t * (0.1 + 0.12 * uMotifC.x + O * 0.35) + uAudio.y * 0.3, g);
-  // strokes follow the iso-lines of n0 -> swirls around its extrema
-  vec3 T = cross(d, g);
+  vec3 TA = compFlow(uCompA.x, d, g, uFocA, t);
+  vec3 TB = compFlow(uCompB.x, d, g, uFocB, t);
+  TA *= dot(TA, TB) < 0.0 ? -1.0 : 1.0;          // strokes have no polarity: align before blending
+  vec3 T = mix(TA, TB, uBlend);
   float tl = length(T);
   T = tl > 1e-4 ? T / tl : normalize(cross(d, vec3(0.31, 0.83, 0.47)));
   vec3 B = cross(d, T);
+  vec4 comp = mix(uCompA, uCompB, uBlend);
+  gHatch = comp.w;
 
-  vec3 p = d * 3.0 + g * (0.04 + 0.08 * uMotifC.x + 0.1 * O);   // warped painting space
+  vec3 p = d * 3.0 + g * (comp.z + 0.06 * uMotifC.x + 0.1 * O);   // warped painting space
   float K = 1.0 - uMotifD.z;                     // everything but splashes fades at the collapse
-  float sat = clamp(uSat, 0.0, 1.0) * (0.85 + 0.15 * C);
+  float sat = clamp(uSat, 0.0, 1.0);
 
   // ------------------------------------------------- big colour masses
   float m1n = snoise(p * 0.55 + vec3(t * 0.02, 0.0, -t * 0.015));
@@ -168,22 +205,22 @@ void main() {
   vec3 washA = pal(region + 0.05);
   vec3 washB = pal(region + 0.42);
   vec3 wash = mix(washA, washB, smoothstep(-0.12, 0.12, m2n + (drag - 0.5) * 0.6));
-  wash = mix(wash, uPaper, smoothstep(0.55, 0.9, drag) * 0.5);
-  float ce = 0.8 - 0.6 * uMotifD.w - 0.3 * C;
-  float cover = smoothstep(ce - 0.04, ce + 0.04, mass + 0.25 * drag) * uMotifA.x * K;
-  vec3 col = mix(uPaper, mix(uPaper, wash, sat), cover * (0.25 + 0.45 * uMotifD.w));
+  wash = mix(wash, uPaper, smoothstep(0.6, 0.95, drag) * 0.3);
+  float ce = -0.15 - 0.55 * uMotifD.w - 0.2 * C;
+  float cover = smoothstep(ce - 0.05, ce + 0.05, mass + 0.3 * (drag - 0.5)) * uMotifA.x * K;
+  vec3 col = mix(uPaper, mix(uPaper, wash, sat), cover * 0.92);
   float height = cover * 0.1 * drag;
 
   // ------------------------------------------------- brush strokes: 3 layers, big -> small
   float tear = max(O > 0.35 ? (O - 0.35) * 0.9 : 0.0, uMotifD.x * 0.22);
   float D = uMotifD.w;
-  float opa = 0.6 + 0.4 * smoothstep(0.0, 0.5, D);
+  float opa = 0.85 + 0.15 * D;
   float dens[3];
-  dens[0] = 0.92 * D * uMotifA.w * K;
-  dens[1] = mix(0.07, 0.8, D) * mix(1.0, 0.25, uMotifD.z);
-  dens[2] = 0.6 * D * uMotifB.w * K;
+  dens[0] = 0.95 * D * uMotifA.w * K;
+  dens[1] = mix(0.5, 0.9, D) * mix(1.0, 0.2, uMotifD.z);
+  dens[2] = 0.7 * D * uMotifB.w * K;
   float scl[3];
-  scl[0] = 0.55; scl[1] = 1.05; scl[2] = 2.1;
+  scl[0] = 0.42 * comp.y; scl[1] = 0.8 * comp.y; scl[2] = 1.55 * comp.y;
   float topM = 0.0;
   for (int l = 0; l < 3; l++) {
     if (dens[l] < 0.01) continue;
@@ -301,13 +338,13 @@ void main() {
 
   // ------------------------------------------------- paint flecks
   {
-    vec3 fq = p * 22.0;
+    vec3 fq = p * 15.0;
     vec3 fc = floor(fq);
     vec4 fh = random4(fc + 3.3);
     float fdens = (0.08 + 0.2 * C + 0.15 * uMotifD.y) * uMotifA.z * K + 0.35 * Os;
     float fr = 0.08 + 0.2 * fh.z * fh.z;
     float fd = length(fq - fc - 0.3 - fh.xyw * 0.4);
-    float aa = px * 3.0 * 22.0;
+    float aa = px * 3.0 * 15.0;
     float fleck = step(fh.x * 0.999 + 0.001, fdens) * smoothstep(fr + aa, fr - aa, fd);
     vec3 fcol = fh.w > 0.6 ? uPaper * 1.03 : (Os > 0.3 && fh.y > 0.5 ? mix(uMagenta, uUltra, fh.w) : pal(fh.y + region));
     col = mix(col, fcol, fleck);

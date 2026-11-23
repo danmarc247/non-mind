@@ -342,7 +342,7 @@ function stressorSource(defId, affix = null) {
 }
 
 const MAIN = `
-uniform float uFlash; uniform float uFade; uniform vec3 uRim; uniform float uGlow; uniform float uSpark;
+uniform float uFlash; uniform float uFade; uniform vec3 uRim; uniform float uGlow; uniform float uSpark; uniform vec3 uEnvA; uniform vec3 uEnvB; uniform vec3 uEnvC; uniform float uReflect;
 void main() {
   vec3 ro = (cameraPosition - sculptureCenter) / _scale;
   vec3 rd = getRayDirection();
@@ -352,12 +352,24 @@ void main() {
   if (length(p) > 1.02) discard;
   vec3 n = calcNormal(p);
   ShadedMaterial sm = shade(p, n);
-  vec3 c = sm.color; c = c / (c + vec3(1.0)); c = pow(c, vec3(1.0 / 2.2));
-  // painterly: quantised light bands + rim in paper white
-  float l = dot(n, normalize(vec3(0.4, 0.8, 0.45)));
-  c *= 0.82 + 0.18 * floor(l * 3.0 + 1.5) / 3.0;
+  // Solid, saturated paint with a wet surface: the albedo is used as the display colour (no washing
+  // tone curve), lit in bands, with a painted environment reflected in it and a hard specular glint.
+  vec3 alb = clamp(sm.mat.albedo, 0.0, 1.0);
+  vec3 L = normalize(vec3(0.4, 0.8, 0.45));
+  float l = dot(n, L);
+  float band = floor(clamp(l * 0.5 + 0.5, 0.0, 1.0) * 4.0 + 0.5) / 4.0;
+  vec3 c = alb * (0.52 + 0.58 * band);
+  c = mix(c, alb * alb * 0.55, smoothstep(0.15, -0.6, l) * 0.55);   // shadows deepen and saturate
   float fr = pow(1.0 - max(dot(n, -rd), 0.0), 2.2);
-  c = mix(c, uRim, fr * (0.35 + uGlow * 0.5));
+  vec3 r = reflect(rd, n);
+  float up = r.y * 0.5 + 0.5;
+  vec3 env = mix(uEnvB, uEnvA, smoothstep(0.1, 0.9, up));
+  env = mix(env, uEnvC, smoothstep(0.55, 0.95, sin(r.x * 5.0 + r.z * 3.0 + time * 0.35) * 0.5 + 0.5) * 0.65);
+  env = mix(env, vec3(1.0, 0.99, 0.95), smoothstep(0.72, 1.0, up) * 0.8);
+  c = mix(c, env, clamp((0.16 + 0.55 * fr) * uReflect, 0.0, 0.85));
+  vec3 hv = normalize(L - rd);
+  c += vec3(1.0, 0.98, 0.92) * (pow(max(dot(n, hv), 0.0), 56.0) * 0.85 + pow(max(dot(n, hv), 0.0), 10.0) * 0.12) * uReflect;
+  c = mix(c, uRim, fr * fr * (0.1 + uGlow * 0.35));
   c = mix(c, vec3(1.0), uFlash);
   // hover sparkle: pinpoint glints that twinkle across the surface, plus a faint lift
   if (uSpark > 0.001) {
@@ -375,6 +387,9 @@ void main() {
   gl_FragDepth = clip.z / clip.w * 0.5 + 0.5;
 }`;
 
+// The painted environment every sculpture reflects: three colours from the stage palette, shared by all
+// materials (one object, written once per frame by the scene loop).
+export const sculptEnv = { a: { value: new THREE.Vector3(1.0, 0.176, 0.478) }, b: { value: new THREE.Vector3(0.165, 0.169, 1.0) }, c: { value: new THREE.Vector3(1.0, 0.824, 0.122) }, reflect: { value: 1 } };
 const cache = new Map();
 function compile(src) {
   const s = sculptToThreeJSShaderSource(src);
@@ -389,11 +404,12 @@ function material(k, srcFn, rim, glow) {
     try { sh = compile(srcFn()); } catch (e) { console.warn('sculpt failed', k, e); sh = compile('sphere(0.35);'); }
     base = new THREE.ShaderMaterial({
       vertexShader: sh.vert, fragmentShader: sh.frag, side: THREE.BackSide,
-      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
+      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uEnvA: sculptEnv.a, uEnvB: sculptEnv.b, uEnvC: sculptEnv.c, uReflect: sculptEnv.reflect, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
     });
     cache.set(k, base);
   }
   const m = base.clone();
+  m.uniforms.uEnvA = sculptEnv.a; m.uniforms.uEnvB = sculptEnv.b; m.uniforms.uEnvC = sculptEnv.c; m.uniforms.uReflect = sculptEnv.reflect; // clone() copies uniforms: re-share
   m.uniforms.uRim.value = new THREE.Vector3(...rim);
   return m;
 }

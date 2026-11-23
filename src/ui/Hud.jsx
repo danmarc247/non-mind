@@ -16,7 +16,7 @@ import Tutorial from './hud/Tutorial.jsx';
 import Mobile from './hud/Mobile.jsx';
 import Tools from './hud/Tools.jsx';
 import Nudge from './hud/Nudge.jsx';
-import { Log, StageFlash } from './hud/Log.jsx';
+import { ArcaneProvider, Herald, Log, StageFlash } from './hud/Log.jsx';
 import { attend } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
 
@@ -134,7 +134,8 @@ export default function Hud() {
   const bandTop = topH + 24;
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
-  const logH = compact ? 50 : 104;
+  const logH = compact ? 122 : 182;
+  const sideL = 12 + (compact ? 300 : 340) + 24;
 
   return (
     <DegradeCtx.Provider value={{ d, tick }}>
@@ -144,15 +145,15 @@ export default function Hud() {
         style={{ '--band-h': `${bandH}px`, '--log-h': `${logH}px` }}
       >
         {started && mobile && (
-          <>
+          <ArcaneProvider>
             <Mobile w={w} h={h} />
             <StageFlash />
             <Nudge blocked={codex} />
             <Tutorial />
-          </>
+          </ArcaneProvider>
         )}
         {started && !mobile && (
-          <>
+          <ArcaneProvider>
             <div ref={topRef} className="absolute inset-x-3 top-3"><TopBar compact={compact} /></div>
             <div ref={botRef} className="absolute inset-x-3 bottom-3"><Bottom compact={compact} /></div>
 
@@ -177,6 +178,7 @@ export default function Hud() {
             </div>
 
             <div className="absolute left-1/2 -translate-x-1/2" style={{ top: bandTop }}><PendingBanner /></div>
+            <div className="pointer-events-none absolute" style={{ top: bandTop + 64, left: sideL, right: sideL }}><Herald size={compact ? 26 : 32} /></div>
             <StageFlash />
             <Nudge blocked={codex} />
             <Tutorial />
@@ -190,7 +192,7 @@ export default function Hud() {
                 transition={G.overwhelm >= 1 ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : { duration: 0.3 }}
               />
             )}
-          </>
+          </ArcaneProvider>
         )}
         <AnimatePresence>{codex && started && <Codex key="codex" onClose={() => setCodex(false)} />}</AnimatePresence>
         <AnimatePresence>{!started && <Title key="title" />}</AnimatePresence>

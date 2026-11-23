@@ -87,5 +87,5 @@ void main() {
   col *= mix(1.0, dot(nrm, L) / L.z, 0.5);
 
   if (alpha < 0.004) discard;
-  gl_FragColor = vec4(col, alpha);
+  gl_FragColor = vec4(col, clamp(alpha * 1.45, 0.0, 1.0));
 }

@@ -14,7 +14,7 @@ import { TABS } from './LeftPanel.jsx';
 import { Body as InspectorBody } from './Inspector.jsx';
 import Reset from './Reset.jsx';
 import Tools from './Tools.jsx';
-import { Log } from './Log.jsx';
+import { Herald, Log } from './Log.jsx';
 import { POP, Scr, Shake } from './shared.jsx';
 
 const PHASE = { prep: 'gathering', fight: 'holding', won: 'held', lost: 'broken' };
@@ -128,9 +128,14 @@ export default function Mobile({ w, h }) {
         </div>
       )}
 
+      {/* a new line arrives large in the clear middle, then settles into the log */}
+      <div className="pointer-events-none absolute inset-x-4" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 214 : 96}px)` : 'calc(env(safe-area-inset-top, 0px) + 96px)' }}>
+        <Herald size={portrait ? 22 : 20} />
+      </div>
+
       {/* log, quietly, above the dock */}
       <div className="pointer-events-none absolute left-2" style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${cur ? 0 : 66}px)`, display: cur ? 'none' : undefined }}>
-        <Log compact />
+        <Log compact mobile />
       </div>
 
       {/* bottom sheet */}

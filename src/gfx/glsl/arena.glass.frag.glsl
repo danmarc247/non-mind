@@ -78,5 +78,5 @@ void main() {
   col = mix(col, uPaper, uFlash * 0.4);
   // back faces are the far wall seen through the near one: quieter
   if (!gl_FrontFacing) alpha *= 0.45;
-  gl_FragColor = vec4(col, clamp(alpha, 0.0, 0.55));
+  gl_FragColor = vec4(col, clamp(alpha * 1.35, 0.0, 0.78));
 }

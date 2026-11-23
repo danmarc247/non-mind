@@ -24,7 +24,7 @@ export const TETHER_DEFS = [
 const tR1 = new THREE.Vector3(), tR2 = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), tD = new THREE.Vector3();
 const gateWorld = (dir, out) => { const [x, z] = gatePos(dir); return out.set(x * 1.08, SEA_Y + 0.9, z * 1.08); };
 
-export function Tethers({ width = 1.4 }) {
+export function Tethers({ width = 1.4, instant = false }) {
   const { size, viewport } = useThree();
   const { mesh, mat } = useMemo(() => {
     const n = NT * 2 * (SEG + 1) * 2;
@@ -89,7 +89,7 @@ export function Tethers({ width = 1.4 }) {
       const ra = rough(d.from, tR1), rb = rough(d.to, tR2);
       end(d.from, u.uP0.value[i], rb);
       end(d.to, u.uP1.value[i], ra);
-      st.on[i] = ease(st.on[i], vis * (1 - st.snap * 0.8), dt, vis ? 1.2 : 3);
+      st.on[i] = instant ? vis * (1 - st.snap * 0.8) : ease(st.on[i], vis * (1 - st.snap * 0.8), dt, vis ? 1.2 : 3);
       u.uOn.value[i] = st.on[i];
       const L = u.uP0.value[i].distanceTo(u.uP1.value[i]);
       // the gap breathes; it never closes, it widens with overwhelm and snaps open on a reset

@@ -19,6 +19,7 @@ const num = (k, d) => (q.get(k) !== null ? +q.get(k) : d);
 mood.stage = num('stage', 0); mood.complexity = num('cx', 0.2); mood.overwhelm = num('ow', 0);
 const only = q.get('only') ? q.get('only').split(',') : null;
 const show = (k) => !only || only.includes(k);
+const instant = q.get('instant') === '1';   // skip appear easing (software WebGL runs at a few fps)
 window.__mood = mood;
 
 const SEA_R = 12.5, SEA_Y = -0.35, TARGET = new THREE.Vector3(0, -3.2, 0);
@@ -104,10 +105,10 @@ function App() {
         <directionalLight position={[-6, 10, 5]} intensity={1.6} />
         <PainterSky />
         <StandIn />
-        {show('strata') && <Strata />}
-        {show('mobiles') && <Mobiles clearCone={num('focus', null) === null} />}
-        {show('tethers') && <Tethers />}
-        {show('motes') && <Motes />}
+        {show('strata') && <Strata instant={instant} />}
+        {show('mobiles') && <Mobiles instant={instant} clearCone={num('focus', null) === null} />}
+        {show('tethers') && <Tethers instant={instant} />}
+        {show('motes') && <Motes instant={instant} />}
         {num('focus', null) === null && <OrbitControls makeDefault autoRotate={q.get('rot') !== '0' && q.get('az') === null} autoRotateSpeed={0.3} enablePan={false}
           minDistance={12} maxDistance={90} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} />}
         {q.get('post') === '1' && <PainterPost quality="med" />}
