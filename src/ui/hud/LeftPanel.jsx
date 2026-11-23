@@ -369,8 +369,8 @@ export default function LeftPanel({ compact }) {
   const Body = cur.C;
   return (
     <Appear from="left" className={cn('pointer-events-auto', compact ? 'w-[280px]' : 'w-[316px]')}>
-      <Panel title={<Scr k={50}>{cur.label}</Scr>} tone={cur.tone === 'ink-2' ? 'violet' : cur.tone} bodyClassName="px-3 pt-2 pb-3">
-        <div className={cn('mb-2 flex flex-wrap gap-1', tabs.length < 2 && 'hidden')}>
+      <Panel bodyClassName="px-3 pt-3 pb-3">
+        <div className="mb-2 flex flex-wrap gap-1">
           <AnimatePresence initial={false}>
             {tabs.map((t) => {
               const b = t.badge?.(G) || 0;
@@ -395,7 +395,7 @@ export default function LeftPanel({ compact }) {
             })}
           </AnimatePresence>
         </div>
-        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pb-1" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 100px)' }}>
+        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pb-1" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 58px - var(--tabs-h, 0px))' }}>
           <motion.div key={cur.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
             <Body G={G} />
           </motion.div>

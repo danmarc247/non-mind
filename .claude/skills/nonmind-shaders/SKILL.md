@@ -53,7 +53,7 @@ Rules:
   - arrays as `uPal[8]`
 - Get colours from `PALETTE` (sRGB 0..1), from `mixStagePalette(...)` plus `linearToSrgb` (the sea), or from `unitColors()`.
 - Colour space:
-  - The R3F/postprocessing *input* is linear, so post effects convert with `toLinear` (`pow(c, 2.2)`; see `PainterPost.jsx`).
+  - The R3F/postprocessing *input* is linear, so post effects convert with `linearToSrgb (Canvas is `linear legacy flat`: write display sRGB)` (`pow(c, 2.2)`; see `PainterPost.jsx`).
   - Raw `ShaderMaterial`s on scene meshes write sRGB-ish values directly. Sky and sea do this.
   - Match whatever the neighbouring code does. Do not mix conventions inside a file.
 - Never hardcode a colour literal in GLSL. The existing exceptions are `vec3(1.0)` for white flash, the sea's overwhelm magenta (which should become `uMagenta` if touched), and the sky's dark splash core (`vec3(0.42,0.04,0.16)`, crimson family). New code adds a uniform.

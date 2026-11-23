@@ -53,14 +53,14 @@ export function StageFlash() {
   useEffect(() => {
     let timer = 0;
     const off = onEvent((e) => {
-      let text = null, tone = 'magenta';
-      if (e.type === 'stage') text = STAGES[e.stage]?.id.toUpperCase();
+      let text = null, hint = null, tone = 'magenta';
+      if (e.type === 'stage') { text = STAGES[e.stage]?.id.toUpperCase(); hint = STAGES[e.stage]?.hint; }
       if (e.type === 'reset') { text = 'SIMPLE AGAIN'; tone = 'violet'; }
       if (e.type === 'ending') { text = 'AN ENDING'; tone = 'leaf'; }
       if (!text) return;
       clearTimeout(timer);
-      setFlash({ text, tone, key: performance.now() });
-      timer = setTimeout(() => setFlash(null), 1500);
+      setFlash({ text, hint, tone, key: performance.now() });
+      timer = setTimeout(() => setFlash(null), 1600);
     });
     return () => { off(); clearTimeout(timer); };
   }, []);
@@ -78,11 +78,21 @@ export function StageFlash() {
           >
             <KoanFlash
               text={flash.text}
-              wpm={flash.text.includes(' ') ? 110 : 52}
+              wpm={60}
               trail="rgb_split"
               tone={flash.tone}
               className="h-[120px] font-title text-[88px] text-ink [text-shadow:4px_5px_0_var(--color-paper)]"
             />
+            {flash.hint && (
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...POP, delay: 0.15 }}
+                className="mx-auto mt-1 w-fit rounded-[10px] bg-paper/85 px-3 py-1 text-center font-body text-[18px] italic text-ink-2"
+              >
+                {flash.hint}
+              </motion.p>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
