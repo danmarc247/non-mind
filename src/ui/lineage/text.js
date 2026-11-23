@@ -14,7 +14,7 @@ export const LINEAGE_TEXT = {
   },
   // ghosts: why they are no longer on the board
   gone: {
-    link: 'It met its likeness and became one rung of it.',
+    link: 'It met its likeness and became one link further.',
     integrate: 'It went in whole and is now a part.',
     subtract: 'Some of it remains, as the shape of a cut.',
     split: 'It came apart along its seam.',

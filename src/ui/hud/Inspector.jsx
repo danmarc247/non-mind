@@ -102,7 +102,7 @@ function Ops({ G, u }) {
         {btn('subtract', unlocked(G, 'subtract'), 'subtract', 'blood', () => setPending(pending?.kind === 'subtract' ? null : 'subtract'), {
           disabled: ins && G.insight < COSTS.subtract,
           cost: ins ? COSTS.subtract : null,
-          tip: 'Carve another out of this. This one keeps its rung and takes one trait from the other.',
+          tip: 'Carve another out of this. This one keeps its link and takes one trait from the other.',
         })}
         {btn('split', unlocked(G, 'split'), 'split', 'violet', gone(() => act('split', u.id)), {
           disabled: !canSplit || G.insight < COSTS.split,
@@ -198,8 +198,7 @@ export function Body({ G, u }) {
           ))}
         </div>
         <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-head text-[17px] leading-none text-ink">{L.pali}</span>
-          <span className="font-body text-[12px] text-ink-2">{L.gloss}</span>
+          <span className="font-head text-[17px] leading-none text-ink">{L.name}</span>
           <span className="ml-auto font-stat text-[12px] text-ink-2">x{L.mult}</span>
         </div>
         <p className="mt-0.5 font-body text-[13px] italic leading-snug text-ink">{L.text}</p>

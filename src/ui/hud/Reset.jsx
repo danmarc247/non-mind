@@ -27,10 +27,10 @@ export default function Reset({ compact, small }) {
             transition={{ duration: 0.9, repeat: Infinity, ease: 'easeOut' }}
           />
         )}
-        <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Mu remains, and makes the next time wider.'}>
+        <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Residue remains, and makes the next time wider.'}>
           <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 60 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
             <span className={small ? 'font-title text-[9px] leading-none' : compact ? 'font-title text-[11px] leading-none' : 'font-title text-[13px] leading-none'}>NON-MIND</span>
-            <span className={small ? 'mt-0.5 font-stat text-[11px] nm-tab' : 'mt-1 font-stat text-[13px] nm-tab'}>+{fmt(gain, { int: true })} mu</span>
+            <span className={small ? 'mt-0.5 font-stat text-[11px] nm-tab' : 'mt-1 font-stat text-[13px] nm-tab'}>+{fmt(gain, { int: true })} residue</span>
           </RingButton>
         </Tooltip>
       </motion.div>
@@ -45,7 +45,7 @@ export default function Reset({ compact, small }) {
             className="absolute top-full right-0 z-30 mt-3 w-[260px] rounded-[14px] border-[3px] border-ink bg-paper p-3 shadow-[3px_4px_0_0_var(--color-ink)]"
           >
             <p className="font-body text-[14px] leading-snug text-ink">
-              Everything here becomes simple. You keep <b className="font-stat">{fmt(gain, { int: true })} mu</b>{G.endings ? ' and every ending' : ''}.
+              Everything here becomes simple. You keep <b className="font-stat">{fmt(gain, { int: true })} residue</b>{G.endings ? ' and every ending' : ''}.
             </p>
             <div className="mt-3 flex justify-end gap-2">
               <InkButton size="sm" tone="paper" onClick={() => setConfirm(false)}>not yet</InkButton>

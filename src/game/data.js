@@ -27,21 +27,21 @@ export const STAGES = [
   { id: 'overwhelm', unlock: 'nonmind', hint: 'It is too much. It was always this much.', need: (g) => g.overwhelm >= 1 },
 ];
 
-// 12-link ladder: the genetic upgrade track. Two units of one family at the same link fuse into the next.
+// 12-link ladder: the genetic upgrade track (English names only). Two units of one family at the same link fuse into the next.
 // `mult` scales core stats; `trait` is the heritable gene gained on reaching the link.
 export const LINKS = [
-  { n: 1, pali: 'Dukkha', gloss: 'unsatisfactoriness', mult: 1, trait: 'ache', text: 'It does not fit. This is where it starts.' },
-  { n: 2, pali: 'Saddhā', gloss: 'confidence', mult: 1.7, trait: 'trust', text: 'It leans on something it has not yet seen.' },
-  { n: 3, pali: 'Pāmojja', gloss: 'gladness', mult: 2.8, trait: 'glad', text: 'A small yes, repeated.' },
-  { n: 4, pali: 'Pīti', gloss: 'rapture', mult: 4.5, trait: 'rapture', text: 'The body hears the news before the mind.' },
-  { n: 5, pali: 'Passaddhi', gloss: 'tranquillity', mult: 7, trait: 'calm', text: 'The shaking stops shaking.' },
-  { n: 6, pali: 'Sukha', gloss: 'ease', mult: 11, trait: 'ease', text: 'Nothing is asked of it.' },
-  { n: 7, pali: 'Samādhi', gloss: 'collectedness', mult: 17, trait: 'gather', text: 'Many, facing one way.' },
-  { n: 8, pali: 'Yathābhūta', gloss: 'seeing as it is', mult: 26, trait: 'see', text: 'It stops adding.' },
-  { n: 9, pali: 'Nibbidā', gloss: 'disenchantment', mult: 40, trait: 'tire', text: 'The trick is seen and still performed, more quietly.' },
-  { n: 10, pali: 'Virāga', gloss: 'dispassion', mult: 62, trait: 'fade', text: 'The colour stays. The wanting of the colour goes.' },
-  { n: 11, pali: 'Vimutti', gloss: 'release', mult: 95, trait: 'release', text: 'Held by nothing, it holds nothing.' },
-  { n: 12, pali: 'Khaye ñāṇa', gloss: 'knowing the ending', mult: 150, trait: 'end', text: 'It knows it is done, and is.' },
+  { n: 1, name: 'Unsatisfactoriness', mult: 1, trait: 'ache', text: 'It does not fit. This is where it starts.' },
+  { n: 2, name: 'Confidence', mult: 1.7, trait: 'trust', text: 'It leans on something it has not yet seen.' },
+  { n: 3, name: 'Gladness', mult: 2.8, trait: 'glad', text: 'A small yes, repeated.' },
+  { n: 4, name: 'Rapture', mult: 4.5, trait: 'rapture', text: 'The body hears the news before the mind.' },
+  { n: 5, name: 'Tranquillity', mult: 7, trait: 'calm', text: 'The shaking stops shaking.' },
+  { n: 6, name: 'Ease', mult: 11, trait: 'ease', text: 'Nothing is asked of it.' },
+  { n: 7, name: 'Collectedness', mult: 17, trait: 'gather', text: 'Many, facing one way.' },
+  { n: 8, name: 'Seeing As It Is', mult: 26, trait: 'see', text: 'It stops adding.' },
+  { n: 9, name: 'Disenchantment', mult: 40, trait: 'tire', text: 'The trick is seen and still performed, more quietly.' },
+  { n: 10, name: 'Dispassion', mult: 62, trait: 'fade', text: 'The colour stays. The wanting of the colour goes.' },
+  { n: 11, name: 'Release', mult: 95, trait: 'release', text: 'Held by nothing, it holds nothing.' },
+  { n: 12, name: 'Knowing The Ending', mult: 150, trait: 'end', text: 'It knows it is done, and is.' },
 ];
 
 // What each heritable trait does in battle (read by battle.js). Values scale with copies of the gene.
@@ -55,7 +55,7 @@ export const TRAITS = {
   gather: { text: 'Repeated strikes on one target grow.' },
   see: { text: 'Ignores opacity and veils.' },
   tire: { text: 'Stressors nearby lose salience.' },
-  fade: { text: 'Counts as every aspect. Cannot be dysregulated.' },
+  fade: { text: 'Counts as every aspect.' },
   release: { text: 'On falling, mends every ally.' },
   end: { text: 'Dissolves into a permanent ending.' },
 };
@@ -67,7 +67,7 @@ export const ASPECTS = {
   somatic: { name: 'Somatic', tone: 'tangerine', text: 'Members gain %v% tolerance.', v: [30, 70, 150] },
   shadow: { name: 'Shadow', tone: 'violet', text: 'Stressors lose %v% tolerance on arrival.', v: [8, 16, 30] },
   relational: { name: 'Relational', tone: 'rose', text: 'Members share %v% of harm with neighbours.', v: [25, 40, 60] },
-  void: { name: 'Void', tone: 'ink', text: 'Members gain %v opacity.', v: [12, 25, 45] },
+  void: { name: 'Void', tone: 'ink', text: 'Members gain %v% opacity.', v: [12, 25, 45] },
   mythic: { name: 'Mythic', tone: 'yolk', text: 'Affect from all sources +%v%.', v: [15, 40, 100] },
 };
 export const ASPECT_IDS = Object.keys(ASPECTS);
@@ -107,22 +107,22 @@ export const FAMILIES = [
     text: 'It does not fix. It is a place where unfixed things may be.' },
   { id: 'equanimity', name: 'Equanimity', dir: 9, tier: 5, aspects: ['mythic', 'void'], field: 'Field of Sky Weather', witness: 'Even Witness',
     stats: { tol: 1800, sal: 260, lat: 1.0, reach: 6.0, opa: 20, lab: 0, rec: 20 }, ability: 'level', form: 'orbit', colors: ['ultra', 'yolk'],
-    text: 'Praise and blame arrive. It offers them both the same chair.' },
+    text: 'Applause and accusation arrive. It offers them both the same chair.' },
 ];
 export const FAMILY = Object.fromEntries(FAMILIES.map((f) => [f.id, f]));
 
 // Abilities fire when charge is full. Kept as data; battle.js implements `kind`.
 export const ABILITIES = {
-  reframe: { name: 'Reframe', kind: 'invert', power: 1.5, text: 'The target strikes its own kind once.' },
-  lid: { name: 'Lid', kind: 'store', power: 0.6, text: 'Stores harm taken. Returns all of it when it falls.' },
-  loop: { name: 'Loop', kind: 'flurry', power: 5, text: 'Strikes five times. Feels each one.' },
-  withdraw: { name: 'Withdraw', kind: 'retreat', power: 3, text: 'Leaps to the far rim and strikes thrice from there.' },
+  reframe: { name: 'Reframe', kind: 'invert', power: 1.5, text: 'The strongest stressor is turned on its nearest kin, and stunned.' },
+  lid: { name: 'Lid', kind: 'store', power: 0.6, text: 'Keeps most of the harm it takes and hardens. Returns it to those near when it falls.' },
+  loop: { name: 'Loop', kind: 'flurry', power: 5, text: 'Strikes five times, and is worn by it.' },
+  withdraw: { name: 'Withdraw', kind: 'retreat', power: 3, text: 'Leaps to the far rim, unseen a moment, and strikes thrice from there.' },
   mend: { name: 'Mend', kind: 'heal', power: 2.5, text: 'Mends the ally who needs it most.' },
-  cast_out: { name: 'Cast Out', kind: 'transfer', power: 2, text: 'Hands its own wounds to the nearest stressor.' },
-  vanish: { name: 'Vanish', kind: 'blink', power: 4, text: 'Is not here. Returns behind the strongest, heavily.' },
+  cast_out: { name: 'Cast Out', kind: 'transfer', power: 2, text: 'Hands its own wounds to the nearest stressor, and is eased by it.' },
+  vanish: { name: 'Vanish', kind: 'blink', power: 4, text: 'Is not here. Returns beside the stressor with most tolerance, heavily.' },
   transmute: { name: 'Transmute', kind: 'burst_affect', power: 2.2, text: 'Burns everything near. The ashes are affect.' },
   hold: { name: 'Hold', kind: 'taunt', power: 4, text: 'Everything nearby must attend to it. It hardens.' },
-  level: { name: 'Level', kind: 'equalize', power: 0.35, text: 'All stressors are set to the tolerance of the weakest among them, roughly.' },
+  level: { name: 'Level', kind: 'equalize', power: 0.35, text: 'Draws every stressor down toward the weakest. The greatest are drawn less.' },
 };
 
 // Stressors arrive through the gates. `arc` waves add a modifier following the 10-step rhetorical arc.
@@ -173,7 +173,7 @@ export const UPGRADES = [
   { id: 'long_view', name: 'Long View', cost: 2e4, text: 'Affect scales with seconds spent in this run, slowly.', stage: 5 },
   { id: 'crowd', name: 'Inner Crowd', cost: 2.5e5, text: 'Salience of all regulators scales with complexity.', stage: 6 },
   { id: 'thrift', name: 'Thrift Of Attention', cost: 3e6, text: 'Interest cap doubles.', stage: 7 },
-  { id: 'second_arrow', name: 'Second Arrow', cost: 5e7, text: 'Recursion +10 for everyone. So is harm taken, by 10%.', stage: 9 },
+  { id: 'second_arrow', name: 'Second Blow', cost: 5e7, text: 'Recursion +10 for everyone. So is harm taken, by 10%.', stage: 9 },
   { id: 'lending', name: 'Lending', cost: 8e8, text: 'Attendants attend twice as often.', stage: 10 },
 ];
 
@@ -187,20 +187,20 @@ export const SPELLS = [
 // Timed verbs with aspect-gated slots; they produce or consume decaying moods.
 export const VERBS = [
   { id: 'dream', name: 'Dream', time: 40, needs: null, text: 'Give a regulator to sleep. Something related wakes.', stage: 10 },
-  { id: 'ruminate', name: 'Ruminate', time: 25, needs: 'cortical', text: 'Insight, and a Dread.', stage: 10 },
+  { id: 'ruminate', name: 'Ruminate', time: 25, needs: 'cortical', text: 'Insight, and a Dread. Sometimes Fascination instead.', stage: 10 },
   { id: 'rest', name: 'Rest', time: 30, needs: 'vagal', text: 'A Dread is taken away. Composure returns.', stage: 10 },
-  { id: 'confide', name: 'Confide', time: 35, needs: 'relational', text: 'A Contentment. Witnessed things weigh less.', stage: 10 },
+  { id: 'confide', name: 'Confide', time: 35, needs: 'relational', text: 'Told to someone, it is lighter: a Contentment.', stage: 10 },
 ];
 export const MOODS = {
   dread: { name: 'Dread', life: 180, text: 'Three of these and the gates open wider.' },
-  contentment: { name: 'Contentment', life: 90, text: 'Cancels one Dread. Does not last.' },
-  fascination: { name: 'Fascination', life: 180, text: 'Yield rises. So does everything else.' },
+  contentment: { name: 'Contentment', life: 90, text: 'Cancels one Dread if there is one. Does not last.' },
+  fascination: { name: 'Fascination', life: 180, text: 'Affect yield rises by half, for a while.' },
 };
 
 export const STANCES = [
-  { id: 'toward', name: 'Toward', text: 'Mending doubled. Reach shortened.', mod: { heal: 2, reach: 0.8 } },
-  { id: 'away', name: 'Away', text: 'Opacity +20, reach lengthened. Yield reduced.', mod: { opa: 20, reach: 1.3, affect: 0.8 } },
-  { id: 'against', name: 'Against', text: 'Salience +60%. Tolerance reduced.', mod: { sal: 1.6, tol: 0.8 } },
+  { id: 'toward', name: 'Toward', text: 'Moving toward others: mending doubled, reach shortened.', mod: { heal: 2, reach: 0.8 } },
+  { id: 'away', name: 'Away', text: 'Moving away from others: opacity +20, reach lengthened, yield reduced.', mod: { opa: 20, reach: 1.3, affect: 0.8 } },
+  { id: 'against', name: 'Against', text: 'Moving against others: salience +60%, tolerance reduced.', mod: { sal: 1.6, tol: 0.8 } },
 ];
 
 // Shop odds by level: [t1..t5] percent.

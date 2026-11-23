@@ -178,8 +178,8 @@ void main() {
   if (!hit) {
     // cut-paper outline from the closest approach: a white brush band with a hairline of ink outside
     float px = 0.0011 * tMin;
-    float w = px * (2.2 + 1.2 * uDetail);
-    if (minD > w * 1.9 || minD < 0.0) discard;
+    float w = px * (3.2 + 1.2 * uDetail);
+    if (minD > w * 1.7 || minD < 0.0) discard;
     P = ro + rd * tMin;
     float brk = dr_noise(vec2(atan(P.y, P.x) * 9.0 + uSeed, P.z * 7.0));
     if (brk < 0.18 + 0.25 * uTear) discard;

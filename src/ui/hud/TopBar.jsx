@@ -53,7 +53,7 @@ export function Resources({ G, compact, mobile }) {
     { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : '' },
     { k: 'attention', show: unlocked(G, 'shop'), tone: 'yolk', value: fmt(G.attention, { int: true }), hint: 'Attention. Spent to bring things in, to look again, to grow. Paid out when a wave is held; idle attention earns a little more.' },
     { k: 'insight', show: unlocked(G, 'insight'), tone: 'ultra', value: `${Math.floor(G.insight)}`, hint: `Insight ${Math.floor(G.insight)} of ${G.insightMax}. It seeps in on its own and is spent on joining, cutting and spells.` },
-    { k: 'mu', show: G.mu > 0 || G.depth > 0, tone: 'violet', value: fmt(G.mu, { int: true }), hint: `Mu ${fmtLong(G.mu)}. What remains after letting go. It widens affect, and every beginning starts with a little more attention.` },
+    { k: 'residue', show: G.mu > 0 || G.depth > 0, tone: 'violet', value: fmt(G.mu, { int: true }), hint: `Residue ${fmtLong(G.mu)}. What remains after letting go. It widens affect, and every beginning starts with a little more attention.` },
     { k: 'endings', show: G.endings > 0, tone: 'leaf', value: fmt(G.endings, { int: true }), hint: 'Endings. Things that reached the twelfth link and stopped. Each one raises affect and salience for good.' },
   ];
   return (

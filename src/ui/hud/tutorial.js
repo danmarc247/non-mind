@@ -79,7 +79,7 @@ export const INTROS = [
   { id: 'mirror', key: 'mirror', anchor: 'tab-mirror', tab: 'mirror', voice: 'The whole of it can be reflected.', plain: 'In MIRROR, REFLECT doubles affect and opens a third ring. Stressors grow too.' },
   { id: 'wildcard', key: 'wildcard', anchor: 'tab-bonds', tab: 'bonds', voice: 'Every aspect counts one more than is there.', plain: 'Nothing to press: each bond counts one extra member, so its tiers come sooner.' },
   { id: 'overwhelm', when: (G) => G.overwhelm > 0, anchor: 'complexity', voice: 'It is getting to be too much.', plain: 'Complexity is past capacity: waves hit harder. Merge, release or repurpose units to bring it down.' },
-  { id: 'nonmind', key: 'nonmind', anchor: 'reset', voice: 'It is too much. It can be let go.', plain: 'Press NON-MIND to start over with mu, which speeds up the next run. Right now it keeps double.' },
+  { id: 'nonmind', key: 'nonmind', anchor: 'reset', voice: 'It is too much. It can be let go.', plain: 'Press NON-MIND to start over with residue, which speeds up the next run. Right now it keeps double.' },
 ].map((s) => ({ ...s, ack: true, intro: true, when: s.when || ((G) => unlocked(G, s.key)) }));
 
 export const STEPS = [...CORE, ...INTROS];

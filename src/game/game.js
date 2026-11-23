@@ -113,7 +113,7 @@ function fuse(G, u) {
     keep.muts = [...new Set([...(keep.muts || []), ...(gone.muts || [])])].slice(0, MAX_MUTS); mutate(G, keep, 0.6);
     G.stats.links++;
     G.events.push({ type: 'link', id: keep.id, gone: gone.id, link: keep.link });
-    say(G, `${nameOf(keep.g)}: ${LINKS[keep.link - 1].pali}. ${LINKS[keep.link - 1].text}`, 'link');
+    say(G, `${nameOf(keep.g)}: ${LINKS[keep.link - 1].name}. ${LINKS[keep.link - 1].text}`, 'link');
     if (keep.link >= 12) {
       G.units.splice(G.units.indexOf(keep), 1); G.endings++;
       G.events.push({ type: 'ending', id: keep.id }); say(G, 'An ending is known. It stays known.', 'ending'); koan(G, 'ending', 'ending');

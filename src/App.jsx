@@ -7,6 +7,7 @@ const Hud = hudMod?.default || Fallback;
 import { onEvent } from './game/store.js';
 import Manual from './ui/Manual.jsx';
 import SaveMenu from './ui/SaveMenu.jsx';
+import Lineage from './ui/Lineage.jsx';
 import { getAudio } from './audio/engine.js';
 
 // game event -> spatial sound. y is fixed at unit height; x/z come from the sim.
@@ -35,6 +36,7 @@ export default function App() {
       <Hud />
       <Manual />
       <SaveMenu />
+      <Lineage />
     </div>
   );
 }

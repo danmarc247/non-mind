@@ -32,7 +32,7 @@ function letters(el, text) {
 export default function Ceremony() {
   const R = {
     root: useRef(null), stage: useRef(null), word: useRef(null), under: useRef(null), hint: useRef(null),
-    ladder: useRef(null), pips: useRef(null), pali: useRef(null), ltext: useRef(null),
+    ladder: useRef(null), pips: useRef(null), lname: useRef(null), ltext: useRef(null),
     ending: useRef(null), ring: useRef(null), ringIn: useRef(null), eline: useRef(null), etext: useRef(null),
     wave: useRef(null), swipe: useRef(null), arc: useRef(null), wnum: useRef(null),
     reset: useRef(null), wipe: useRef(null), rword: useRef(null), rline: useRef(null),
@@ -86,7 +86,7 @@ export default function Ceremony() {
           p.style.setProperty('--fill', css(c.a));
           gsap.set(p, { backgroundColor: i < n - 1 ? css(c.a) : TONES.paper, scale: 1 });
         });
-        R.pali.current.textContent = LINKS[n - 1].pali;
+        R.lname.current.textContent = LINKS[n - 1].name;
         R.ltext.current.textContent = LINKS[n - 1].text;
         const last = pips[n - 1];
         tl.set(R.ladder.current, { autoAlpha: 1 });
@@ -99,7 +99,7 @@ export default function Ceremony() {
           .fromTo(pips.slice(0, n - 1), { scale: 0.6 }, { scale: 1, duration: 0.22, ease: 'back.out(2)', stagger: 0.03 }, 0.05)
           .to(last, { backgroundColor: last.style.getPropertyValue('--fill'), scale: 1.45, duration: 0.2, ease: 'power2.out' }, 0.12 + n * 0.03)
           .to(last, { scale: 1, duration: 0.3, ease: 'back.out(3)' })
-          .fromTo([R.pali.current, R.ltext.current], { y: 10, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.24, stagger: 0.08 }, 0.3)
+          .fromTo([R.lname.current, R.ltext.current], { y: 10, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.24, stagger: 0.08 }, 0.3)
           .to(R.ladder.current, { y: -14, autoAlpha: 0, duration: 0.24, ease: 'power2.in' }, 1.35);
       },
       ending(tl, o, calm) {
@@ -188,7 +188,7 @@ export default function Ceremony() {
         <div ref={R.pips} className="flex gap-2.5 rounded-full border-[3px] border-ink bg-paper px-5 py-2.5 shadow-[3px_4px_0_var(--color-ink)]">
           {Array.from({ length: 12 }, (_, i) => <span key={i} className="block h-5 w-5 rounded-full border-[3px] border-ink" />)}
         </div>
-        <div ref={R.pali} className="font-head text-[clamp(26px,3.2vw,40px)] leading-none text-ink [text-shadow:2px_2px_0_var(--color-paper)]" />
+        <div ref={R.lname} className="font-head text-[clamp(26px,3.2vw,40px)] leading-none text-ink [text-shadow:2px_2px_0_var(--color-paper)]" />
         <p ref={R.ltext} className="rounded-full bg-paper/85 px-3 py-0.5 font-body text-[15px] italic text-ink-2" />
       </div>
       {/* an ending */}

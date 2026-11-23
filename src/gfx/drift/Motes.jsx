@@ -8,7 +8,7 @@ import { ease, smooth, tok, stagePalette } from './shared.js';
 import vert from '../glsl/drift.motes.vert.glsl';
 import frag from '../glsl/drift.motes.frag.glsl';
 
-export function Motes({ instant = false, max = 420, yMin = -32, yMax = 24, rMin = 15, rMax = 62, size = 0.32 }) {
+export function Motes({ instant = false, max = 420, yMin = -32, yMax = 24, rMin = 15, rMax = 62, size = 0.5 }) {
   const { mesh, mat } = useMemo(() => {
     const g = new THREE.InstancedBufferGeometry();
     const base = new THREE.PlaneGeometry(1, 1);

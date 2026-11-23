@@ -19,19 +19,19 @@ const D = Math.PI / 180;
 // kind: solid (sub = SDF kind), paper (sub = pattern, shape), wire (host = index of a body it orbits, or a free centre)
 // az/r/y: home position (degrees, horizontal radius, height); size: bounding radius (world units)
 export const MOBILE_DEFS = [
-  { kind: 'solid', sub: 0, az: 205, r: 34, y: 5, size: 4.6, unlock: 0, slot: 0 },
-  { kind: 'paper', sub: 0, shape: 0, az: 68, r: 31, y: -3, size: 6.0, unlock: 1, slot: 1 },
+  { kind: 'solid', sub: 0, az: 232, r: 30, y: -2, size: 6.0, unlock: 0, slot: 0 },
+  { kind: 'paper', sub: 0, shape: 0, az: 118, r: 27, y: -9, size: 6.5, unlock: 1, slot: 1 },
   { kind: 'wire', host: 0, rings: 3, unlock: 2, slot: 2 },
-  { kind: 'solid', sub: 2, az: 318, r: 38, y: -14, size: 5.0, unlock: 3, slot: 3 },
-  { kind: 'paper', sub: 1, shape: 1, aspect: 0.55, az: 148, r: 46, y: 9, size: 7.5, unlock: 4, slot: 2 },
-  { kind: 'solid', sub: 1, az: 22, r: 27, y: -15, size: 4.0, unlock: 5, slot: 4 },
-  { kind: 'solid', sub: 4, az: 252, r: 50, y: -7, size: 6.5, unlock: 6, slot: 1 },
+  { kind: 'solid', sub: 2, az: 352, r: 28, y: -13, size: 5.5, unlock: 3, slot: 3 },
+  { kind: 'paper', sub: 1, shape: 1, aspect: 0.55, az: 165, r: 46, y: 2, size: 9.0, unlock: 4, slot: 2 },
+  { kind: 'solid', sub: 1, az: 62, r: 25, y: -4, size: 5.0, unlock: 5, slot: 4 },
+  { kind: 'solid', sub: 4, az: 290, r: 32, y: -6, size: 6.5, unlock: 6, slot: 1 },
   { kind: 'wire', host: 6, rings: 2, unlock: 7, slot: 0 },
-  { kind: 'solid', sub: 3, az: 112, r: 35, y: -21, size: 4.4, unlock: 8, slot: 3 },
-  { kind: 'paper', sub: 2, shape: 2, az: 290, r: 29, y: 2, size: 5.2, unlock: 9, slot: 0 },
-  { kind: 'solid', sub: 0, alt: 1, az: 352, r: 56, y: 12, size: 5.5, unlock: 11, slot: 2 },
-  { kind: 'paper', sub: 0, shape: 1, aspect: 1.0, az: 178, r: 23, y: -20, size: 4.2, unlock: 12, slot: 4 },
-  { kind: 'solid', sub: 2, alt: 1, az: 46, r: 50, y: -27, size: 5.2, unlock: 14, slot: 1 },
+  { kind: 'solid', sub: 3, az: 198, r: 26, y: -15, size: 5.0, unlock: 8, slot: 3 },
+  { kind: 'paper', sub: 2, shape: 2, az: 20, r: 31, y: 1, size: 6.0, unlock: 9, slot: 0 },
+  { kind: 'solid', sub: 0, alt: 1, az: 95, r: 48, y: 3, size: 8.0, unlock: 11, slot: 2 },
+  { kind: 'paper', sub: 0, shape: 1, aspect: 1.0, az: 262, r: 24, y: -17, size: 4.6, unlock: 12, slot: 4 },
+  { kind: 'solid', sub: 2, alt: 1, az: 320, r: 47, y: 0, size: 7.0, unlock: 14, slot: 1 },
   { kind: 'wire', center: [0, -13, 0], radius: 27, rings: 2, unlock: 16, slot: 3 },
 ];
 

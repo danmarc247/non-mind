@@ -11,11 +11,11 @@ import frag from '../glsl/drift.strata.frag.glsl';
 
 // y, radius, pattern, unlock stage, spin rate (rad/s, sign = direction), alpha
 export const STRATA_DEFS = [
-  { y: -9, r: 25, pattern: 0, unlock: 0, spin: 0.012, alpha: 0.85, slot: 0 },
-  { y: -15, r: 33, pattern: 1, unlock: 0, spin: -0.008, alpha: 0.7, slot: 1 },
-  { y: -21, r: 40, pattern: 2, unlock: 5, spin: 0.006, alpha: 0.6, slot: 2 },
-  { y: -26, r: 47, pattern: 3, unlock: 9, spin: -0.005, alpha: 0.55, slot: 3 },
-  { y: -30, r: 56, pattern: 4, unlock: 13, spin: 0.004, alpha: 0.5, slot: 4 },
+  { y: -9, r: 19, pattern: 0, unlock: 0, spin: 0.012, alpha: 0.9, slot: 0 },
+  { y: -14, r: 24, pattern: 1, unlock: 0, spin: -0.008, alpha: 0.75, slot: 1 },
+  { y: -19, r: 29, pattern: 2, unlock: 5, spin: 0.006, alpha: 0.65, slot: 2 },
+  { y: -24, r: 34, pattern: 3, unlock: 9, spin: -0.005, alpha: 0.6, slot: 3 },
+  { y: -29, r: 40, pattern: 4, unlock: 13, spin: 0.004, alpha: 0.55, slot: 4 },
 ];
 const GEO = new THREE.CircleGeometry(1, 96);
 const SHADOW_LIGHT = new THREE.Vector3(0.38, 1, 0.22).normalize();

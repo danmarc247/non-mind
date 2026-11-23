@@ -22,7 +22,7 @@ void main() {
   // the sheet's own rotating frame
   vec2 p = dr_rot(uSpin) * w / uR;           // -1..1
   float rimN = dr_noise(vec2(atan(p.y, p.x) * 4.0 + uSeed, t * 0.05));
-  float rim = smoothstep(1.0, 0.45 + 0.15 * rimN, rn);
+  float rim = smoothstep(1.0, 0.72 + 0.1 * rimN, rn);
   float paint = 0.0; vec3 col = uPaper; float height = 0.0;
 
   if (uPattern < 0.5) {
@@ -105,6 +105,13 @@ void main() {
     c = mix(c, mix(uInk, pal(uSeed + 1.0), 0.25), shadow * 0.42 + halo * 0.3);
     a = max(a, (shadow * 0.5 + halo * 0.25) * rim);
   }
+  // a white-outlined lip (ref b) inside the fade, broken by a dry brush, so each slice reads as a plate
+  float lipR = 0.8 + 0.03 * rimN;
+  float lip = smoothstep(0.022, 0.008, abs(rn - lipR)) * smoothstep(0.3, 0.5, dr_bristle(atan(p.y, p.x) * 0.6 + uSeed));
+  float lipInk = smoothstep(0.01, 0.003, abs(rn - lipR - 0.025)) * 0.6;
+  c = mix(c, uInk, lipInk); c = mix(c, uPaper, lip);
+  a = max(a, max(lip, lipInk) * smoothstep(1.0, 0.85, rn));
+  a *= smoothstep(lipR + 0.02, lipR - 0.02, rn) * 0.6 + 0.4;   // inside the lip is the slice, outside only a ghost
   // impasto from derivatives keeps the slices painterly when seen at a glance
   vec2 slope = clamp(vec2(dFdx(height), dFdy(height)) * 1.6, -0.6, 0.6);
   c *= 1.0 + slope.x * 0.25 - slope.y * 0.15;

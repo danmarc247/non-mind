@@ -41,7 +41,7 @@ export const driftState = { mobiles: [], cameraTarget: new THREE.Vector3(0, -3.2
 // Clear cone: 0 when a sphere (c, r) sits between the camera and the arena, 1 when it is clear.
 // The arena is treated as a sphere of radius `arenaR` at `target`. Bodies BEHIND the arena are fine.
 const tv = new THREE.Vector3(), ta = new THREE.Vector3();
-export function clearOfArena(camPos, target, c, r, arenaR = 15, margin = 0.06) {
+export function clearOfArena(camPos, target, c, r, arenaR = 14, margin = 0.05) {
   ta.copy(target).sub(camPos); const da = ta.length(); ta.multiplyScalar(1 / da);
   tv.copy(c).sub(camPos); const dv = tv.length();
   const along = tv.dot(ta);
