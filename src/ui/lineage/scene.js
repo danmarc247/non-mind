@@ -241,10 +241,13 @@ export async function createLineageScene(host, { getGame, getSelected, onHover, 
   // filters: wet wobble on everything, blur on the past, overwhelm drains the colour
   const noise = new Sprite(noiseTexture()); noise.renderable = false; noise.scale.set(2.2);
   app.stage.addChild(noise);
-  const wobble = new DisplacementFilter({ sprite: noise, scale: 5 });
+  const wobble = new DisplacementFilter({ sprite: noise, scale: 2 });
   const drain = new ColorMatrixFilter();
+  // filters render the map into a texture: do that at the screen's pixel density, or everything goes soft
+  const fres = app.renderer.resolution || Math.min(2, window.devicePixelRatio || 1);
+  for (const f of [wobble, drain]) { f.resolution = fres; f.antialias = 'on'; }
   world.filters = [wobble, drain];
-  ghostLayer.filters = [new BlurFilter({ strength: 1.6, quality: 2 })];
+  { const gb = new BlurFilter({ strength: 1.2, quality: 2 }); gb.resolution = fres; ghostLayer.filters = [gb]; }
   ghostLayer.alpha = 0.5;
 
   const nodes = new Map(); // id -> { c, p:[x,y], anchor, r, ghost, snap, ... }
@@ -262,7 +265,7 @@ export async function createLineageScene(host, { getGame, getSelected, onHover, 
       dashed(spokes, seg, 2, c.a, 0.28, 1);
       const seed = new Graphics(); drawBody(seed, f.form, 8, c, 2); seed.position.set(Math.cos(a) * R_SEED, Math.sin(a) * R_SEED);
       const label = new Text({ text: f.name, style: { fontFamily: 'Londrina Solid', fontSize: 14, fill: T['ink-2'], letterSpacing: 0.5 }, resolution: 3 });
-      label.anchor.set(0.5); label.position.set(Math.cos(a) * (R_SEED + 34), Math.sin(a) * (R_SEED + 26)); label.alpha = 0.85;
+      label.anchor.set(0.5); label.position.set(Math.cos(a) * (R_SEED + 62), Math.sin(a) * (R_SEED + 50)); // clear of the family mark label.alpha = 0.85;
       ground.addChild(seed, label);
     }
     // outer faint ring: where the gone are kept
