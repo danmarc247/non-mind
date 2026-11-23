@@ -242,7 +242,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Motes />
       <GlassVessel />
       <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
-      {post && <PainterPost quality={quality} />}
+      {post && <PainterPost quality={quality} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
     </Canvas>
   );
 }
