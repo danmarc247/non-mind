@@ -100,13 +100,14 @@ Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) a
 | `C` | Open or close the codex |
 | `M` | Open or close this manual |
 | `L` | Open or close the Lineage map |
+| `B` | Open or close the book |
 | `?` or `H`, or the `?` ring | Ask for a hint: the next suggestion appears at once |
 | `Esc` | Close the open panel, cancel a pending operation, or deselect |
 | Drag, scroll | Orbit and zoom (distance 5 to 70, panning off) |
 
 The shop keys work once the shop is unlocked. Typing in a box and open panels silence the game's hotkeys, and `Space` never presses a button that happens to have focus.
 
-The ring of tools holds the codex, the manual, **save**, **lineage**, **again** (a confirmed wipe of everything, including residue) and **sound** (on or off, remembered). The save menu keeps the game now, copies it as a line of text, downloads it as a `.txt` file, or puts such a line back (a rejected code changes nothing). Apart from that the game saves to `localStorage` every 10 seconds.
+The tools come in two groups. Above, what belongs to play: the codex, the manual, **lineage** and the **book**. Below, smaller and set apart, what belongs to the session: **save**, **again** (a confirmed wipe of everything, including residue) and **sound** (on or off, remembered). The save menu keeps the game now, copies it as a line of text, downloads it as a `.txt` file, or puts such a line back (a rejected code changes nothing). Apart from that the game saves to `localStorage` every 10 seconds.
 
 The **Lineage** map is a paper folio drawn with PixiJS: every body you have grown this run, and what it grew from. It loads only while open.
 
@@ -371,6 +372,22 @@ Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
 | **Seats** | 3 rings of 10 (the second opens at stage 7, the third with a mirror). Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
 
+### Rare surprises
+
+Now and then, from stage 2 on, a smaller ring appears above Attend. It stays for 15 seconds and then goes. Taking it costs nothing and is always kind; leaving it costs nothing either. Between two of them lie four to ten minutes.
+
+| Surprise | What it does |
+|---|---|
+| **Transcend** | The lowest seated regulator climbs one link, for nothing |
+| **Actualize** | A minute of yield at once, insight filled, and everything under way is finished |
+| **Convolute** | The arrivals are replaced by kin of those you already hold, and two attention comes with them |
+
+The idle hints and the guide do not point at these. They are meant to be noticed.
+
+### Things that drift in
+
+Some things in this game are not earned and not bought. Once in a while something drifts in over the sea that was not sent, and stays only a short while. If you reach it in time it is kept in the **book**, and each one kept leaves a small, lasting kindness behind. How many there are, what they show and what they say is for you to find. The book has room for all of them.
+
 ---
 
 ## Tech stack
@@ -624,7 +641,7 @@ Credit where it is due.
 | Cult UI components (TextureCard, TextureButton, MinimalCard, NeumorphButton, ShaderLensBlur) | https://www.cult-ui.com | MIT, Copyright (c) 2023 Jordan-Gilliam |
 | React Bits backgrounds | https://reactbits.dev | MIT with Commons Clause, per the upstream repo |
 
-See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports and changes. Game text, names and content are original.
+See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports and changes. Game text, names and content are original, except that some lines on the things kept in the book are quoted from the essay *Nature, O Nature* at https://www.thestartandtheend.com/nature-o-nature/.
 
 ---
 
@@ -639,6 +656,7 @@ What has changed since the first version, and what has not.
 - The per-event cryptic line pools are wired into the log, with idle and overwhelm lines in between.
 - The idle libraries are used or gone: PixiJS draws the Lineage map, GSAP runs the Ceremony overlays (mounted, lazily loaded), and OGL and zustand were removed.
 - Idle hints and the question button, from a pure advisor module in the engine.
+- Rare surprises above Attend (Transcend, Actualize, Convolute), and things that drift in to be kept in the book.
 - The contained sea, paint fx and wave veils, the arena parts and the floating bodies, each as its own folder.
 - Bundle splitting has begun: `vite.config.js` groups vendor code (React, three, the R3F family, Shader Park, Motion, GSAP) into chunks, and `src/App.jsx` loads the scene, the Ceremony, the Manual, the save menu and the Lineage map lazily. The largest chunk is still about 740 kB (190 kB gzip), the warning limit stays raised, and the Lineage map's PixiJS chunk loads only when opened.
 
