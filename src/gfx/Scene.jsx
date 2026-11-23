@@ -76,6 +76,16 @@ function Gates() {
 
 // ---------- sculptures ----------
 const SPHERE = new THREE.SphereGeometry(1, 20, 14);
+// Raymarched bodies fill roughly half their bounding sphere. Pick against the front of a sphere of that
+// size so the unit under the cursor is the one selected (the render proxy is a BackSide sphere twice as large).
+const _ps = new THREE.Sphere(), _pp = new THREE.Vector3();
+function pickRaycast(k) {
+  return function raycast(raycaster, hits) {
+    this.getWorldPosition(_ps.center); _ps.radius = k * this.getWorldScale(_pp).x;
+    const pt = raycaster.ray.intersectSphere(_ps, new THREE.Vector3());
+    if (pt) hits.push({ distance: raycaster.ray.origin.distanceTo(pt), point: pt, object: this });
+  };
+}
 const DISC = new THREE.CircleGeometry(1, 28);
 function Bodies() {
   const root = useRef();
@@ -102,8 +112,8 @@ function Bodies() {
     for (const [id, w] of want) {
       let b = map.current.get(id);
       if (!b || b.k !== w.k) {
-        if (b) { root.current.remove(b.g); b.mesh.material.dispose(); }
-        const g = new THREE.Group(), mesh = new THREE.Mesh(SPHERE, w.mat()), disc = new THREE.Mesh(DISC, new THREE.MeshBasicMaterial({ color: w.tone, transparent: true, opacity: 0.5, depthWrite: false }));
+        if (b) { root.current.remove(b.g); b.mesh.material.dispose(); b.disc.material.dispose(); }
+        const g = new THREE.Group(), mesh = new THREE.Mesh(SPHERE, w.mat()); mesh.raycast = pickRaycast(0.56); const disc = new THREE.Mesh(DISC, new THREE.MeshBasicMaterial({ color: w.tone, transparent: true, opacity: 0.5, depthWrite: false }));
         mesh.frustumCulled = false; disc.rotation.x = -Math.PI / 2; disc.position.y = SEA_Y + 0.16 - UNIT_Y;
         g.add(mesh, disc); g.position.set(w.x, UNIT_Y, w.z); g.scale.setScalar(0.01);
         mesh.userData.pick = id; root.current.add(g);
@@ -141,6 +151,7 @@ function Bodies() {
     onPointerOut={(e) => { if (hover.current === e.object.userData.pick) { hover.current = null; document.body.style.cursor = ''; } }} />;
 }
 
+const CORE_PICK = pickRaycast(0.45);
 function Core() {
   const mesh = useRef(), st = useRef({ stage: -1, pop: 0 });
   useEffect(() => onEvent((e) => { if (e.type === 'attend') st.current.pop = 1; if (e.type === 'coreHit') st.current.pop = -0.6; }), []);
@@ -153,7 +164,7 @@ function Core() {
     const u = mesh.current.material.uniforms;
     if (u) { u.time.value = mood.time; u._scale.value = sc; u.uFlash.value = Math.max(0, s.pop * 0.35) + mood.flash * 0.5; }
   });
-  return <mesh ref={mesh} geometry={SPHERE} position={[0, 1.7, 0]} frustumCulled={false}
+  return <mesh ref={mesh} geometry={SPHERE} raycast={CORE_PICK} position={[0, 1.7, 0]} frustumCulled={false}
     onClick={(e) => { e.stopPropagation(); act('attend'); }}
     onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }} />;
 }
@@ -241,7 +252,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Tethers />
       <Motes />
       <GlassVessel />
-      <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
+      <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={5} maxDistance={70} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
     </Canvas>
   );

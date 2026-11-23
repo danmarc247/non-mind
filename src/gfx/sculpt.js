@@ -407,6 +407,8 @@ function material(k, srcFn, rim, glow) {
       uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uEnvA: sculptEnv.a, uEnvB: sculptEnv.b, uEnvC: sculptEnv.c, uReflect: sculptEnv.reflect, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
     });
     cache.set(k, base);
+    // bounded cache: the oldest programs are released (units keep their own clones alive while on stage)
+    if (cache.size > 96) { const old = cache.keys().next().value; cache.get(old).dispose(); cache.delete(old); }
   }
   const m = base.clone();
   m.uniforms.uEnvA = sculptEnv.a; m.uniforms.uEnvB = sculptEnv.b; m.uniforms.uEnvC = sculptEnv.c; m.uniforms.uReflect = sculptEnv.reflect; // clone() copies uniforms: re-share

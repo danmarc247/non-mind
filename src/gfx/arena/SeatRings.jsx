@@ -16,7 +16,7 @@ import seatFrag from '../glsl/arena.seat.frag.glsl';
 const N = 30, DISC_R = 0.98;
 const PAPER_RGB = hexToRgb('#fbf6ec');
 
-export function SeatRings({ y = SEA_Y + 0.12 }) {
+export function SeatRings({ y = SEA_Y + 0.42 }) {
   const mesh = useRef();
   const hover = useRef(-1);
   const seats = useMemo(() => { const a = []; for (let r = 0; r < 3; r++) for (let d = 0; d < 10; d++) a.push({ ring: r, dir: d, pos: seatPos(r, d) }); return a; }, []);

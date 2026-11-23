@@ -47,7 +47,7 @@ function Restart() {
   useEffect(() => { const t = () => setOpen(true); window.addEventListener('nonmind:restart', t); return () => window.removeEventListener('nonmind:restart', t); }, []);
   if (!open) return null;
   return (
-    <div className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center bg-ink/35 backdrop-blur-[3px]" onClick={() => setOpen(false)}>
+    <div aria-modal="true" role="dialog" data-modal="restart" className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center bg-ink/35 backdrop-blur-[3px]" onClick={() => setOpen(false)}>
       <div onClick={(e) => e.stopPropagation()} className="w-[min(440px,92vw)] rounded-[26px] border-4 border-ink bg-paper p-6 text-center shadow-[8px_10px_0_var(--color-ink)]">
         <div className="font-title text-4xl text-ink">again?</div>
         <p className="mt-2 font-body italic text-ink-2">Everything here goes, including what the resets kept.</p>
@@ -63,6 +63,31 @@ function Restart() {
 
 export default function App() {
   const audioRef = useRef(null);
+  // Input hygiene, in the capture phase so it runs before every hotkey handler:
+  // typing in a field never triggers hotkeys; while a modal is open the game's hotkeys are silent;
+  // Space attends and must not also press whichever button happens to have focus.
+  useEffect(() => {
+    const typing = (t) => t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+    const down = (e) => {
+      if (e.key === 'Escape') return;
+      if (typing(e.target)) { e.stopPropagation(); return; }
+      if (document.querySelector('[aria-modal="true"]') && /^[ 1-5rRxXcClLmMhH?]$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+        const own = { m: 'manual', M: 'manual', l: 'lineage', L: 'lineage' }[e.key];
+        if (!own || !document.querySelector(`[data-modal="${own}"]`)) { e.stopPropagation(); if (e.key === ' ') e.preventDefault(); }
+      }
+    };
+    const up = (e) => { if (e.key === ' ' && e.target && e.target.closest && e.target.closest('button,[role="button"]') && !typing(e.target)) e.preventDefault(); };
+    window.addEventListener('keydown', down, true); window.addEventListener('keyup', up, true);
+    return () => { window.removeEventListener('keydown', down, true); window.removeEventListener('keyup', up, true); };
+  }, []);
+  // sound on / off from the tool ring
+  useEffect(() => {
+    let muted = false; try { muted = localStorage.getItem('non-mind-muted') === '1'; } catch { /* ignore */ }
+    const apply = () => { try { getAudio().setMuted(muted); } catch { /* optional */ } window.dispatchEvent(new CustomEvent('nonmind:muted', { detail: muted })); };
+    const t = () => { muted = !muted; try { localStorage.setItem('non-mind-muted', muted ? '1' : '0'); } catch { /* ignore */ } apply(); };
+    window.addEventListener('nonmind:mute', t); if (muted) apply();
+    return () => window.removeEventListener('nonmind:mute', t);
+  }, []);
   const started = useGame(() => game.started);
   useEffect(() => { if (started) whoosh(); }, [started]);
   useEffect(() => {

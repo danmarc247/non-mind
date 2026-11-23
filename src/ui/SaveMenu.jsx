@@ -75,7 +75,7 @@ export default function SaveMenu() {
     <>
       <AnimatePresence>
         {open && (
-          <motion.div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
+          <motion.div aria-modal="true" role="dialog" data-modal="save" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.14 } }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
             <motion.div onClick={(e) => e.stopPropagation()}
               className="relative flex max-h-[92vh] w-[min(560px,96vw)] flex-col gap-3 overflow-y-auto rounded-[28px] border-4 border-ink bg-paper p-6 shadow-[10px_12px_0_var(--color-ink)]"

@@ -45,7 +45,7 @@ export default function Manual() {
     <>
       <AnimatePresence>
         {open && (
-          <motion.div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
+          <motion.div aria-modal="true" role="dialog" data-modal="manual" className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} onClick={() => setOpen(false)}>
             <motion.div onClick={(e) => e.stopPropagation()}
               className="relative flex h-[min(88vh,900px)] w-[min(1180px,96vw)] overflow-hidden rounded-[28px] border-4 border-ink bg-paper shadow-[10px_12px_0_var(--color-ink)]"
