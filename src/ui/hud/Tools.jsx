@@ -12,6 +12,7 @@ export const TOOLS = [
   { id: 'manual', label: 'manual', tone: 'sky', key: 'm', event: 'nonmind:manual' },
   { id: 'save', label: 'save', tone: 'yolk', key: null, event: 'nonmind:save' },
   { id: 'lineage', label: 'lineage', tone: 'rose', key: 'l', event: 'nonmind:lineage' },
+  { id: 'again', label: 'again', tone: 'tangerine', key: null, event: 'nonmind:restart' },
 ];
 
 export default function Tools({ size = 56, layout = 'grid', hotkeys = true, className }) {

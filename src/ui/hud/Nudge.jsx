@@ -184,7 +184,7 @@ export default function Nudge({ blocked }) {
       <AnimatePresence>
         {cur && (
           <motion.div key={cur.s.id + cur.shownAt} className="absolute inset-0"
-            initial={{ opacity: 0 }} animate={{ opacity: urgent ? 1 : 0.92 }} exit={{ opacity: 0, transition: { duration: 0.35 } }} transition={{ duration: 0.3 }}>
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.35 } }} transition={{ duration: 0.3 }}>
             {/* the arrow: its tip sits at (x, y), pointing into the target */}
             {L && <motion.div className="absolute" style={{ left: L.x, top: L.y }} animate={cur.done ? {} : bob} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}>
               <div style={{ position: 'absolute', left: -60, top: -20, width: 64, height: 40, transformOrigin: '60px 20px', transform: `rotate(${L.rot}deg)` }}>
@@ -192,7 +192,7 @@ export default function Nudge({ blocked }) {
               </div>
             </motion.div>}
             {!cur.done && (
-              <motion.div className="absolute w-max max-w-[260px] rounded-[12px] border-2 border-ink/25 bg-paper/85 px-3 py-2 shadow-[2px_3px_0_0_color-mix(in_srgb,var(--color-ink)_25%,transparent)]" style={capStyle}
+              <motion.div className="absolute w-max max-w-[260px] rounded-[12px] border-[3px] border-ink bg-paper px-3 py-2 shadow-[3px_4px_0_0_color-mix(in_srgb,var(--color-ink)_100%,transparent)]" style={capStyle}
                 initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
                 <p className={urgent ? 'font-body text-[15px] italic leading-snug text-magenta' : 'font-body text-[15px] italic leading-snug text-ink-2'}>{cur.s.text}</p>
                 {cur.s.plain && <p className="mt-0.5 font-body text-[13px] leading-snug text-ink">{cur.s.plain}</p>}
