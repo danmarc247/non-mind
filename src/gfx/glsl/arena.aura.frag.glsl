@@ -97,7 +97,7 @@ void main() {
     float tq = max(dot(q - ro, rd), 0.0);
     if (blocked && tq > hi.x) continue;
     float dd = length(ro + rd * tq - q);
-    float fil = smoothstep(fw, fw * 0.35, dd);
+    float fil = smoothstep(0.6, 0.0, dd);
     float flow = 0.4 + 0.6 * smoothstep(0.3, 1.0, sin(s * 14.0 - uTime * 3.0 + float(k) * 1.7));
     float fade = smoothstep(0.0, 0.08, s) * smoothstep(1.0, 0.6, s);
     float tear = 1.0 - ow * step(0.55, ar_noise(vec2(s * 9.0, float(k) + uTime)));

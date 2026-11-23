@@ -191,7 +191,7 @@ export function voice(kit, dest, t, freq, o = {}) {
     nodes.push(s);
     srcs.push(s);
   }
-  const fg = [1.0, 0.55, 0.22], fq = [3, 4, 5]; // low Q: vibrato barely modulates level
+  const fg = [1.0, 0.55, 0.22], fq = o.formantQ || [3, 4, 5]; // low Q: vibrato barely modulates level
   formants.forEach((f, i) => {
     const bp = kit.filter('bandpass', f, fq[i]);
     const g = kit.gain(fg[i] * 1.9);

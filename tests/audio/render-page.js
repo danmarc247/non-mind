@@ -261,14 +261,14 @@ async function realtime(ms = 6000) {
  * returns the peak-to-peak swing (dB) of its 20 ms RMS envelope in the
  * sustain (3.5-5.5 s), i.e. how much the level wobbles.
  */
-async function voiceFlutter() {
+async function voiceFlutter(legacy = false) {
   const { createKit, voice } = await import('/src/audio/instruments.js');
   const { VoiceBudget, VOWELS, degHz, makeScale } = await import('/src/audio/util.js');
   const out = [];
   for (const [vk, deg, oct] of [['a', 0, 0], ['o', 4, 0], ['u', 2, 1]]) {
     const ctx = new OfflineAudioContext(1, SR * 7, SR);
     const kit = createKit(ctx, new VoiceBudget(48), 3);
-    voice(kit, ctx.destination, 0.05, degHz(makeScale(0), deg, oct), { dur: 6.5, vowel: VOWELS[vk], spread: 3.5 });
+    voice(kit, ctx.destination, 0.05, degHz(makeScale(0), deg, oct), { dur: 6.5, vowel: VOWELS[vk], spread: 3.5, ...(legacy ? { vibrato: 9, formantQ: [4.5, 6, 7] } : {}) });
     const d = (await ctx.startRendering()).getChannelData(0);
     const w = SR / 50, env = [];
     for (let s = Math.floor(3.5 * SR); s + w <= 5.5 * SR; s += w / 2) {

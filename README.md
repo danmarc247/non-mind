@@ -178,20 +178,20 @@ Each unit votes its genes' aspects (weighted by tree position) and keeps the top
 
 Two units of the same genome at the same link fuse into the next. Each link multiplies tolerance and salience and grants one heritable trait.
 
-| Link | Name | Gloss | x | Trait | Effect |
-|---|---|---|---|---|---|
-| 1 | Dukkha | unsatisfactoriness | 1 | ache | Deals more the less tolerance it has left |
-| 2 | Saddhā | confidence | 1.7 | trust | Starts each wave with a veil worth a share of tolerance |
-| 3 | Pāmojja | gladness | 2.8 | glad | Each strike yields a little affect |
-| 4 | Pīti | rapture | 4.5 | rapture | First strikes of a wave come much faster |
-| 5 | Passaddhi | tranquillity | 7 | calm | Slows stressors nearby |
-| 6 | Sukha | ease | 11 | ease | Mends itself continuously |
-| 7 | Samādhi | collectedness | 17 | gather | Repeated strikes on one target grow |
-| 8 | Yathābhūta | seeing as it is | 26 | see | Ignores opacity and veils |
-| 9 | Nibbidā | disenchantment | 40 | tire | Stressors nearby lose salience |
-| 10 | Virāga | dispassion | 62 | fade | Counts as every aspect; cannot be dysregulated |
-| 11 | Vimutti | release | 95 | release | On falling, mends every ally |
-| 12 | Khaye ñāṇa | knowing the ending | 150 | end | Dissolves into a permanent ending |
+| Link | Name | x | Trait | Effect |
+|---|---|---|---|---|
+| 1 | unsatisfactoriness | 1 | ache | Deals more the less tolerance it has left |
+| 2 | confidence | 1.7 | trust | Starts each wave with a veil worth a share of tolerance |
+| 3 | gladness | 2.8 | glad | Each strike yields a little affect |
+| 4 | rapture | 4.5 | rapture | First strikes of a wave come much faster |
+| 5 | tranquillity | 7 | calm | Slows stressors nearby |
+| 6 | ease | 11 | ease | Mends itself continuously |
+| 7 | collectedness | 17 | gather | Repeated strikes on one target grow |
+| 8 | seeing as it is | 26 | see | Ignores opacity and veils |
+| 9 | disenchantment | 40 | tire | Stressors nearby lose salience |
+| 10 | dispassion | 62 | fade | Counts as every aspect; cannot be dysregulated |
+| 11 | release | 95 | release | On falling, mends every ally |
+| 12 | knowing the ending | 150 | end | Dissolves into a permanent ending |
 
 ### Operations
 
