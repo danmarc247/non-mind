@@ -48,25 +48,29 @@ vec4 mv_canvas(SeaCtx c) {
   return vec4(col, band * 0.55 + hair * 0.1 + 0.03 * weave);
 }
 
-// (b) flow-field marbling: two advection steps, veined bands, bristle drag across the flow
+// (b) flow-field marbling: parallel combed stripes, advected twice through the flow (marbled paper),
+// paper veins at the seams, ink in every third seam, bristle drag across the flow
 vec4 mv_marble(SeaCtx c) {
-  vec2 q = c.p * 0.15 + c.g * 0.6;
-  float n1 = snoise(vec3(q, c.t * 0.04));
-  q += vec2(-c.N.y, c.N.x) * n1 * 0.45 + c.N * n1 * 0.2;
-  float n2 = snoise(vec3(q * 1.8 + 3.1, c.t * 0.05));
-  float v = (n1 * 1.3 + n2 * 0.6 + c.fn * 0.5) * 1.15 + c.r * 0.05;
+  vec2 q = c.p * 0.085 + c.g * 0.25;
+  float n1 = snoise(vec3(q, c.t * 0.03));
+  q += vec2(-c.N.y, c.N.x) * n1 * 0.55;
+  float n2 = snoise(vec3(q * 1.6 + 3.1, c.t * 0.04));
+  q += vec2(n2, -n2 * 0.6) * 0.3;
+  vec2 comb = sp_rot(0.6 + c.t * 0.004) * q;
+  float v = comb.y * 9.0 + sin(comb.x * 7.0 + n1 * 2.0) * 0.7;
   float f = fract(v), id = floor(v);
-  vec3 col = mix(sp_pal(id), sp_pal(id + 1.0), smoothstep(0.82, 0.93, f));
+  vec3 col = mix(sp_pal(id * 2.0), sp_pal(id * 2.0 + 2.0), smoothstep(0.88, 0.97, f));
+  col = mix(col, uGround, 0.18 * step(2.5, mod(id, 4.0)));
   float w = fwidth(v) + 0.004;
-  float fade = smoothstep(0.12, 0.04, w);                                 // lines fade before they alias
-  float vein = sp_aa(0.465 - abs(f - 0.5), w) * fade;                            // paper vein at each band seam
+  float fade = smoothstep(0.25, 0.08, w);                                 // lines fade before they alias
+  float vein = sp_aa(0.47 - abs(f - 0.5), w) * fade;
+  float inkv = sp_aa(0.485 - abs(fract(v / 3.0 + 0.1666) - 0.5), w / 3.0) * fade;
   float across = dot(c.p, c.N);
   float br = sp_vn(across * 26.0) * 0.6 + sp_vn(across * 71.0) * 0.4;
-  col *= 0.9 + 0.2 * br;
-  col = mix(col, uPaper, vein * 0.9);
-  float inkv = sp_aa(0.482 - abs(fract(v * 0.5 + 0.25) - 0.5), w * 0.5) * fade;       // every other seam carries ink
-  col = mix(col, uInk, inkv * 0.6);
-  return vec4(col, 0.25 * br + 0.35 * vein + 0.2 * smoothstep(0.0, 0.9, f));
+  col *= 0.92 + 0.16 * br;
+  col = mix(col, uPaper, vein * 0.95);
+  col = mix(col, uInk, inkv * 0.7);
+  return vec4(col, 0.25 * br + 0.4 * vein + 0.25 * smoothstep(0.1, 0.9, f));
 }
 
 // (c) ten-fold kaleidoscope: mirror sectors whose edges are the ten gate spokes
@@ -145,27 +149,30 @@ vec4 mv_reaction(SeaCtx c) {
   return vec4(col, 0.35 * m + 0.45 * rim + 0.2 * core);
 }
 
-// (f) folded interference: iterative domain folding, orbit-trap colouring, thin paper interference lines
+// (f) folded interference: an IFS of mirror folds + rotation + scale (9 folds), orbit-trap colouring,
+// fine paper interference lines from the trap distance (faded by their own fwidth)
 vec4 mv_fold(SeaCtx c) {
-  vec2 z = sp_rot(c.t * 0.012) * c.p * 0.085 + c.g * 0.02;
-  z = vec2(abs(z.x), z.y);
-  vec2 C = vec2(-0.64, -0.52) + 0.07 * vec2(sin(c.t * 0.06), cos(c.t * 0.045));
-  float t1 = 10.0, t2 = 10.0, acc = 0.0;
+  vec2 z = sp_rot(c.t * 0.01) * c.p * 0.075;
+  float ang = 0.62 + 0.08 * sin(c.t * 0.05), sc = 1.0;
+  mat2 R = sp_rot(ang);
+  vec2 off = vec2(0.46, 0.27) + 0.04 * vec2(sin(c.t * 0.07), cos(c.t * 0.06));
+  float t1 = 10.0, t2 = 10.0;
   for (int i = 0; i < 9; i++) {
-    z = abs(z) / clamp(dot(z, z), 0.12, 1.2) + C;
-    t1 = min(t1, abs(z.y));
-    t2 = min(t2, length(z - vec2(0.25, 0.1)));
-    acc += exp(-6.0 * abs(dot(z, z) - 0.5));
+    z = abs(z) - off;
+    z = R * z * 1.3; sc *= 1.3;
+    t1 = min(t1, abs(z.y) / sc);
+    t2 = min(t2, length(z) / sc);
   }
-  float v = t2 * 5.0 + acc * 0.25;
-  vec3 col = mix(sp_pal(floor(v)), sp_pal(floor(v) + 1.0), smoothstep(0.7, 0.95, fract(v)));
-  float w1 = fwidth(t1) * 1.5 + 0.002;
-  col = mix(col, uInk, sp_aa(t1 - 0.012, w1) * 0.8);
-  float il = sin(acc * 9.0 + c.t * 0.3) ;
-  float wl = fwidth(acc * 9.0) + 0.05;
-  col = mix(col, uPaper, smoothstep(0.92 - wl * 0.3, 1.0, il) * 0.7);
-  col = mix(col, uGround, smoothstep(0.35, 0.0, t2) * 0.5);
-  return vec4(col, 0.3 * smoothstep(0.0, 1.0, fract(v)) + 0.3 * smoothstep(0.9, 1.0, il));
+  float v = t2 * 26.0;
+  vec3 col = mix(sp_pal(floor(v)), sp_pal(floor(v) + 1.0), smoothstep(0.75, 0.95, fract(v)));
+  float w2 = fwidth(v) + 0.01;
+  col = mix(col, uInk, sp_aa(0.47 - abs(fract(v) - 0.5), w2) * smoothstep(0.4, 0.1, w2) * 0.8);
+  float il = t1 * 140.0;
+  float wl = fwidth(il) + 0.01;
+  float lines = sp_aa(0.4 - abs(fract(il) - 0.5), wl) * smoothstep(0.5, 0.15, wl) * smoothstep(0.08, 0.0, t1);
+  col = mix(col, uPaper, lines * 0.8);
+  col = mix(col, uGround, smoothstep(0.012, 0.0, t2) * 0.6);
+  return vec4(col, 0.3 * smoothstep(0.0, 1.0, fract(v)) + 0.4 * lines);
 }
 
 // (g) overwhelm: white canvas floods in; magenta and ultramarine splashes with spikes and satellites

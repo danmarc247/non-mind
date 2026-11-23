@@ -14,6 +14,7 @@ import { TABS } from './LeftPanel.jsx';
 import { Body as InspectorBody } from './Inspector.jsx';
 import Reset from './Reset.jsx';
 import Tools from './Tools.jsx';
+import Ask from './Ask.jsx';
 import { Herald, Log } from './Log.jsx';
 import { POP, Scr, Shake } from './shared.jsx';
 
@@ -121,9 +122,14 @@ export default function Mobile({ w, h }) {
         {portrait && unlocked(G, 'shop') && <Shake seed={13} className="pointer-events-auto"><Gauges G={G} /></Shake>}
       </div>
 
+      {/* ask for a hint: always there, on the right edge */}
+      <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 84}px)` : 'calc(env(safe-area-inset-top, 0px) + 74px)' }}>
+        <Ask size={46} />
+      </div>
+
       {/* tool rings down the right edge (codex, manual, save, lineage) */}
       {!cur && (
-        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 84}px)` : 'calc(env(safe-area-inset-top, 0px) + 130px)' }}>
+        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 250 : 138}px)` : 'calc(env(safe-area-inset-top, 0px) + 128px)' }}>
           <Tools size={46} layout={portrait ? 'col' : 'grid'} hotkeys={false} />
         </div>
       )}

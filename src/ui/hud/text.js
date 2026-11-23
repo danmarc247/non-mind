@@ -34,3 +34,19 @@ export const CODEX = [
 ];
 
 export const CODEX_INTRO = 'What follows is accurate. It may not be useful until it has already happened.';
+
+// The ask button's questions: the player's own voice, sincere and a little lost. Deliberately unrelated
+// to the hint that pressing it brings (the owner's first four are kept as given).
+export const QUESTIONS = [
+  'Where am I?', 'Is this the beep beep?', 'Was the moment wrong?', 'Can I reach the sun?',
+  'Who left this here?', 'Is it still Tuesday?', 'Does the water know?', 'Am I the small one?',
+  'Is the door the same door?', 'Did I already say that?', 'Which way is down here?', 'Is anyone counting?',
+  'Was it always this colour?', 'Can I keep the quiet part?', 'Is the bowl full or am I?', 'Where does the hum go at night?',
+  'Is that my hand?', 'Should the ring be warm?', 'Who taught the waves?', 'Am I early?',
+  'Is this the part where I wait?', 'Can a circle be tired?', 'Did the light move or did I?', 'What was I holding?',
+  'Is there a smaller room inside?', 'Does the tide remember me?', 'Is it rude to stay?', 'Why is the floor singing?',
+  'Was there a first one?', 'Can I come back later?', 'Is the wind on my side?', 'Am I allowed to rest here?',
+  'Which of these is mine?', 'Is the noise a kind of weather?', 'Did something just begin?', 'Is the sky the lid?',
+  'How long is a breath here?', 'Can I trade this for a softer one?', 'Is the stone listening?', 'Was that a yes?',
+  'Are the edges asleep?', 'Do the gates know my name?', 'Is today the long one?', 'Where did the other one go?',
+];
