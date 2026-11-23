@@ -45,8 +45,7 @@
     "tailwind-merge": "^3.7.1",
     "three": "^0.187.0",
     "three-text": "^0.6.5",
-    "woff-lib": "^0.1.0",
-    "zustand": "^5.1.0"
+    "woff-lib": "^0.1.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",

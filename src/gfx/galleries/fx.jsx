@@ -92,10 +92,11 @@ function Sea() {
     return { uTime: { value: 0 }, uA: { value: s(p.primary) }, uB: { value: s(p.secondary) }, uC: { value: s(p.accent) }, uPaper: { value: new THREE.Vector3(...PALETTE.paper) }, uInk: { value: new THREE.Vector3(...PALETTE.ink) },
       uComplexity: { value: 0.45 }, uOverwhelm: { value: 0 }, uTension: { value: 0.3 }, uR: { value: FX_ARENA.SEA_R }, uSide: { value: 0 }, uPulse: { value: 0 } };
   }, []);
+  const mat = useMemo(() => new THREE.ShaderMaterial({ vertexShader: seaVert, fragmentShader: seaFrag, uniforms: u }), [u]);
   useFrame(() => { u.uTime.value = fxClock.t; u.uPulse.value = mood.flash; });
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position-y={FX_ARENA.SEA_Y}><circleGeometry args={[FX_ARENA.SEA_R, 96]} /><shaderMaterial vertexShader={seaVert} fragmentShader={seaFrag} uniforms={u} /></mesh>
+      <mesh rotation-x={-Math.PI / 2} position-y={FX_ARENA.SEA_Y} material={mat}><circleGeometry args={[FX_ARENA.SEA_R, 96]} /></mesh>
       <mesh position-y={FX_ARENA.SEA_Y + 0.55} rotation-x={Math.PI / 2}><torusGeometry args={[FX_ARENA.SEA_R + 0.12, 0.09, 10, 96]} /><meshBasicMaterial color={new THREE.Color().setRGB(...PALETTE.paper)} /></mesh>
     </group>
   );

@@ -27,6 +27,9 @@ export function ArcVeil() {
       uPts: { value: Array.from({ length: NPTS }, () => new THREE.Vector4()) }, uNPts: { value: 0 },
     };
   }, []);
+  // built imperatively: R3F copies a `uniforms` prop into its own objects, which would freeze numeric values
+  const mat = useMemo(() => new THREE.ShaderMaterial({ vertexShader: veilVert, fragmentShader: veilFrag, uniforms, transparent: true, depthWrite: false }), [uniforms]);
+  useEffect(() => () => mat.dispose(), [mat]);
   useEffect(() => {
     const on = (e) => { if (e.type === 'attend') st.pulse = Math.min(1, st.pulse + 0.3); if (e.type === 'reset') st.str = 0; };
     const a = onEvent(on), b = _registerFx(on);
@@ -51,9 +54,8 @@ export function ArcVeil() {
     u.uNPts.value = n;
   });
   return (
-    <mesh rotation-x={-Math.PI / 2} position-y={VEIL_Y} renderOrder={3} frustumCulled={false}>
+    <mesh rotation-x={-Math.PI / 2} position-y={VEIL_Y} renderOrder={3} frustumCulled={false} material={mat}>
       <circleGeometry args={[FX_ARENA.SEA_R, 96]} />
-      <shaderMaterial vertexShader={veilVert} fragmentShader={veilFrag} uniforms={uniforms} transparent depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }

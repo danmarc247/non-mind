@@ -6,6 +6,10 @@ import {
 import { leaf, node, key, prune, complexityOf, inheritTraits, traitForLink, aspectsOf, tierOf, nameOf, leafCount } from './genome.js';
 import { startWave, stepBattle, aspectTiers } from './battle.js';
 import { rollMutation, epithet } from './content/mutations.js';
+import { KOANS, pickKoan } from './content/koans.js';
+
+// A line from the pools, never the same twice in a row per pool.
+function koan(G, pool, kind = 'koan') { const lastKoan = (G.lastKoan ||= {}); const list = pool.includes('.') ? KOANS.byStage[pool.split('.')[1]] : KOANS[pool]; if (!list || !list.length) return; const line = pickKoan(G.rng, list, lastKoan[pool]); lastKoan[pool] = line; say(G, line, kind); }
 
 export const MAX_MUTS = 6;
 // A unit's full name: genome name plus the epithet of its rarest mutation.
@@ -107,7 +111,7 @@ function fuse(G, u) {
     say(G, `${nameOf(keep.g)}: ${LINKS[keep.link - 1].pali}. ${LINKS[keep.link - 1].text}`, 'link');
     if (keep.link >= 12) {
       G.units.splice(G.units.indexOf(keep), 1); G.endings++;
-      G.events.push({ type: 'ending', id: keep.id }); say(G, 'An ending is known. It stays known.', 'ending');
+      G.events.push({ type: 'ending', id: keep.id }); say(G, 'An ending is known. It stays known.', 'ending'); koan(G, 'ending', 'ending');
       return;
     }
     u = keep;
@@ -127,6 +131,7 @@ export const actions = {
     G.stats.clicks++; G.clicksThisWave++;
     const a = G.gain(clickValue(G), 'click');
     G.events.push({ type: 'attend', amt: a });
+    if (G.stats.clicks % 25 === 0) koan(G, 'attend');
     return a;
   },
   buy(G, i) {
@@ -193,7 +198,7 @@ export const actions = {
     const a = addUnit(G, parts[0], link, u.traits.slice(0, half).concat('ache').slice(0, half || 1), u.seat, 0, (u.muts || []).filter((_, i) => i % 2 === 0));
     const b = addUnit(G, parts[1], link, u.traits.slice(half).length ? u.traits.slice(half) : ['ache'], null, 0, (u.muts || []).filter((_, i) => i % 2 === 1));
     mutate(G, a, 0.5); mutate(G, b, 0.5);
-    G.stats.splits++; G.events.push({ type: 'split', id, a: a.id, b: b.id });
+    G.stats.splits++; G.events.push({ type: 'split', id, a: a.id, b: b.id }); koan(G, 'split', 'op');
     return true;
   },
   repurpose(G, id) {
@@ -202,7 +207,7 @@ export const actions = {
     const n = Math.round(tierOf(u.g) * u.link * (1 + leafCount(u.g)));
     G.habits[h.id] = (G.habits[h.id] || 0) + n;
     G.units.splice(G.units.indexOf(u), 1); G.stats.repurposes++;
-    G.events.push({ type: 'repurpose', id, habit: h.id, n }); say(G, `${nameOf(u.g)} is now ${n} of ${h.name}.`, 'op');
+    G.events.push({ type: 'repurpose', id, habit: h.id, n }); say(G, `${nameOf(u.g)} is now ${n} of ${h.name}.`, 'op'); koan(G, 'repurpose', 'op');
     return true;
   },
   cast(G, id) {
@@ -242,7 +247,7 @@ export const actions = {
     const meta = { mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
     const N = createGame(G.seed, meta);
     N.events.push({ type: 'reset', gain, depth: N.depth });
-    say(N, 'Simple again.', 'reset');
+    say(N, 'Simple again.', 'reset'); koan(N, 'reset', 'reset');
     return N;
   },
 };
@@ -270,6 +275,7 @@ function combine(G, aId, bId, op) {
   G.stats[op === 'blend' ? 'integrations' : 'subtractions']++;
   G.events.push({ type: what, a: aId, b: bId, id: u.id });
   say(G, op === 'blend' ? `${nameOf(g)}. It was two.` : `${nameOf(g)}. Something is missing from it, usefully.`, 'op');
+  koan(G, what, 'op');
   return u;
 }
 
@@ -297,10 +303,13 @@ export function step(G, dt) {
   G.capacity = capacityOf(G);
   G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.35)));
   if (G.overwhelm >= 1) G.composure -= G.composureMax * 0.02 * dt;
+  // the log is never quite silent: an idle line now and then, an overwhelm line when it is too much
+  G.koanT = (G.koanT || 45) - dt;
+  if (G.koanT <= 0) { G.koanT = G.overwhelm > 0.5 ? 14 : 45; koan(G, G.overwhelm > 0.5 ? 'overwhelm' : 'idle', G.overwhelm > 0.5 ? 'warn' : 'koan'); }
   // stages
   while (G.stage < STAGES.length - 1 && STAGES[G.stage + 1].need(G)) {
     G.stage++; const s = STAGES[G.stage];
-    G.events.push({ type: 'stage', stage: G.stage, id: s.id }); say(G, `${s.id.toUpperCase()}. ${s.hint}`, 'stage');
+    G.events.push({ type: 'stage', stage: G.stage, id: s.id }); say(G, `${s.id.toUpperCase()}. ${s.hint}`, 'stage'); koan(G, `byStage.${s.id}`, 'stage');
   }
   // phases
   G.phaseT += dt;
@@ -323,12 +332,12 @@ function endWave(G, won) {
     G.attention += pay; addXp(G, 2);
     G.gain(20 * Math.pow(1.35, G.cycle * 10 + G.wave - 1), 'wave');
     G.composure = Math.min(G.composureMax, G.composure + G.composureMax * 0.25);
-    G.events.push({ type: 'waveWin', pay, interest });
+    G.events.push({ type: 'waveWin', pay, interest }); koan(G, 'waveWin');
     G.wave++; if (G.wave > WAVES_PER_CYCLE) { G.wave = 1; G.cycle++; say(G, 'The ten have spoken. The ten begin.', 'stage'); }
     rollShop(G, true);
   } else {
     G.streak = 0; G.composure = G.composureMax; G.habituation = Math.min(12, (G.habituation || 0) + 1); G.attention += 2; addXp(G, 1);
-    addMood(G, 'dread'); G.events.push({ type: 'waveLose' }); rollShop(G, true);
+    addMood(G, 'dread'); G.events.push({ type: 'waveLose' }); koan(G, 'waveLose', 'warn'); rollShop(G, true);
   }
 }
 
