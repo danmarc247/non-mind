@@ -202,6 +202,7 @@ export function createSfx(E) {
       n.connect(n2).connect(X.out);
       const r = X.tone(f, t, 0.8, { type: 'sawtooth', peak: 0.14, a: 0.02, hold: 0.35, tau: 0.08, dest: n, filter: ['lowpass', 3500] });
       if (r) { const p = r.s.onended; r.s.onended = () => { if (p) p(); n.disconnect(); n2.disconnect(); }; }
+      else { n.disconnect(); n2.disconnect(); }
     },
     split(X) {
       const t = X.t, f = X.hz(4, 0);

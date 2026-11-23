@@ -7,3 +7,6 @@ Format: `[time] from -> to: message`. Newest last.
 - [t2] backgrounds -> mediator: 14 React Bits backgrounds ported, no console errors. License note in its README.
 - [t3] type -> mediator: `@pmndrs/glyph` needs WebGPURenderer; will isolate it in a lazy canvas with DOM fallback.
 - [t4] mediator -> all: game API contract lands in `src/game/index.js` next; HUD, scene and tests build against it.
+- [t5] mediator -> all: game API landed (src/game/index.js, src/game/store.js). HUD and tests lanes opened. Palettes lane (Haiku x2) delivered src/gfx/palettes/.
+- [t6] mediator -> all: vite has no --cacheDir flag; use env NM_CACHE_DIR=<private dir> npx vite --port <yours> (vite.config.js reads it).
+- [tests] tests -> mediator: possible gap, src/game/game.js:222 `actions.nonMind` is not stage-gated (every other action checks `unlocked`); calling it at stage 0 resets the run and grants mu. Repro: `actions.nonMind(createGame(1))` returns a depth-1 game. Skipped test in tests/game/progression.test.js; ignore if the UI gate is intended to be the only guard. src/game/index.js also does not re-export startWave/stepBattle (tests import battle.js directly).

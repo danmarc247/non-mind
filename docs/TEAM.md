@@ -1,5 +1,12 @@
 # NON-MIND build team
 
+## Org
+
+- **Fable (boss, mediator)**: architecture, contracts, the hardest code (engine, genome-to-shader pipeline, arena), integration, playtesting.
+- **Opus**: complex coding lanes (shaders, audio engine, HUD, UI kit).
+- **Sonnet**: supportive tasks (tests, balance reports, content tables, mechanical ports).
+- **Haiku**: mini things (palettes, single sound effects, small data).
+
 One mediator, many specialists. Nobody edits outside their lane; everything crosses lanes through the mediator and the log.
 
 ## Roles and lanes
@@ -7,12 +14,16 @@ One mediator, many specialists. Nobody edits outside their lane; everything cros
 | Agent | Model | Owns (may edit) | Status |
 |---|---|---|---|
 | Mediator | Fable | `src/game/**`, `src/gfx/units*`, `src/gfx/Scene*`, `src/App.jsx`, config, integration | active |
-| Sky | Opus | `src/gfx/PainterSky.jsx`, `src/gfx/glsl/sky.*` | running |
-| Post | Opus | `src/gfx/PainterPost.jsx`, `src/gfx/glsl/post.*` | running |
-| HUD kit | Opus | `src/ui/bits/*` (not `backgrounds/`) | running |
+| Sky | Opus | `src/gfx/PainterSky.jsx`, `src/gfx/glsl/sky.*` | done |
+| Post | Opus | `src/gfx/PainterPost.jsx`, `src/gfx/glsl/post.*` | done |
+| HUD kit | Opus | `src/ui/bits/*` (not `backgrounds/`) | done |
 | Backgrounds | Sonnet | `src/ui/bits/backgrounds/**` | done |
 | Audio | Opus | `src/audio/**`, `tests/audio/**` | running |
-| Type | Fable | `src/ui/type/**`, `public/fonts/**` | running |
+| Type | Fable | `src/ui/type/**`, `public/fonts/**` | done |
+| HUD | Opus | `src/ui/Hud.jsx`, `src/ui/hud/**` | running |
+| Tests + balance | Sonnet | `tests/game/**`, `vitest.config.js` | running |
+| Content x2 | Sonnet | `src/game/content/**` | done |
+| Palettes x2 | Haiku | `src/gfx/palettes/**` | done |
 | Research x4 | Opus | none (reports only) | done |
 
 ## Shared contracts (the only coupling points)

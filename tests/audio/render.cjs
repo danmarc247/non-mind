@@ -44,9 +44,11 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
 
   const results = {};
   console.log('\n== music renders (40 s each) ==');
-  console.log('id            peak   rms   rmsDb  dc         silent%  centroid  onsets  NaN  maxOsc  ms');
+  console.log('id            peak   rms   rmsDb  dc         silent%  centroid  onsets  notes  NaN  maxOsc  ms');
   for (const r of RENDERS) {
     const res = await page.evaluate((cfg) => window.__audioTest.renderMusic(cfg), { ...r, dur: 40 });
+    delete res.noteLog; delete res.onsetTimes;
+    if (res.segments) res.segments.forEach((x) => delete x.onsetTimes);
     if (res.wav) {
       const f = path.join(wavDir, `nonmind-${r.id.replace(/[^a-z0-9-]/gi, '_')}.wav`);
       fs.writeFileSync(f, Buffer.from(res.wav, 'base64'));
@@ -55,7 +57,7 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
     }
     results[r.id] = res;
     console.log(
-      `${r.id.padEnd(13)} ${String(res.peak).padEnd(6)} ${String(res.rms).padEnd(5)} ${String(res.rmsDb).padEnd(6)} ${String(res.dc).padEnd(10)} ${String(res.silentPct).padEnd(8)} ${String(res.centroid).padEnd(9)} ${String(res.onsets).padEnd(7)} ${String(res.nan).padEnd(4)} ${String(res.maxOsc).padEnd(7)} ${res.renderMs}`,
+      `${r.id.padEnd(13)} ${String(res.peak).padEnd(6)} ${String(res.rms).padEnd(5)} ${String(res.rmsDb).padEnd(6)} ${String(res.dc).padEnd(10)} ${String(res.silentPct).padEnd(8)} ${String(res.centroid).padEnd(9)} ${String(res.onsets).padEnd(7)} ${String(res.notes).padEnd(6)} ${String(res.nan).padEnd(4)} ${String(res.maxOsc).padEnd(7)} ${res.renderMs}`,
     );
     if (res.segments) for (const s of res.segments) console.log(`   [${s.from}-${s.to}s] rms ${s.rms} (${s.rmsDb} dB) peak ${s.peak} centroid ${s.centroid} onsets ${s.onsets}`);
     check(res.nan === 0, `${r.id}: NaN samples`);
@@ -71,6 +73,14 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
   const rs = results['reset@20'].segments;
   check(rs[1].rms < rs[0].rms * 0.5, `reset: post-collapse rms ${rs[1].rms} not << pre ${rs[0].rms}`);
   check(rs[1].onsets <= 3, `reset: post-collapse should be nearly event-free (${rs[1].onsets} onsets)`);
+
+  const dA = await page.evaluate(() => window.__audioTest.renderMusic({ mood: { complexity: 0.6 }, dur: 10, seed: 5 }));
+  const dB = await page.evaluate(() => window.__audioTest.renderMusic({ mood: { complexity: 0.6 }, dur: 10, seed: 5 }));
+  const dC = await page.evaluate(() => window.__audioTest.renderMusic({ mood: { complexity: 0.6 }, dur: 10, seed: 6 }));
+  const sig = (r) => `${r.rms}/${r.peak}/${r.centroid}/${r.notes}`;
+  console.log(`determinism: seed5 ${sig(dA)} | seed5 again ${sig(dB)} | seed6 ${sig(dC)}`);
+  check(sig(dA) === sig(dB), 'same seed should render identically');
+  check(sig(dA) !== sig(dC), 'different seeds should differ');
 
   console.log('\n== sfx (rendered alone, positioned, intensity 0.8) ==');
   console.log('name            peak   rms    dur(s)  tailRms   NaN');

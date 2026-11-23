@@ -117,7 +117,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   vec3 hv = normalize(L + vec3(0.0, 0.0, 1.0));
   float spec = pow(max(dot(n, hv), 0.0), 18.0);
   float wet = smoothstep(0.3, 0.8, pp_vnoise(q * 5.0 + 2.0));
-  col += smoothstep(0.35, 1.0, spec) * uRelief * (0.06 + 0.16 * wet) * vec3(1.0, 0.97, 0.92) * (0.5 + lum);
+  col += smoothstep(0.55, 1.0, spec) * uRelief * (0.05 + 0.14 * wet) * vec3(1.0, 0.97, 0.92) * (0.5 + lum);
 
   // canvas weave (shows most in thin paint between dabs)
   vec2 cw = px / 2.4;

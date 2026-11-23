@@ -1,0 +1,257 @@
+// Bottom band: shop, attend button, bench + seated strip.
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useAnimationControls } from 'motion/react';
+import { InkButton, Panel, Tooltip, UnitCard } from '../bits';
+import { toneVar } from '../bits';
+import {
+  FAMILY, ASPECTS, TIER_COST, COSTS, XP_TO_LEVEL, BENCH, unlocked, unitCap, clickValue, leaf, nameOf,
+} from '../../game/index.js';
+import { act, choose, game, useGame } from '../../game/store.js';
+import { cn } from '../../lib/cn';
+import { fmt } from './fmt.js';
+import { attend, onHud } from './bus.js';
+import { Appear, Key, Label, Scr, Shake, UnitGlyph, aspectChips, unitTier, unitTone, POP } from './shared.jsx';
+
+const cardCls = (compact) =>
+  cn(compact ? 'w-[92px]' : 'w-[108px]', '[&_.aspect-square]:aspect-[5/3] [&_.text-lg]:text-[15px] [&_.mt-2]:mt-1.5');
+
+/* ------------------------------------------------------------ shop */
+
+function Shop({ G, compact }) {
+  const need = XP_TO_LEVEL[G.level - 1];
+  const seatedN = G.units.filter((u) => u.seat).length;
+  const cap = unitCap(G);
+  return (
+    <Panel
+      title={<Scr k={20}>arrivals</Scr>}
+      tone="yolk"
+      bodyClassName="px-3 pb-3 pt-2"
+      actions={
+        <div className="flex items-center gap-3">
+          <Tooltip content={`Level ${G.level}. Higher levels hold more at once and draw rarer things. ${G.level < 10 ? `${G.xp} of ${need} toward the next.` : 'There is no higher.'}`}>
+            <span className="flex items-center gap-1.5">
+              <span className="font-stat text-base leading-none text-ink nm-tab">lv{G.level}</span>
+              <span className="relative block h-[9px] w-[54px] overflow-hidden rounded-full border-2 border-ink bg-paper-2">
+                <motion.span className="absolute inset-y-0 left-0 bg-ultra" initial={false} animate={{ width: `${G.level >= 10 ? 100 : (100 * G.xp) / need}%` }} transition={POP} />
+              </span>
+            </span>
+          </Tooltip>
+          <Tooltip content="Seated, of how many may be seated at once.">
+            <span className={cn('font-stat text-base leading-none nm-tab', seatedN >= cap ? 'text-magenta' : 'text-ink')}>{seatedN}/{cap}</span>
+          </Tooltip>
+        </div>
+      }
+    >
+      <div className="flex items-start gap-2.5">
+        <div className="flex gap-2">
+          {G.shop.map((id, i) => {
+            const f = id && FAMILY[id];
+            const cost = f ? TIER_COST[f.tier - 1] : 0;
+            return (
+              <div key={i} className="relative">
+                <Key k={i + 1} className="absolute -top-2 -left-1.5 z-20" />
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {f ? (
+                    <Appear key={`${id}-${i}`} from="up">
+                      <Tooltip content={<span><b className="font-head">{f.name}</b>: {f.text}</span>}>
+                        <UnitCard
+                          name={f.name}
+                          tier={f.tier}
+                          aspects={f.aspects.map((a) => ({ name: ASPECTS[a].name, tone: ASPECTS[a].tone }))}
+                          cost={cost}
+                          dim={G.attention < cost}
+                          onClick={() => act('buy', i)}
+                          className={cardCls(compact)}
+                          reveal={false}
+                        >
+                          <UnitGlyph g={leaf(id)} link={1} />
+                        </UnitCard>
+                      </Tooltip>
+                    </Appear>
+                  ) : (
+                    <motion.div
+                      key={`empty-${i}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[150px] w-[92px]' : 'h-[164px] w-[108px]')}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex w-[104px] flex-col gap-2.5 pt-1">
+          <InkButton size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} className="[&_button]:w-full">
+            look <span className="font-stat normal-case">{COSTS.reroll}</span>
+          </InkButton>
+          <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} className="[&_button]:w-full">
+            grow <span className="font-stat normal-case">{COSTS.xp}</span>
+          </InkButton>
+          <p className="px-0.5 font-body text-[11px] italic leading-snug text-ink-2">
+            Two alike become one, further along.
+          </p>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+/* ------------------------------------------------------------ attend */
+
+function AttendButton({ G, compact }) {
+  const controls = useAnimationControls();
+  const [floats, setFloats] = useState([]);
+  const n = useRef(0);
+  useEffect(
+    () =>
+      onHud((e) => {
+        if (e.type !== 'attend') return;
+        controls.start({ scale: [1, 0.86, 1.07, 1], transition: { duration: 0.26, times: [0, 0.25, 0.65, 1], ease: 'easeOut' } });
+        const id = n.current++;
+        setFloats((f) => [...f.slice(-10), { id, amt: e.amt, x: (Math.random() - 0.5) * 70, r: (Math.random() - 0.5) * 16 }]);
+        setTimeout(() => setFloats((f) => f.filter((q) => q.id !== id)), 900);
+      }),
+    [controls],
+  );
+  const size = compact ? 108 : 128;
+  return (
+    <div className="relative flex flex-col items-center" style={{ width: size + 24 }}>
+      <div className="pointer-events-none absolute bottom-full left-1/2 h-0 w-0">
+        <AnimatePresence>
+          {floats.map((f) => (
+            <motion.span
+              key={f.id}
+              className="absolute -translate-x-1/2 font-stat text-2xl whitespace-nowrap text-magenta [text-shadow:2px_2px_0_var(--color-ink)]"
+              initial={{ opacity: 0, y: 30, x: f.x * 0.3, scale: 0.6, rotate: f.r }}
+              animate={{ opacity: [0, 1, 1, 0], y: -60, x: f.x, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.85, ease: [0.15, 0.8, 0.3, 1] }}
+            >
+              +{fmt(f.amt)}
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
+      <motion.button
+        type="button"
+        animate={controls}
+        whileHover={{ scale: 1.04, rotate: -2 }}
+        onClick={() => attend()}
+        className="relative grid place-items-center rounded-full border-[4px] border-ink bg-magenta text-paper shadow-[4px_6px_0_0_var(--color-ink)] outline-none focus-visible:ring-4 focus-visible:ring-yolk active:shadow-[1px_2px_0_0_var(--color-ink)]"
+        style={{ width: size, height: size }}
+        aria-label="Attend"
+      >
+        <span className="absolute inset-[7px] rounded-full border-2 border-paper/50" />
+        <span className="absolute left-[22%] top-[14%] h-[18%] w-[30%] -rotate-[24deg] rounded-full bg-paper/35" />
+        <span className="relative flex flex-col items-center leading-none">
+          <span className={cn('font-head tracking-wider', compact ? 'text-[24px]' : 'text-[28px]')}><Scr k={30}>ATTEND</Scr></span>
+          <span className="mt-1 font-stat text-[13px] text-paper/90 nm-tab">+{fmt(clickValue(G))}</span>
+        </span>
+      </motion.button>
+      <Key k="space" className="mt-2" />
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------ bench + seated */
+
+function Seated({ G }) {
+  const seated = G.units.filter((u) => u.seat).sort((a, b) => a.seat.ring - b.seat.ring || a.seat.dir - b.seat.dir);
+  if (!seated.length) return null;
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <Label className="shrink-0">held</Label>
+      <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-1">
+        <AnimatePresence initial={false}>
+          {seated.map((u) => (
+            <motion.button
+              key={u.id}
+              layout
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={POP}
+              type="button"
+              onClick={() => choose(u.id)}
+              className={cn(
+                'flex h-[26px] shrink-0 items-center gap-1.5 rounded-[8px] border-2 border-ink bg-paper px-2 font-head text-[13px] leading-none text-ink shadow-[1px_2px_0_0_var(--color-ink)] transition-transform hover:-translate-y-0.5',
+                game.selected === u.id && 'bg-magenta text-paper',
+                game.pending && game.pending.a !== u.id && 'outline-2 outline-dashed outline-offset-1 outline-magenta',
+              )}
+            >
+              <span className="h-2.5 w-2.5 rounded-full border-[1.5px] border-ink" style={{ background: toneVar(unitTone(u)) }} />
+              <span className="max-w-[120px] truncate">{nameOf(u.g)}</span>
+              {u.link > 1 && <span className="font-stat text-[11px]">{u.link}</span>}
+            </motion.button>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function Bench({ G, compact }) {
+  const bench = G.units.filter((u) => !u.seat && !u.busy);
+  return (
+    <Panel
+      title={<Scr k={21}>waiting</Scr>}
+      tone="teal"
+      bodyClassName="px-3 pb-3 pt-2"
+      className="min-w-0 flex-1"
+      actions={<span className={cn('font-stat text-base leading-none nm-tab', bench.length >= BENCH ? 'text-magenta' : 'text-ink')}>{bench.length}/{BENCH}</span>}
+    >
+      <Seated G={G} />
+      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1 pt-1.5 pb-2', compact ? 'min-h-[156px]' : 'min-h-[172px]')}>
+        <AnimatePresence initial={false} mode="popLayout">
+          {bench.map((u) => (
+            <Appear key={u.id} from="up" layout className="shrink-0">
+              <div className={cn('rounded-[18px]', game.pending && game.pending.a !== u.id && 'outline-[3px] outline-dashed outline-offset-2 outline-magenta')}>
+                <UnitCard
+                  name={nameOf(u.g)}
+                  tier={unitTier(u)}
+                  aspects={aspectChips(u.g)}
+                  selected={game.selected === u.id}
+                  onClick={() => choose(u.id)}
+                  className={cardCls(compact)}
+                  reveal={false}
+                >
+                  <UnitGlyph g={u.g} link={u.link} />
+                </UnitCard>
+              </div>
+            </Appear>
+          ))}
+        </AnimatePresence>
+        {!bench.length && (
+          <p className="self-center px-2 font-body text-sm italic text-ink-2/80">Nothing waits. What is bought sits here until it is given a place.</p>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
+export default function Bottom({ compact }) {
+  const G = useGame();
+  const shop = unlocked(G, 'shop');
+  return (
+    <div className="pointer-events-none absolute inset-x-3 bottom-3 flex items-end gap-3">
+      {!shop && <div className="flex-1" />}
+      <AnimatePresence initial={false}>
+        {shop && (
+          <Appear key="shop" from="up" className="pointer-events-auto shrink-0">
+            <Shake seed={21}><Shop G={G} compact={compact} /></Shake>
+          </Appear>
+        )}
+      </AnimatePresence>
+      <Shake seed={22} className="pointer-events-auto shrink-0 pb-1"><AttendButton G={G} compact={compact} /></Shake>
+      {!shop && <div className="flex-1" />}
+      <AnimatePresence initial={false}>
+        {shop && (
+          <Appear key="bench" from="up" delay={0.05} className="pointer-events-auto flex min-w-0 flex-1">
+            <Shake seed={23} className="flex min-w-0 flex-1"><Bench G={G} compact={compact} /></Shake>
+          </Appear>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

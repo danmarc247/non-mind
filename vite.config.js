@@ -5,6 +5,7 @@ import glsl from 'vite-plugin-glsl';
 
 export default defineConfig({
   base: './',
+  cacheDir: process.env.NM_CACHE_DIR || 'node_modules/.vite',
   plugins: [react(), tailwindcss(), glsl({ root: '/node_modules/', compress: false })],
   build: { target: 'es2022', chunkSizeWarningLimit: 6000 },
   server: { host: true, port: 5173 },
