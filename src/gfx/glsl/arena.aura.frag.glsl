@@ -75,7 +75,7 @@ void main() {
     // dry-brush gaps along the ring, tearing wider with overwhelm
     float ang = atan(dot(dir, vec3(0.0, 1.0, 0.0)), dot(dir, normalize(cross(rd, vec3(0.0, 1.0, 0.0)))));
     float gap = ar_noise(vec2(ang * 3.0 + fi * 7.3, fi + uTime * 0.2));
-    float keep = smoothstep(0.18 + 0.6 * ow, 0.3 + 0.6 * ow, gap);
+    float keep = smoothstep(0.18 + 0.4 * ow, 0.3 + 0.4 * ow, gap);
     vec3 sc = pick(fi + floor(uStage * 0.5));
     sc = mix(sc, uPaper, mod(fi, 2.0) * 0.55);             // alternate white-outlined rings
     sc = mix(sc, mix(uBlood, uMagenta, gap), ow * 0.8);

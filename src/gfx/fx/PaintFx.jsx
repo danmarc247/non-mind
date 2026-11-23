@@ -156,7 +156,7 @@ function createSystem() {
       case 'flurry':
         for (let j = 0; j < 5; j++) {
           const a = R() * 6.283, d = 1.8 + R() * 1.2;
-          ribbon(K.STROKE, x, UNIT_Y + 0.4, z, x + Math.cos(a) * d, UNIT_Y + 0.2, z + Math.sin(a) * d, 0.32 * S, 0.45, 0.2, D + j * 0.045, c, A, mixC(c, 'ink', 0.35));
+          ribbon(K.STROKE, x, UNIT_Y + 0.4, z, x + Math.cos(a) * d, UNIT_Y + 0.2, z + Math.sin(a) * d, 0.42 * S, 0.45, 0.22, D + j * 0.045, c, A, mixC(c, 'ink', 0.35));
         }
         break;
       case 'retreat': {
@@ -177,7 +177,8 @@ function createSystem() {
         decal(K.CRESCENT, x, GY, z, 2.2 * S, 0.5, D, c, A * 0.7, 'blood');
         break;
       case 'blink':
-        decal(K.HOLE, x, GY, z, 1.8 * S, 0.45, D, c, A);
+        decal(K.HOLE, x, GY, z, 2.4 * S, 0.45, D, c, A);
+        bill(K.HOLE, x, UNIT_Y + 0.3, z, 3.0 * S, 0.4, D, c, A, c, 1.3);
         burst(K.SPARK, x, UNIT_Y + 0.4, z, 8, 5, 1.5, 0.22 * S, 0, 0.3, [c], { alpha: A, delay: D, c2: 'paper' });
         break;
       case 'burst_affect':
@@ -334,15 +335,15 @@ function createSystem() {
       case 'waveWin': {
         const pal = mixStagePalette(mood.stage), sp = pal.primary.map(linearToSrgb), cols = ['yolk', 'magenta', 'teal', 'ultra', 'tangerine', 'rose', sp];
         for (let j = 0; j < 60; j++) {
-          const a = R() * 6.283, rr = 8 + R() * 4, s = 1.2 + R() * 2;
-          part(K.FLECK, Math.cos(a) * rr, 7 + R() * 4, Math.sin(a) * rr, -Math.cos(a) * s, -0.6 - R(), -Math.sin(a) * s, 0.3 + R() * 0.16, 2.2, 1.5 + R() * 0.5, R() * 0.35,
+          const a = R() * 6.283, rr = 6 + R() * 5, s = 1.5 + R() * 2.2;
+          part(K.FLECK, Math.cos(a) * rr, 3.5 + R() * 3, Math.sin(a) * rr, -Math.cos(a) * s, -1.2 - R(), -Math.sin(a) * s, 0.3 + R() * 0.16, 2.2, 1.5 + R() * 0.5, R() * 0.35,
             cols[j % cols.length], 1, 'paper', 0, 0, 0, (R() - 0.5) * 10);
         }
         mood.flash = Math.max(mood.flash, 0.5);
         break;
       }
       case 'waveLose':
-        decal(K.BLEED, 0, GY + 0.05, 0, SEA_R, 1.4, 0, 'ink', 1, 'violet', 0, R() * 6.28);
+        decal(K.BLEED, 0, GY + 0.05, 0, SEA_R, 1.4, 0, 'ink', 0.82, 'violet', 0, R() * 6.28);
         break;
       case 'stage': {
         const sp = STAGE_PALETTES[Math.max(0, Math.min(STAGE_PALETTES.length - 1, e.stage | 0))];
@@ -352,8 +353,8 @@ function createSystem() {
         break;
       }
       case 'attend': {
-        ring(0, GY, 0, 1.7, 3.3 + R() * 0.4, 0.07, 'yolk', 0.42, 0, 1);
-        for (let j = 0; j < 2; j++) { const a = R() * 6.283; part(K.SPARK, Math.cos(a) * 0.8, CORE_Y + 1.4, Math.sin(a) * 0.8, Math.cos(a) * 1.8, 2.6, Math.sin(a) * 1.8, 0.2, 9, 0.45, 0, 'yolk', 1, 'tangerine', 0, 1, 1); }
+        ring(0, GY, 0, 1.5, 2.8 + R() * 0.3, 0.16, 'yolk', 0.4, 0, 1, 0, 'tangerine', 0.22);
+        for (let j = 0; j < 2; j++) { const a = R() * 6.283; part(K.SPARK, Math.cos(a) * 0.8, CORE_Y + 1.4, Math.sin(a) * 0.8, Math.cos(a) * 1.8, 2.6, Math.sin(a) * 1.8, 0.32, 9, 0.45, 0, 'yolk', 1, 'tangerine', 0, 1, 1); }
         break;
       }
       case 'coreHit': {

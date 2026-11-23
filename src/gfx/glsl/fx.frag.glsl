@@ -305,7 +305,7 @@ void main() {
     fade = 1.0 - smoothstep(0.75, 1.0, k);
   } else if (kind == 37) {
     // waveLose: ink bleeds in from the rim
-    float front = 1.0 - 0.36 * fx_eo(k / 0.6);
+    float front = 1.0 - 0.24 * fx_eo(k / 0.6);
     float ten = fx_n(vec2(an * 5.0 + s * 3.0, age * 0.6)) * 0.12 + pow(fx_n(vec2(an * 19.0, s)), 3.0) * 0.16;
     float e = front - ten;
     a = smoothstep(e - 0.01, e + 0.04, r) * fx_aa(r - 0.985, 0.006);
