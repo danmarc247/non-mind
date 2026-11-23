@@ -42,8 +42,21 @@ export default function Tools({ size = 56, layout = 'grid', hotkeys = true, clas
     window.addEventListener('nonmind:quality-changed', on);
     return () => window.removeEventListener('nonmind:quality-changed', on);
   }, []);
-  const nextQuality = () => { const n = QUALITY[(QUALITY.indexOf(qual) + 1) % QUALITY.length]; setQual(n); window.dispatchEvent(new CustomEvent('nonmind:quality', { detail: n })); };
-  const view = (t) => (t.id === 'quality' ? { ...t, label: qual } : t.id === 'sound' && muted ? { ...t, label: 'quiet', tone: 'paper-2' } : t.id === 'locale' ? { ...t, label: getLocale() === 'de' ? 'deutsch' : 'english' } : t);
+  // "plain" is the fifth stop of the same ring: the painted shaders are put away and the colours stay
+  const [plainOn, setPlainOn] = useState(() => { try { return localStorage.getItem('non-mind-plain') === '1'; } catch { return false; } });
+  useEffect(() => {
+    const on = (e) => setPlainOn(!!e.detail?.plain);
+    window.addEventListener('nonmind:plain-changed', on);
+    return () => window.removeEventListener('nonmind:plain-changed', on);
+  }, []);
+  const STOPS = [...QUALITY, 'plain'];
+  const shown = plainOn ? 'plain' : qual;
+  const nextQuality = () => {
+    const n = STOPS[(STOPS.indexOf(shown) + 1) % STOPS.length];
+    window.dispatchEvent(new CustomEvent('nonmind:plain', { detail: n === 'plain' }));
+    if (n !== 'plain') { setQual(n); window.dispatchEvent(new CustomEvent('nonmind:quality', { detail: n })); }
+  };
+  const view = (t) => (t.id === 'quality' ? { ...t, label: shown } : t.id === 'sound' && muted ? { ...t, label: 'quiet', tone: 'paper-2' } : t.id === 'locale' ? { ...t, label: getLocale() === 'de' ? 'deutsch' : 'english' } : t);
   // two groups: what belongs to play (codex, manual, lineage, book), then, set apart and smaller, what belongs
   // to the session (save, again, sound)
   const all = TOOLS.map(view);
@@ -51,7 +64,7 @@ export default function Tools({ size = 56, layout = 'grid', hotkeys = true, clas
   const small = Math.round(size * 0.8);
   const ring = (t, i, sz) => (
     <span key={t.id} data-tut={t.id} className="inline-flex">
-      <RingButton tone={t.tone} size={sz} hotkey={hotkeys ? t.key : undefined} hotkeyPos="corner" onClick={t.id === 'quality' ? nextQuality : fire(t.event)} label={t.id === 'quality' ? `picture quality: ${qual}` : t.id === 'sound' ? (muted ? 'sound is off' : 'sound is on') : t.label} aria-pressed={t.id === 'sound' ? muted : undefined}>
+      <RingButton tone={t.tone} size={sz} hotkey={hotkeys ? t.key : undefined} hotkeyPos="corner" onClick={t.id === 'quality' ? nextQuality : fire(t.event)} label={t.id === 'quality' ? `picture quality: ${shown}` : t.id === 'sound' ? (muted ? 'sound is off' : 'sound is on') : t.label} aria-pressed={t.id === 'sound' ? muted : undefined}>
         <span className={cn('font-head uppercase', sz < 50 ? 'text-[11px] tracking-tight' : t.label.length > 6 ? 'text-[12px] tracking-tight' : cn(text, 'tracking-wide'))}><Scr k={60 + i}>{t.label}</Scr></span>
       </RingButton>
     </span>

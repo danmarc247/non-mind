@@ -18,6 +18,7 @@ import ContainedSea from './sea/index.js';
 import { DriftingCard } from './cards/index.js';
 import Director, { director } from './Director.jsx';
 import { quality, onQuality, governFrame, tierInfo, TIERS } from './quality.js';
+import { plain, onPlain, plainUnitGeo, plainStressorGeo, plainCoreGeo, plainUnitMaterial, plainStressorMaterial, plainCoreMaterial, plainSkyMaterial, plainColours } from './plain.js';
 
 const PainterSky = SkyMod.PainterSky || PainterSkyDefault;
 const PainterPost = PostMod.PainterPost || PainterPostDefault;
@@ -89,7 +90,9 @@ function pickRaycast(k) {
   };
 }
 const DISC = new THREE.CircleGeometry(1, 28);
-function Bodies() {
+// plain picture: a stressor takes the tone of the aspect it leans on, so the gates stay colourful
+const STRESSOR_TONE = (def) => { const c = ANY_STRESSOR[def]?.color; return PALETTE[c && c !== 'ink' ? c : 'violet'] || PALETTE.magenta; };
+function Bodies({ plainMode = false }) {
   const root = useRef();
   const map = useRef(new Map());
   const hover = useRef(null);
@@ -107,15 +110,15 @@ function Bodies() {
       if (!u.seat) continue;
       const c = fighting ? B.units.find((x) => x.uid === u.id) : null;
       const [sx, sz] = seatPos(u.seat.ring, u.seat.dir);
-      want.set('u' + u.id, { k: `${u.id}|${u.link}|${leaves(u.g).length}|${(u.muts || []).length}`, mat: () => unitMaterial(u.g, u.link, u.muts || [], u.id), x: c ? c.x : sx, z: c ? c.z : sz, s: 1.9 + 0.09 * u.link + 0.1 * leaves(u.g).length, hp: c ? c.hp / c.max : 1, dead: c ? !c.alive : false, alias: c ? 'c' + c.id : null, sel: game.selected === u.id, tone: ASPECT_TONES[aspectsOf(u.g)[0]], charge: c ? c.charge / 100 : 0 });
+      want.set('u' + u.id, { k: `${u.id}|${u.link}|${leaves(u.g).length}|${(u.muts || []).length}`, mat: () => (plainMode ? plainUnitMaterial(leaves(u.g)[0].f, u.link) : unitMaterial(u.g, u.link, u.muts || [], u.id)), geo: plainMode ? plainUnitGeo(leaves(u.g)[0].f) : null, x: c ? c.x : sx, z: c ? c.z : sz, s: 1.9 + 0.09 * u.link + 0.1 * leaves(u.g).length, hp: c ? c.hp / c.max : 1, dead: c ? !c.alive : false, alias: c ? 'c' + c.id : null, sel: game.selected === u.id, tone: ASPECT_TONES[aspectsOf(u.g)[0]], charge: c ? c.charge / 100 : 0 });
     }
-    if (fighting) for (const e of B.enemies) want.set('e' + e.id, { k: `${e.def}|${e.affix || ''}`, mat: () => stressorMaterial(e.def, e.affix || null), x: e.x, z: e.z, s: (e.boss ? 3.6 : 1.45) + Math.min(0.5, (ANY_STRESSOR[e.def]?.value || 1) * 0.07), hp: e.hp / e.max, dead: !e.alive, enemy: true, tone: '#1b1030' });
+    if (fighting) for (const e of B.enemies) want.set('e' + e.id, { k: `${e.def}|${e.affix || ''}`, mat: () => (plainMode ? plainStressorMaterial(STRESSOR_TONE(e.def)) : stressorMaterial(e.def, e.affix || null)), geo: plainMode ? plainStressorGeo(e.boss) : null, x: e.x, z: e.z, s: (e.boss ? 3.6 : 1.45) + Math.min(0.5, (ANY_STRESSOR[e.def]?.value || 1) * 0.07), hp: e.hp / e.max, dead: !e.alive, enemy: true, tone: '#1b1030' });
     // reconcile
     for (const [id, w] of want) {
       let b = map.current.get(id);
       if (!b || b.k !== w.k) {
         if (b) { root.current.remove(b.g); b.mesh.material.dispose(); b.disc.material.dispose(); }
-        const g = new THREE.Group(), mesh = new THREE.Mesh(SPHERE, w.mat()); mesh.raycast = pickRaycast(0.56); const disc = new THREE.Mesh(DISC, new THREE.MeshBasicMaterial({ color: w.tone, transparent: true, opacity: 0.5, depthWrite: false }));
+        const g = new THREE.Group(), mesh = new THREE.Mesh(w.geo || SPHERE, w.mat()); mesh.raycast = pickRaycast(0.56); const disc = new THREE.Mesh(DISC, new THREE.MeshBasicMaterial({ color: w.tone, transparent: true, opacity: 0.5, depthWrite: false }));
         mesh.frustumCulled = false; disc.rotation.x = -Math.PI / 2; disc.position.y = SEA_Y + 0.16 - UNIT_Y;
         g.add(mesh, disc); g.position.set(w.x, UNIT_Y, w.z); g.scale.setScalar(0.01);
         mesh.userData.pick = id; root.current.add(g);
@@ -154,19 +157,19 @@ function Bodies() {
 }
 
 const CORE_PICK = pickRaycast(0.45);
-function Core() {
+function Core({ plainMode = false }) {
   const mesh = useRef(), st = useRef({ stage: -1, pop: 0 });
   useEffect(() => onEvent((e) => { if (e.type === 'attend') st.current.pop = 1; if (e.type === 'coreHit') st.current.pop = -0.6; }), []);
   useFrame((_, dt) => {
     const s = st.current, G = game.G;
-    if (s.stage !== G.stage) { s.stage = G.stage; const old = mesh.current.material; mesh.current.material = coreMaterial(G.stage); old?.dispose?.(); s.pop = 1.5; }
+    if (s.stage !== G.stage) { s.stage = G.stage; const old = mesh.current.material; mesh.current.material = plainMode ? plainCoreMaterial(G.stage) : coreMaterial(G.stage); old?.dispose?.(); s.pop = 1.5; }
     s.pop = ease(s.pop, 0, dt, 9);
     const sc = 3.2 + 0.06 * G.stage + 0.45 * s.pop + 0.06 * Math.sin(mood.time * 2);
     mesh.current.scale.setScalar(sc);
     const u = mesh.current.material.uniforms;
     if (u) { u.time.value = mood.time; u._scale.value = sc; u.uFlash.value = Math.max(0, s.pop * 0.35) + mood.flash * 0.5; }
   });
-  return <mesh ref={mesh} geometry={SPHERE} raycast={CORE_PICK} position={[0, 1.7, 0]} frustumCulled={false}
+  return <mesh ref={mesh} geometry={plainMode ? plainCoreGeo() : SPHERE} raycast={CORE_PICK} position={[0, 1.7, 0]} frustumCulled={false}
     onClick={(e) => { e.stopPropagation(); act('attend'); }}
     onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }} />;
 }
@@ -207,6 +210,29 @@ function Fx() {
       <circleGeometry args={[0.5, 18]} />
       <meshBasicMaterial transparent opacity={0.9} depthWrite={false} toneMapped={false} />
     </instancedMesh>
+  );
+}
+
+// ---------- plain picture: a colour wash for the sky and a flat sea, no painted shaders ----------
+function PlainWorld() {
+  const sky = useMemo(() => plainSkyMaterial(), []);
+  const sea = useRef(), rim = useRef(), st = useRef({ stage: -1 });
+  useEffect(() => () => sky.dispose(), [sky]);
+  useFrame(() => {
+    mood.flash = Math.max(0, mood.flash - 0.03);   // nothing else decays it here
+    const stg = Math.round(mood.stage * 4) / 4;
+    if (stg === st.current.stage) return;
+    st.current.stage = stg;
+    const c = plainColours(mood.stage);
+    sky.uniforms.uTop.value.set(...c.top); sky.uniforms.uMid.value.set(...c.mid); sky.uniforms.uLow.value.set(...c.low);
+    sea.current?.material.color.setRGB(...c.sea); rim.current?.material.color.setRGB(...c.rim);
+  });
+  return (
+    <>
+      <mesh material={sky} frustumCulled={false} renderOrder={-10}><sphereGeometry args={[400, 16, 12]} /></mesh>
+      <mesh ref={sea} position={[0, SEA_Y, 0]} rotation-x={-Math.PI / 2}><circleGeometry args={[SEA_R, 64]} /><meshBasicMaterial color="#8fd3ff" /></mesh>
+      <mesh ref={rim} position={[0, SEA_Y + 0.05, 0]} rotation-x={-Math.PI / 2}><torusGeometry args={[SEA_R, 0.14, 8, 96]} /><meshBasicMaterial color="#1b1030" /></mesh>
+    </>
   );
 }
 
@@ -261,29 +287,33 @@ const PORTRAIT = typeof window !== 'undefined' && window.innerHeight > window.in
 export default function Scene({ audioRef, quality: postQuality, post = true }) {
   const [tier, setTier] = useState(quality.tier);
   const t = TIERS[tier];
+  const [plainOn, setPlainOn] = useState(plain.on);
+  useEffect(() => onPlain(setPlainOn), []);
   return (
     <Canvas linear legacy flat camera={{ position: PORTRAIT ? [0, 30, 42] : [0, 21, 29], fov: PORTRAIT ? 52 : 44, near: 0.5, far: 900 }} dpr={Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, t.dpr)} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
       <Quality onTier={setTier} />
       <Loop audioRef={audioRef} />
       <Director />
-      <PainterSky />
-      <Strata />
-      <ContainedSea />
+      {plainOn ? <PlainWorld /> : <><PainterSky /><Strata /><ContainedSea /></>}
       <GatePortals />
       <SeatRings />
-      <Core />
-      <CoreAura />
-      <Bodies />
+      <Core key={plainOn ? 'core-plain' : 'core'} plainMode={plainOn} />
+      {!plainOn && <CoreAura />}
+      <Bodies key={plainOn ? 'bodies-plain' : 'bodies'} plainMode={plainOn} />
       <DriftingCard />
-      <ArcVeil />
-      <PaintFx />
-      <Mobiles count={Math.round((SMALL ? 8 : 14) * t.mobiles)} />
-      <Tethers />
-      <Motes max={Math.round((SMALL ? 180 : 420) * t.motes)} />
-      <GlassVessel />
+      {!plainOn && (
+        <>
+          <ArcVeil />
+          <PaintFx />
+          <Mobiles count={Math.round((SMALL ? 8 : 14) * t.mobiles)} />
+          <Tethers />
+          <Motes max={Math.round((SMALL ? 180 : 420) * t.motes)} />
+          <GlassVessel />
+        </>
+      )}
       <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={5} maxDistance={70} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
-      {post && <PainterPost quality={postQuality || t.post} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
+      {post && !plainOn && <PainterPost quality={postQuality || t.post} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
     </Canvas>
   );
 }
