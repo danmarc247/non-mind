@@ -243,14 +243,14 @@ function unitSource(g, link, muts = [], salt = '', formOverride = null) {
   s += `rotateY(time*${f3(0.2 + rng() * 0.12)}+${f3(rng() * 6.28)}); rotateX(${f3((rng() - 0.5) * 0.3)});\n`;
   if (F.stretch > 0) s += `displace(sp.x*${f3(1 - stW)}, sp.y*${f3(1 - 1 / stH)}, sp.z*${f3(1 - stW)});\n`;
   // twist: a helical domain twist plus a corkscrew spine, so the whole body winds
-  if (F.twist > 0) s += `rotateY(sp.y*${f3(twist)}+${f3(0.3 * F.twist)}*sin(time*0.7)); displace(${f3(0.075 * F.twist)}*sin(sp.y*7.0+time*0.8), 0.0, ${f3(0.075 * F.twist)}*cos(sp.y*7.0+time*0.8));\n`;
+  if (F.twist > 0) s += `rotateY(sp.y*${f3(twist)}+${f3(0.3 * F.twist)}*sin(time*0.7)); rotateZ(sp.y*${f3(1.4 * F.twist)}); displace(${f3(0.12 * F.twist)}*sin(sp.y*6.0+time*0.8), 0.0, ${f3(0.12 * F.twist)}*cos(sp.y*6.0+time*0.8));\n`;
   if (W > 0.004) s += `displace(noise(sp*5.0+time*0.5)*${f3(W)}, noise(sp*5.0+vec3(7.0,1.0,3.0)-time*0.4)*${f3(W)}, 0);\n`;
   s += treeSrc(g, link, R, rng, 0) + '\n';
   if (F.noise > 0) s += `expand(noise(getSpace()*${f3(9 + 4 * F.noise)}+vec3(0.0,time*0.6,0.0))*${f3(0.012 + 0.03 * F.noise)}+noise(getSpace()*23.0-time*0.4)*${f3(0.008 * F.noise)});\n`;
   if (F.hollow > 0) {
-    const t = f3(0.016 + 0.008 * (1 - F.hollow)), wr = f3(0.13 + 0.15 * F.hollow), wp = f3(0.24);
-    s += `let d0=getSDF()+0.0; shell(${t}); difference(); shape(()=>{ mirrorXYZ(); displace(${wp},${wp},${wp}); sphere(${wr}); })(); shape(()=>{ mirrorXYZ(); displace(${f3(0.4)},0.0,0.0); sphere(${f3(0.08 + 0.14 * F.hollow)}); })(); shape(()=>{ mirrorXYZ(); displace(0.0,0.0,${f3(0.4)}); sphere(${f3(0.08 + 0.14 * F.hollow)}); })();
-union(); mixMat(smoothstep(-${t},0.0,d0)); color(${v3(head.c)}); ${PAINT}\n`;
+    const t = f3(0.016 + 0.008 * (1 - F.hollow)), wr = f3(0.11 + 0.11 * F.hollow), wp = f3(0.26);
+    s += `let d0=getSDF()+0.0; shell(${t}); difference(); shape(()=>{ mirrorXYZ(); displace(${wp},${wp},${wp}); sphere(${wr}); })(); shape(()=>{ mirrorXYZ(); displace(${f3(0.42)},0.0,0.0); sphere(${f3(0.06 + 0.09 * F.hollow)}); })(); shape(()=>{ mirrorXYZ(); displace(0.0,0.0,${f3(0.42)}); sphere(${f3(0.06 + 0.09 * F.hollow)}); })();
+union(); mixMat(smoothstep(-${t},0.0,d0)); color(${v3(head.a.map((x, i) => x * 0.25 + PALETTE.ink[i] * 0.75))}); ${PAINT}\n`;
   }
   s += `})();\n`;
   // spikes: tapered ink thorns, radial

@@ -60,7 +60,7 @@ export function Shop({ G, compact, mobile }) {
             const f = id && FAMILY[id];
             const cost = f ? TIER_COST[f.tier - 1] : 0;
             return (
-              <div key={i} className="relative">
+              <div key={i} className="relative" data-tut={`shop-${i}`}>
                 <Key k={i + 1} className="absolute -top-2 -left-1.5 z-20" />
                 <AnimatePresence mode="popLayout" initial={false}>
                   {f ? (
@@ -94,10 +94,10 @@ export function Shop({ G, compact, mobile }) {
           })}
         </div>
         <div className={mobile ? 'flex flex-row items-center gap-3' : 'flex w-[104px] flex-col gap-3 pt-1'} data-tut="lookgrow">
-          <InkButton size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} full>
+          <InkButton data-tut="reroll" size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} full>
             look <span className="font-stat normal-case">{COSTS.reroll}</span>
           </InkButton>
-          <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} full>
+          <InkButton data-tut="xp" size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} full>
             grow <span className="font-stat normal-case">{COSTS.xp}</span>
           </InkButton>
           {!compact && !mobile && (
@@ -211,8 +211,9 @@ export function Seated({ G }) {
               transition={POP}
               type="button"
               onClick={() => choose(u.id)}
+              data-tut={`unit-${u.id}`}
               className={cn(
-                'flex h-[26px] shrink-0 items-center gap-1.5 rounded-[8px] border-2 border-ink bg-paper px-2 font-head text-[13px] leading-none text-ink shadow-[1px_2px_0_0_var(--color-ink)] transition-transform hover:-translate-y-0.5',
+                'flex h-[26px] pointer-coarse:h-11 shrink-0 items-center gap-1.5 rounded-[8px] border-2 border-ink bg-paper px-2 font-head text-[13px] leading-none text-ink shadow-[1px_2px_0_0_var(--color-ink)] transition-transform hover:-translate-y-0.5',
                 game.selected === u.id && 'bg-magenta text-paper',
                 game.pending && game.pending.a !== u.id && 'outline-2 outline-dashed outline-offset-1 outline-magenta',
               )}
@@ -240,7 +241,7 @@ export function Bench({ G, compact }) {
       <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1 pt-1.5 pb-2', compact ? 'min-h-[128px]' : 'min-h-[172px]')}>
         <AnimatePresence initial={false} mode="popLayout">
           {bench.map((u) => (
-            <Appear key={u.id} from="up" layout className="shrink-0">
+            <Appear key={u.id} from="up" layout className="shrink-0" data-tut={`unit-${u.id}`}>
               <div className={cn('rounded-[18px]', game.pending && game.pending.a !== u.id && 'outline-[3px] outline-dashed outline-offset-2 outline-magenta')}>
                 <UnitCard
                   name={nameOf(u.g)}

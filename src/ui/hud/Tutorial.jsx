@@ -14,7 +14,7 @@ const cardW = () => Math.min(310, window.innerWidth - 28);
 const PAD = 10;
 
 /** Where is the anchor on screen? 'core' is the centre of the arena (the 3D scene keeps it centred). */
-function anchorRect(anchor) {
+export function anchorRect(anchor) {
   const vw = window.innerWidth, vh = window.innerHeight;
   if (anchor === 'core') {
     // gfx may publish the projected core (mood.coreScreen = {x, y, r} in css px); otherwise use the

@@ -6,6 +6,8 @@ import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { InkButton, toneVar } from '../bits';
 import { emitHud } from './bus.js';
+import { useState } from 'react';
+import { nudgesOn, setNudges } from './Nudge.jsx';
 import { CODEX, CODEX_INTRO } from './text.js';
 import { Key, POP, scramble } from './shared.jsx';
 
@@ -59,6 +61,15 @@ function Section({ i, open }) {
   );
 }
 
+function HintToggle() {
+  const [on, setOn] = useState(nudgesOn);
+  return (
+    <InkButton size="sm" tone={on ? 'teal' : 'paper-2'} pressed={!on} onClick={() => { setNudges(!on); setOn(!on); }}>
+      hints when idle: {on ? 'on' : 'off'}
+    </InkButton>
+  );
+}
+
 export default function Codex({ onClose }) {
   const G = useGame();
   return (
@@ -82,7 +93,10 @@ export default function Codex({ onClose }) {
         <header className="flex items-center gap-3 border-b-[3px] border-ink px-9 pt-5 pb-3">
           <h2 className="font-title text-[40px] leading-none text-ink [text-shadow:3px_3px_0_var(--color-magenta)]">Codex</h2>
           <p className="flex-1 font-body text-[13px] italic leading-snug text-ink-2">{CODEX_INTRO}</p>
-          <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the way again</InkButton>
+          <div className="flex flex-col items-end gap-1.5">
+            <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the way again</InkButton>
+            <HintToggle />
+          </div>
           <button type="button" onClick={onClose} className="flex items-center gap-1.5 rounded-[8px] border-2 border-ink bg-paper px-2 py-1 font-head text-[13px] uppercase shadow-[1px_2px_0_0_var(--color-ink)] hover:-translate-y-[1px]">
             close <Key k="esc" />
           </button>

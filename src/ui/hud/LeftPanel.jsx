@@ -15,9 +15,9 @@ import { toneVar } from '../bits';
 
 /* ------------------------------------------------------------ rows */
 
-function Row({ children, className, dim }) {
+function Row({ children, className, dim, tut }) {
   return (
-    <div className={cn('rounded-[12px] border-2 border-ink/80 bg-paper px-2.5 py-2 shadow-[2px_2px_0_0_var(--color-ink)]', dim && 'opacity-60', className)}>
+    <div data-tut={tut} className={cn('rounded-[12px] border-2 border-ink/80 bg-paper px-2.5 py-2 shadow-[2px_2px_0_0_var(--color-ink)]', dim && 'opacity-60', className)}>
       {children}
     </div>
   );
@@ -47,7 +47,7 @@ function Habits({ G }) {
           const ok = G.affect >= cost;
           const max = maxAffordable(G, h);
           return (
-            <Appear key={h.id} from="left">
+            <Appear key={h.id} from="left" data-tut={`habit-${h.id}`}>
               <Row>
                 <div className="flex items-center gap-2">
                   <span className="min-w-0 flex-1">
@@ -84,7 +84,7 @@ function Upgrades({ G }) {
         {list.map((u) => {
           const ok = G.affect >= u.cost;
           return (
-            <Appear key={u.id} from="left">
+            <Appear key={u.id} from="left" data-tut={`upgrade-${u.id}`}>
               <Row>
                 <div className="flex items-start gap-2">
                   <span className="min-w-0 flex-1">
@@ -113,7 +113,7 @@ function Insight({ G }) {
       {SPELLS.filter((s) => s.stage <= G.stage).map((s) => {
         const ok = G.insight >= s.cost;
         return (
-          <Row key={s.id}>
+          <Row key={s.id} tut={`spell-${s.id}`}>
             <div className="flex items-start gap-2">
               <span className="min-w-0 flex-1">
                 <span className="block font-head text-[16px] leading-none text-ink">{s.name}</span>
@@ -162,7 +162,7 @@ function Verbs({ G }) {
         const u = run && G.units.find((x) => x.id === run.unit);
         const fits = sel && (!v.needs || sel.traits.includes('fade') || aspectsOf(sel.g).includes(v.needs));
         return (
-          <Row key={v.id} className={cn(run && 'border-magenta')}>
+          <Row key={v.id} tut={`verb-${v.id}`} className={cn(run && 'border-magenta')}>
             <div className="flex items-center gap-2.5">
               <Ring frac={run ? run.t / v.time : 0} tone={v.needs ? (ASPECTS[v.needs].tone === 'ink' ? 'violet' : ASPECTS[v.needs].tone) : 'sky'} size={46} pulse={run && run.t < 5}>
                 <span className="font-stat text-[11px] leading-none text-ink nm-tab">{run ? fmtTime(run.t) : `${v.time}s`}</span>
@@ -245,7 +245,7 @@ function Exchange({ G }) {
 
 function Stance({ G }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" data-tut="stance">
       <p className="font-body text-[12px] italic text-ink-2">Choose how to stand. It can be changed; it cannot be nothing again.</p>
       {STANCES.map((s) => (
         <Row key={s.id} className={cn(G.stance === s.id && 'border-magenta bg-rose/30')}>
@@ -273,7 +273,7 @@ function Mirror({ G }) {
         <span className="font-stat text-[22px] leading-none nm-tab">{G.mirrors}</span><Label>mirrors</Label>
         <span className="flex-1" />
         <Tooltip content={fmtLong(cost) + ' affect'}>
-          <InkButton size="sm" tone="ultra" disabled={G.affect < cost} onClick={() => act('mirror')}>
+          <InkButton data-tut="mirror" size="sm" tone="ultra" disabled={G.affect < cost} onClick={() => act('mirror')}>
             reflect <span className="ml-1 font-stat text-[12px] normal-case">{fmt(cost)}</span>
           </InkButton>
         </Tooltip>
@@ -292,7 +292,7 @@ function Attendants({ G }) {
         <span className="font-stat text-[22px] leading-none nm-tab">{G.attendants}</span><Label>attending</Label>
         <span className="font-stat text-[11px] text-ink-2 nm-tab">~{fmt(each)} each</span>
         <span className="flex-1" />
-        <InkButton size="sm" tone="teal" disabled={G.affect < cost} onClick={() => act('buyAttendant')}>
+        <InkButton data-tut="attendant" size="sm" tone="teal" disabled={G.affect < cost} onClick={() => act('buyAttendant')}>
           lend <span className="ml-1 font-stat text-[12px] normal-case">{fmt(cost)}</span>
         </InkButton>
       </div>

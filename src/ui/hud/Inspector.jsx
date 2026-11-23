@@ -83,7 +83,7 @@ function Ops({ G, u }) {
     show && (
       <Appear key={key} from="up" className="inline-flex">
         <Tooltip content={tip}>
-          <InkButton size="sm" tone={tone} disabled={disabled || busy} pressed={pending?.kind === key} onClick={onClick}>
+          <InkButton data-tut={`op-${key}`} size="sm" tone={tone} disabled={disabled || busy} pressed={pending?.kind === key} onClick={onClick}>
             {label}{cost != null && <span className="ml-1 font-stat text-[12px] normal-case">{cost}</span>}
           </InkButton>
         </Tooltip>
@@ -131,7 +131,7 @@ function Verbs({ G, u }) {
         const busy = !!G.verbs[v.id];
         return (
           <Tooltip key={v.id} content={<span>{v.text} <i className="text-ink-2">{v.time}s.</i>{v.needs && <> Wants something {ASPECTS[v.needs].name}.</>}</span>}>
-            <InkButton size="sm" tone={v.needs ? ASPECTS[v.needs].tone === 'ink' ? 'violet' : ASPECTS[v.needs].tone : 'sky'} disabled={!fits || busy || !!u.busy} onClick={() => { act('startVerb', v.id, u.id); }}>
+            <InkButton data-tut={`verbbtn-${v.id}`} size="sm" tone={v.needs ? ASPECTS[v.needs].tone === 'ink' ? 'violet' : ASPECTS[v.needs].tone : 'sky'} disabled={!fits || busy || !!u.busy} onClick={() => { act('startVerb', v.id, u.id); }}>
               {v.name}
             </InkButton>
           </Tooltip>

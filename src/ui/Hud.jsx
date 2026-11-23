@@ -15,6 +15,7 @@ import Title from './hud/Title.jsx';
 import Tutorial from './hud/Tutorial.jsx';
 import Mobile from './hud/Mobile.jsx';
 import Tools from './hud/Tools.jsx';
+import Nudge from './hud/Nudge.jsx';
 import { Log, StageFlash } from './hud/Log.jsx';
 import { attend } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
@@ -146,6 +147,7 @@ export default function Hud() {
           <>
             <Mobile w={w} h={h} />
             <StageFlash />
+            <Nudge blocked={codex} />
             <Tutorial />
           </>
         )}
@@ -176,6 +178,7 @@ export default function Hud() {
 
             <div className="absolute left-1/2 -translate-x-1/2" style={{ top: bandTop }}><PendingBanner /></div>
             <StageFlash />
+            <Nudge blocked={codex} />
             <Tutorial />
 
             {/* overwhelm: the edges flush and close in */}
