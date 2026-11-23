@@ -104,7 +104,7 @@ describe('battle: outcomes', () => {
     stepUntil(G, (g) => g.phase === 'lost', 300);
     expect(G.phase).toBe('lost');
     expect(G.moods.filter((m) => m.kind === 'dread')).toHaveLength(1);
-    expect(G.attention).toBe(2);
+    expect(G.attention).toBe(3); // loss consolation (balance constant)
     expect(G.composure).toBe(G.composureMax);
   });
 

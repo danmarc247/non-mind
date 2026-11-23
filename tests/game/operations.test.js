@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  actions, key, leaf, node, leaves, STAGES, COSTS, HABITS, FAMILY, tierOf, leafCount, unlocked, unitCap, ringsOpen,
+  actions, key, leaf, node, leaves, STAGES, COSTS, HABITS, FAMILY, tierOf, leafCount, unlocked, unitCap, ringsOpen, mirrorCost,
 } from '../../src/game/index.js';
 import { gameAt, addLeaf, addRaw } from './helpers.js';
 
@@ -184,7 +184,7 @@ describe('operations: stage gating (actions refuse before unlock)', () => {
     ['verbs', 'startVerb', (G) => actions.startVerb(G, 'dream', addLeaf(G, 'reappraisal').id)],
     ['exchange', 'exchange', (G) => { G.attention = 100; return actions.exchange(G, 'attention', 'insight'); }],
     ['stance', 'chooseStance', (G) => actions.chooseStance(G, 'toward')],
-    ['mirror', 'mirror', (G) => { G.affect = 1e12; return actions.mirror(G); }],
+    ['mirror', 'mirror', (G) => { G.affect = mirrorCost(G) * 2; return actions.mirror(G); }],
   ];
 
   for (const [unlock, name, run] of gated) {
@@ -248,8 +248,9 @@ describe('operations: spells, verbs, exchange, stance, mirror', () => {
     expect(actions.exchange(G, 'attention', 'nope')).toBe(false);
   });
 
-  it('mirror costs 1e6 * 40^n and raises seat cap and rings', () => {
-    const G = gameAt(17); G.affect = 1e6;
+  it('mirror costs mirrorCost(n) and raises seat cap and rings', () => {
+    const G = gameAt(17); const c0 = mirrorCost(G); G.affect = c0;
+    expect(mirrorCost({ mirrors: 1 })).toBeGreaterThan(c0);
     expect(actions.mirror(G)).toBe(true);
     expect(G.mirrors).toBe(1); expect(G.affect).toBeCloseTo(0);
     expect(actions.mirror(G)).toBe(false);

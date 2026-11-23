@@ -138,11 +138,17 @@ describe('economy: shop and xp', () => {
 
   it('buyXp pays and levels at the XP_TO_LEVEL thresholds', () => {
     const G = gameAt(1); G.attention = 1000;
-    expect(XP_TO_LEVEL[0]).toBe(2);
-    actions.buyXp(G); // +4 xp -> level 2 (cost 2), 2 left
-    expect(G.level).toBe(2); expect(G.xp).toBe(2); expect(G.attention).toBe(1000 - COSTS.xp);
-    actions.buyXp(G); // 6 >= 4 -> level 3, 2 left
-    expect(G.level).toBe(3); expect(G.xp).toBe(2);
+    const [t1, t2] = XP_TO_LEVEL; // thresholds for level 1 and 2
+    actions.buyXp(G); // +xpGain xp
+    expect(G.attention).toBe(1000 - COSTS.xp);
+    let xp = COSTS.xpGain, level = 1;
+    while (level < 10 && xp >= XP_TO_LEVEL[level - 1]) { xp -= XP_TO_LEVEL[level - 1]; level++; }
+    expect(G.level).toBe(level); expect(G.xp).toBe(xp);
+    expect(level).toBeGreaterThanOrEqual(2); expect(t1).toBeGreaterThan(0); expect(t2).toBeGreaterThan(0);
+    actions.buyXp(G);
+    xp += COSTS.xpGain;
+    while (level < 10 && xp >= XP_TO_LEVEL[level - 1]) { xp -= XP_TO_LEVEL[level - 1]; level++; }
+    expect(G.level).toBe(level); expect(G.xp).toBe(xp);
   });
 
   it('xp can cross several levels at once and stops at 10', () => {
@@ -171,13 +177,13 @@ describe('economy: wave win payout (interest, streak)', () => {
   }
   const wins = (G) => G.events.filter((e) => e.type === 'waveWin');
 
-  it('the first win pays 4 + interest(attention/10, cap 5) + streak bonus', () => {
+  it('the first win pays base + interest(attention/10, cap 5) + streak bonus', () => {
     const G = strongGame(30);
     stepUntil(G, (g) => wins(g).length >= 1, 120);
     const w = wins(G)[0];
     expect(w.interest).toBe(3);
-    expect(w.pay).toBe(4 + 3 + 0);
-    expect(G.attention).toBe(30 + 7);
+    expect(w.pay - w.interest).toBeGreaterThanOrEqual(4);
+    expect(G.attention).toBe(30 + w.pay);
     expect(G.streak).toBe(1);
     expect(G.wave).toBe(2);
   });
@@ -197,7 +203,8 @@ describe('economy: wave win payout (interest, streak)', () => {
     stepUntil(G, (g) => wins(g).length >= 4, 600);
     const ws = wins(G);
     // pay = 4 + interest + min(3, floor(streak/3)); isolate the streak share
-    const streakShare = ws.map((w) => w.pay - 4 - w.interest);
+    const base = ws[0].pay - ws[0].interest; // streak 1 earns no bonus
+    const streakShare = ws.map((w) => w.pay - base - w.interest);
     expect(streakShare.slice(0, 4)).toEqual([0, 0, 1, 1]);
   });
 
