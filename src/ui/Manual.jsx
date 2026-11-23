@@ -14,7 +14,7 @@ function build(md) {
   const title = (md.match(/^# (.+)$/m) || [, 'NON-MIND'])[1];
   const parts = md.replace(/^# .+$/m, '').split(/^(?=## )/m);
   const intro = parts[0].trim();
-  const sections = parts.slice(1).map((p, i) => {
+  const sections = parts.slice(1).filter((p) => !/^## (Contents|Table of contents)\s*$/im.test(p)).map((p, i) => {
     const name = p.match(/^## (.+)$/m)[1].trim();
     const html = marked.parse(p.replace(/^## .+$/m, ''), { gfm: true })
       .replace(/<a /g, '<a target="_blank" rel="noreferrer" ')
@@ -72,7 +72,7 @@ export default function Manual() {
                 <button onClick={() => setOpen(false)} className="absolute right-5 top-5 rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
                 <AnimatePresence mode="wait">
                   <motion.article key={sec.id} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
-                    {active === 0 && <div className="nm-intro mb-6" dangerouslySetInnerHTML={{ __html: doc.intro }} />}
+                    {active === 0 && <div className="nm-intro mb-6 pr-28" dangerouslySetInnerHTML={{ __html: doc.intro }} />}
                     <h2 className="mb-1 font-title text-5xl leading-none" style={{ color: `var(--color-${sec.tone})`, WebkitTextStroke: '1.5px var(--color-ink)' }}>{sec.name}</h2>
                     <svg className="mb-5 h-3 w-64" viewBox="0 0 260 12"><path d="M2 7 C 40 1, 70 12, 110 6 S 190 2, 258 7" fill="none" stroke={`var(--color-${sec.tone})`} strokeWidth="5" strokeLinecap="round" /></svg>
                     <div dangerouslySetInnerHTML={{ __html: sec.html }} />

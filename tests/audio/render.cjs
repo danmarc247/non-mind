@@ -27,6 +27,17 @@ const RENDERS = [
     wav: [10, 40],
   },
   { id: 'depth3-away', mood: { complexity: 0.3, depth: 3, stance: 'away', aspects: { void: 0.7, vagal: 0.6 } } },
+  { id: 'c0.25', mood: { complexity: 0.25 } },
+  { id: 'c0.75', mood: { complexity: 0.75 } },
+  { id: 'c1', mood: { complexity: 1 } },
+  { id: 'low-quality', quality: 'low', mood: { complexity: 0.6, overwhelm: 0.3 } },
+  {
+    // depth change mid-render (key change crossfade) + camera soft-zoom every 100 ms
+    id: 'depth0->1',
+    mood: { complexity: 0.4, depth: 0 },
+    events: [{ t: 15, mood: { depth: 1 } }, ...Array.from({ length: 300 }, (_, i) => ({ t: 5 + i * 0.1, listener: { position: [0, 3 + Math.sin(i / 20), 6 + 3 * Math.sin(i / 37)], forward: [Math.sin(i / 50), -0.3, -Math.cos(i / 50)], up: [0, 1, 0] } }))],
+    segments: [[10, 15], [15, 17], [17, 22]],
+  },
   { id: 'against+asp', mood: { complexity: 0.7, overwhelm: 0.2, stance: 'against', aspects: { cortical: 0.8, somatic: 0.7, relational: 0.6, shadow: 0.5, mythic: 0.6, limbic: 0.5 } } },
 ];
 
@@ -67,6 +78,16 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
     check(res.maxOsc <= 48, `${r.id}: oscillator budget exceeded (${res.maxOsc})`);
   }
   const s0 = results.simple, s1 = results.full;
+  // brightness must rise monotonically with complexity (2 % tolerance)
+  const sweep = ['simple', 'c0.25', 'mid', 'c0.75', 'c1'].map((k) => results[k].centroid);
+  console.log('centroid sweep c=0,.25,.5,.75,1:', sweep.join(' -> '));
+  for (let i = 1; i < sweep.length; i++) check(sweep[i] >= sweep[i - 1] * 0.98, `centroid not monotonic in complexity: ${sweep.join(',')}`);
+  const dc = results['depth0->1'].segments;
+  check(dc[1].peak < 0.95 && dc[1].onsets <= dc[0].onsets + 8, `depth change: burst at key change ${JSON.stringify(dc[1])}`);
+  const flu = await page.evaluate(() => window.__audioTest.voiceFlutter(false));
+  const fluOld = await page.evaluate(() => window.__audioTest.voiceFlutter(true));
+  console.log(`voice flutter (dB p-p, a/o/u): now ${flu.join('/')}  pre-fix settings ${fluOld.join('/')}`);
+  check(Math.max(...flu) < 3, `voice flutter ${flu} >= 3 dB`);
   check(s1.onsets > s0.onsets * 2, `full onsets ${s1.onsets} not clearly > simple ${s0.onsets}`);
   check(s1.centroid > s0.centroid * 1.2, `full centroid ${s1.centroid} not clearly > simple ${s0.centroid}`);
   check(results.mid.onsets > s0.onsets, 'mid onsets should exceed simple');
@@ -88,6 +109,9 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
   const aspects = await page.evaluate(() => window.__audioTest.ASPECTS);
   const jobs = names.map((n) => [n, {}]);
   for (const a of aspects) { jobs.push([`hit:${a}`, { aspect: a }]); jobs.push([`cast:${a}`, { aspect: a }]); }
+  for (const g of [0, 5, 9]) jobs.push([`gate:${g}`, { gate: g }]);
+  jobs.push(['hit:low-q', { aspect: 'somatic', quality: 'low' }]);
+  for (const n of ['mutation', 'miss', 'coreHit', 'gate']) check(names.includes(n), `SFX_NAMES lacks ${n}`);
   for (const [label, opts] of jobs) {
     const name = label.split(':')[0];
     const res = await page.evaluate(([n, o]) => window.__audioTest.renderSfx(n, o), [name, opts]);

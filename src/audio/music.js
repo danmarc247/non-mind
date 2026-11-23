@@ -141,7 +141,7 @@ export function createMusic(E) {
   const RING = 5.5;
   const VOICE_DEF = [
     { L: 6, style: 'rise', oct: 2, th: 0.16, M: 2 },
-    { L: 8, style: 'wave', oct: 1, th: 0.36, M: 3 },
+    { L: 8, style: 'wave', oct: 2, th: 0.36, M: 3 },
     { L: 5, style: 'broken', oct: 1, th: 0.5, M: 2 },
     { L: 7, style: 'pedal', oct: 2, th: 0.64, M: 4 },
     { L: 9, style: 'rise', oct: 3, th: 0.78, M: 3 },
