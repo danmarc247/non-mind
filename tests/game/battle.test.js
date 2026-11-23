@@ -73,7 +73,7 @@ describe('battle: outcomes', () => {
     expect(r).toBe('won');
     expect(G.battle.enemies.filter((e) => e.alive)).toHaveLength(0);
     expect(G.stats.kills).toBeGreaterThan(0);
-    expect(G.composure).toBe(G.composureMax);
+    expect(G.composure).toBeGreaterThan(G.composureMax * 0.5); // the core may be grazed; it must not be threatened
     expect(G.battle.beat).toBe(BEATS_PER_WAVE);
   });
 

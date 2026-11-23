@@ -13,8 +13,9 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { EffectComposer } from '@react-three/postprocessing';
 import { Effect, EffectAttribute, BlendFunction, BloomEffect } from 'postprocessing';
-import { Uniform, Vector3 } from 'three';
+import { Uniform, Vector2, Vector3, SRGBColorSpace } from 'three';
 import { mood, PALETTE } from './mood.js';
+import { mixStagePalette, linearToSrgb, srgbToLinear } from './palettes/stages.js';
 
 import commonGlsl from './glsl/post.common.glsl';
 import kuwaharaGlsl from './glsl/post.kuwahara.glsl';
@@ -30,8 +31,40 @@ export const PAINTER_QUALITY = {
   high: { RINGS: 3, ANGLES: 4, WIDE_TENSOR: 1, LIC_TAPS: 6, SMEAR_TAPS: 7, bloomLevels: 6 },
 };
 
-const toLinear = (c) => new Vector3(...c.map((v) => Math.pow(v, 2.2)));
-const PAPER = toLinear([0xfb / 255, 0xf6 / 255, 0xec / 255]);
+// Colour space. The game Canvas is `linear legacy flat`: shaders write display
+// sRGB, the renderer does no conversion and the composer must not tone-map or
+// re-encode. A colour-managed Canvas (outputColorSpace sRGB) feeds linear HDR;
+// then the grade tone-maps and the final pass encodes. Detected per frame.
+const isDisplay = (renderer) => !renderer || renderer.outputColorSpace !== SRGBColorSpace;
+
+// Stage look, recomputed once per frame (cached on mood.stage/overwhelm/space).
+// Tokens (PALETTE) are sRGB triples; stage palette colours are linear.
+const LOOK = { key: '', display: true };
+function stageLook(display) {
+  const st = Math.min(17, mood.stage + mood.overwhelm * 0.999 * (mood.stage >= 16 ? 1 : 0));
+  const key = `${st.toFixed(4)}|${display}`;
+  if (LOOK.key === key) return LOOK;
+  const p = mixStagePalette(st);
+  const fromLin = (c) => (display ? c.map(linearToSrgb) : c);
+  const fromTok = (c) => (display ? c : c.map(srgbToLinear));
+  const mix = (a, b, k) => a.map((v, i) => v + (b[i] - v) * k);
+  const crimsonTok = [0.55, 0.04, 0.18];
+  Object.assign(LOOK, {
+    key,
+    display,
+    stage: st,
+    ground: fromLin(p.ground),
+    ink: fromLin(p.ink),
+    magenta: fromTok(PALETTE.magenta),
+    ultra: fromTok(PALETTE.ultra),
+    accent: fromLin(mix(p.accent, PALETTE.violet.map(srgbToLinear), 0.35)),
+    crimson: fromLin(mix(crimsonTok.map(srgbToLinear), p.ink, 0.4)),
+    saturation: p.saturation,
+    density: p.strokeDensity,
+  });
+  return LOOK;
+}
+const setV3 = (u, c) => u.value.set(c[0], c[1], c[2]);
 
 const DEFAULTS = {
   strength: 1, // kuwahara blend 0..1
@@ -39,7 +72,9 @@ const DEFAULTS = {
   relief: 1, // impasto lighting
   bristle: 1, // bristle groove depth
   canvas: 1, // canvas weave
-  dab: 1, // palette-knife dab tone breakup
+  dab: 1, // palette-knife dab tone breakup (far/sky only)
+  near: 50, // view distance below which painting is light (arena)
+  far: 80, // view distance beyond which painting is full (sky)
   ink: 0.7, // ink edge lines
   exposure: 1.05,
   saturation: 1.3,
@@ -54,10 +89,10 @@ const unis = (obj) => new Map(Object.entries(obj).map(([k, v]) => [k, new Unifor
 class KuwaharaEffect extends Effect {
   constructor(q, params) {
     super('PainterKuwahara', frag(kuwaharaGlsl), {
-      attributes: EffectAttribute.CONVOLUTION,
+      attributes: EffectAttribute.CONVOLUTION | EffectAttribute.DEPTH,
       blendFunction: BlendFunction.NORMAL,
       defines: defs({ RINGS: q.RINGS, ANGLES: q.ANGLES, WIDE_TENSOR: q.WIDE_TENSOR }),
-      uniforms: unis({ uStrength: 1, uRadius: 5, uTime: 0, uComplexity: 0 }),
+      uniforms: unis({ uStrength: 1, uRadius: 5, uTime: 0, uComplexity: 0, uNearFar: new Vector2(50, 80) }),
     });
     this.params = params;
   }
@@ -69,6 +104,7 @@ class KuwaharaEffect extends Effect {
     u.get('uRadius').value = p.radius * (1 + 0.25 * mood.complexity + 0.35 * mood.overwhelm);
     u.get('uTime').value = mood.time;
     u.get('uComplexity').value = mood.complexity;
+    u.get('uNearFar').value.set(p.near, p.far);
   }
 }
 
@@ -80,15 +116,19 @@ class ReliefEffect extends Effect {
       defines: defs({ LIC_TAPS: q.LIC_TAPS }),
       uniforms: unis({
         uRelief: 1, uBristle: 1, uCanvas: 1, uInk: 0.7, uDab: 1, uTime: 0,
-        uInkColor: toLinear(PALETTE.ink),
+        uInkColor: new Vector3(...PALETTE.ink), uNearFar: new Vector2(50, 80),
       }),
     });
     this.params = params;
   }
-  update() {
+  update(renderer) {
     const p = this.params.current;
     const u = this.uniforms;
-    u.get('uRelief').value = p.relief * (1 + 0.3 * mood.tension);
+    const look = stageLook(isDisplay(renderer));
+    // impasto thickens with progress (stage stroke density 0.05..0.98)
+    u.get('uRelief').value = p.relief * (0.7 + 0.6 * look.density) * (1 + 0.3 * mood.tension);
+    setV3(u.get('uInkColor'), look.ink);
+    u.get('uNearFar').value.set(p.near, p.far);
     u.get('uBristle').value = p.bristle;
     u.get('uCanvas').value = p.canvas;
     u.get('uDab').value = p.dab;
@@ -101,15 +141,21 @@ class GradeEffect extends Effect {
   constructor(params) {
     super('PainterGrade', frag(gradeGlsl), {
       blendFunction: BlendFunction.NORMAL,
-      uniforms: unis({ uExposure: 1, uSaturation: 1.3, uVignette: 1, uTime: 0, uPaper: PAPER.clone() }),
+      uniforms: unis({ uExposure: 1, uSaturation: 1.3, uVignette: 1, uTime: 0, uDisplay: 1, uPaper: new Vector3(...PALETTE.paper) }),
     });
     this.params = params;
   }
-  update() {
+  update(renderer) {
     const p = this.params.current;
     const u = this.uniforms;
-    u.get('uExposure').value = p.exposure * (1 + 0.6 * mood.flash);
-    u.get('uSaturation').value = p.saturation * (1 + 0.15 * mood.complexity + 0.1 * mood.tension);
+    const look = stageLook(isDisplay(renderer));
+    u.get('uDisplay').value = look.display ? 1 : 0;
+    setV3(u.get('uPaper'), look.ground);
+    // display-space input is already graded by the scene: keep the lift gentler
+    const base = look.display ? 1 + (p.saturation - 1) * 0.5 : p.saturation;
+    const stageSat = 0.92 + 0.14 * Math.min(1.3, look.saturation);   // ~0.95 .. 1.1
+    u.get('uExposure').value = (look.display ? 1 : p.exposure) * (1 + 0.6 * mood.flash);
+    u.get('uSaturation').value = base * stageSat * (1 + 0.1 * mood.complexity + 0.1 * mood.tension);
     u.get('uVignette').value = p.vignette * (1 + 0.5 * mood.overwhelm);
     u.get('uTime').value = mood.time;
   }
@@ -123,16 +169,24 @@ class OverwhelmEffect extends Effect {
       defines: defs({ SMEAR_TAPS: q.SMEAR_TAPS }),
       uniforms: unis({
         uOverwhelm: 0, uTension: 0, uFlash: 0, uTime: 0, uAudio: 0,
-        uPaper: PAPER.clone(),
-        uMagenta: toLinear(PALETTE.magenta),
-        uUltra: toLinear(PALETTE.ultra),
-        uViolet: toLinear(PALETTE.violet),
-        uCrimson: toLinear([0.55, 0.04, 0.18]),
+        uDisplay: 1,
+        uPaper: new Vector3(...PALETTE.paper),
+        uMagenta: new Vector3(...PALETTE.magenta),
+        uUltra: new Vector3(...PALETTE.ultra),
+        uViolet: new Vector3(...PALETTE.violet),
+        uCrimson: new Vector3(0.55, 0.04, 0.18),
       }),
     });
   }
-  update() {
+  update(renderer) {
     const u = this.uniforms;
+    const look = stageLook(isDisplay(renderer));
+    u.get('uDisplay').value = look.display ? 1 : 0;
+    setV3(u.get('uPaper'), look.ground);
+    setV3(u.get('uMagenta'), look.magenta);
+    setV3(u.get('uUltra'), look.ultra);
+    setV3(u.get('uViolet'), look.accent);
+    setV3(u.get('uCrimson'), look.crimson);
     u.get('uOverwhelm').value = mood.overwhelm;
     u.get('uTension').value = mood.tension;
     u.get('uFlash').value = mood.flash;
@@ -155,7 +209,10 @@ class PainterBloom extends BloomEffect {
     this.params = params;
   }
   update(renderer, inputBuffer, dt) {
-    this.intensity = this.params.current.bloom + 2.5 * mood.flash;
+    // display-space paper is ~0.97: only let true highlights (and the flash) bloom
+    const display = isDisplay(renderer);
+    this.luminanceMaterial.threshold = display ? 0.985 : 0.85;
+    this.intensity = this.params.current.bloom * (display ? 0.6 : 1) + 2.5 * mood.flash;
     super.update(renderer, inputBuffer, dt);
   }
 }
