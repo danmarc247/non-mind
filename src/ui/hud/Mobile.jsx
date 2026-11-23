@@ -1,6 +1,6 @@
 // Phone / tablet HUD: a slim top strip, the arena in the middle, and a bottom dock of tab pills that
 // opens a bottom sheet. ATTEND sits in the dock under the right thumb. Touch only: no hotkeys, no hover.
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Meter, Panel, toneVar } from '../bits';
 import { STAGES, unlocked, WAVE_ARC, BEATS_PER_WAVE } from '../../game/index.js';
@@ -25,7 +25,7 @@ function StageWave({ G }) {
   const arc = G.battle?.arc || WAVE_ARC[(G.wave - 1) % 10];
   const beat = G.phase === 'fight' ? G.battle?.beat ?? 0 : G.phase === 'prep' ? 0 : BEATS_PER_WAVE;
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-[14px] border-[3px] border-ink bg-paper/95 px-2.5 py-1.5 shadow-[2px_3px_0_0_var(--color-ink)]" data-tut="wave">
+    <div className="flex min-w-0 flex-1 flex-col gap-1 rounded-[16px] border-[3px] border-ink bg-paper/95 px-2.5 py-1.5 shadow-[3px_4px_0_0_var(--color-ink)]" data-tut="wave">
       <div className="flex items-baseline gap-2">
         <span className="font-stat text-[12px] text-ink-2 nm-tab">{G.stage + 1}/18</span>
         <span className="truncate font-head text-[19px] leading-none uppercase" data-tut="stage"><Scr k={1}>{STAGE(G)}</Scr></span>
@@ -51,7 +51,7 @@ const STAGE = (G) => STAGES[G.stage].id;
 
 function Gauges({ G }) {
   return (
-    <div className="flex gap-2 rounded-[14px] border-[3px] border-ink bg-paper/95 px-2.5 py-1.5 shadow-[2px_3px_0_0_var(--color-ink)]" data-tut="complexity">
+    <div className="flex gap-2 rounded-[16px] border-[3px] border-ink bg-paper/95 px-2.5 py-1.5 shadow-[3px_4px_0_0_var(--color-ink)]" data-tut="complexity">
       <Meter className="min-w-0 flex-1" label="complexity" value={Math.min(1, G.complexity / Math.max(1, G.capacity))} danger={G.overwhelm > 0} tone="violet"
         format={() => <span className="nm-tab">{fmt(G.complexity, { int: true })}/{fmt(G.capacity, { int: true })}</span>} />
       <Meter className="min-w-0 flex-1" label="composure" value={G.composure / G.composureMax} tone="teal" danger={G.composure / G.composureMax < 0.25} />
@@ -84,8 +84,25 @@ export default function Mobile({ w, h }) {
   useEffect(() => { if (shopOn) setOpen((o) => o ?? 'shop'); }, [shopOn]);
 
   const top = 'calc(env(safe-area-inset-top, 0px) + 8px)';
-  const sheetMax = portrait ? '46vh' : '50vh';
   const attendSize = portrait ? (w >= 700 ? 112 : 92) : 76;
+  // everything under the top strip hangs from its measured bottom edge
+  const stripRef = useRef(null);
+  const [stripB, setStripB] = useState(150);
+  useLayoutEffect(() => {
+    const el = stripRef.current;
+    if (!el) return undefined;
+    const upd = () => { const b = Math.round(el.getBoundingClientRect().bottom); setStripB((o) => (o === b ? o : b)); };
+    upd();
+    const ro = new ResizeObserver(upd);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [h, w]);
+  const rail = stripB + 8; // first y under the strip
+  const SAFE_B = 'env(safe-area-inset-bottom, 0px)';
+  const DOCK_H = 58;
+  // portrait: the sheet floats above ATTEND as well as the dock; landscape: it takes the left side, under the chips
+  const sheetBottom = portrait ? 8 + attendSize + 6 : 8 + DOCK_H + 6;
+  const sheetMax = portrait ? `${Math.round(h * 0.4)}px` : `calc(${Math.max(120, h - sheetBottom - rail)}px - ${SAFE_B})`;
 
   const sheetBody = () => {
     if (!cur) return null;
@@ -109,7 +126,7 @@ export default function Mobile({ w, h }) {
   return (
     <div className="pointer-events-none absolute inset-0" style={{ paddingLeft: 'env(safe-area-inset-left, 0px)', paddingRight: 'env(safe-area-inset-right, 0px)' }}>
       {/* top strip */}
-      <div className={cn('pointer-events-none absolute inset-x-2 flex flex-col gap-1.5', NO_PINCH)} style={{ top }}>
+      <div ref={stripRef} className={cn('pointer-events-none absolute inset-x-2 flex flex-col gap-2', NO_PINCH)} style={{ top }}>
         <div className="flex items-start gap-2">
           <Shake seed={11} className="pointer-events-auto min-w-0 flex-1"><StageWave G={G} /></Shake>
           <div className="pointer-events-auto flex shrink-0 items-start gap-1.5">
@@ -123,25 +140,24 @@ export default function Mobile({ w, h }) {
       </div>
 
       {/* ask for a hint: always there, on the right edge */}
-      <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 84}px)` : 'calc(env(safe-area-inset-top, 0px) + 74px)' }}>
-        <Ask size={46} />
+      {/* ask + tool rings (codex, manual, save, lineage...) hang under the strip on the right edge, 6px apart */}
+      <div className={cn('pointer-events-none absolute right-2 flex gap-1.5', portrait ? 'flex-col items-end' : 'items-start')} style={{ top: rail }}>
+        <div className="pointer-events-auto"><Ask size={46} /></div>
+        {!cur && (
+          <div className="pointer-events-auto">
+            <Tools size={52} layout={portrait ? 'col' : 'grid'} className={portrait ? undefined : 'grid-cols-3'} hotkeys={false} />
+          </div>
+        )}
       </div>
 
-      {/* tool rings down the right edge (codex, manual, save, lineage) */}
-      {!cur && (
-        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 250 : 138}px)` : 'calc(env(safe-area-inset-top, 0px) + 128px)' }}>
-          <Tools size={46} layout={portrait ? 'col' : 'grid'} hotkeys={false} />
-        </div>
-      )}
-
-      {/* a new line arrives large in the clear middle, then settles into the log */}
-      <div className="pointer-events-none absolute inset-x-4" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 214 : 96}px)` : 'calc(env(safe-area-inset-top, 0px) + 96px)' }}>
+      {/* a new line arrives large in the clear middle, then settles into the log; never over the rings */}
+      <div className="pointer-events-none absolute left-2" style={{ top: portrait ? rail + 52 : rail, right: portrait ? 68 : 236 }}>
         <Herald size={portrait ? 22 : 20} />
       </div>
 
-      {/* log, quietly, above the dock */}
-      <div className="pointer-events-none absolute left-2" style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${cur ? 0 : 66}px)`, display: cur ? 'none' : undefined }}>
-        <Log compact mobile />
+      {/* log, quietly, above the dock and clear of ATTEND */}
+      <div className="pointer-events-none absolute left-2" style={{ bottom: `calc(${SAFE_B} + ${8 + DOCK_H + 8}px)`, width: `min(300px, calc(100% - ${attendSize + 22}px))`, display: cur ? 'none' : undefined }}>
+        <div className="[&>div]:w-full"><Log compact mobile /></div>
       </div>
 
       {/* bottom sheet */}
@@ -149,15 +165,15 @@ export default function Mobile({ w, h }) {
         {cur && (
           <motion.div
             key="sheet"
-            className={cn('pointer-events-auto absolute inset-x-1.5 overflow-hidden', NO_PINCH)}
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 68px)', maxHeight: sheetMax }}
+            className={cn('pointer-events-auto absolute overflow-hidden', portrait ? 'inset-x-2' : 'left-2', NO_PINCH)}
+            style={{ bottom: `calc(${SAFE_B} + ${sheetBottom}px)`, maxHeight: sheetMax, width: portrait ? undefined : 'min(46%, 400px)' }}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 30, opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
             transition={POP}
             data-tut={cur.id === 'shop' ? 'shop' : cur.id === 'bench' ? 'bench' : undefined}
           >
-            <div className="nm-scroll overflow-y-auto overscroll-contain pb-1 [touch-action:pan-y]" style={{ maxHeight: sheetMax, paddingRight: attendSize * 0.55 }}>
+            <div className="nm-scroll overflow-y-auto overscroll-contain pb-1 [touch-action:pan-y]" style={{ maxHeight: sheetMax }}>
               <motion.div key={cur.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
                 {sheetBody()}
               </motion.div>
@@ -167,8 +183,8 @@ export default function Mobile({ w, h }) {
       </AnimatePresence>
 
       {/* dock: pills + ATTEND */}
-      <div className={cn('pointer-events-none absolute inset-x-1.5 flex items-end gap-2', NO_PINCH)} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
-        <div className="pointer-events-auto nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto rounded-[14px] border-[3px] border-ink bg-paper/95 p-1 shadow-[2px_3px_0_0_var(--color-ink)] [touch-action:pan-x]">
+      <div className={cn('pointer-events-none absolute inset-x-2 flex items-end gap-2', NO_PINCH)} style={{ bottom: `calc(${SAFE_B} + 8px)` }}>
+        <div className="pointer-events-auto nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto rounded-[16px] border-[3px] border-ink bg-paper/95 p-1 shadow-[3px_4px_0_0_var(--color-ink)] [touch-action:pan-x]">
           {!list.length && <span className="flex h-11 items-center px-2 font-body text-[13px] italic text-ink-2">Nothing else yet.</span>}
           {list.map((p) => (
             <motion.button
@@ -187,7 +203,7 @@ export default function Mobile({ w, h }) {
             </motion.button>
           ))}
         </div>
-        <div className="pointer-events-auto shrink-0">
+        <div className="pointer-events-auto -mr-3 shrink-0">
           <AttendButton G={G} compact size={attendSize} touch />
         </div>
       </div>

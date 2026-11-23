@@ -136,7 +136,9 @@ export default function Hud() {
   const bandTop = topH + 24;
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
-  const logH = compact ? 96 : 150;
+  // when the band is short the log gives way, so the left list keeps a real scroll viewport
+  const showLog = !compact || bandH >= 330;
+  const logH = !showLog ? 0 : compact ? 96 : 120;
   const sideL = 12 + (compact ? 300 : 340) + 24;
 
   return (
@@ -161,7 +163,7 @@ export default function Hud() {
 
             <div className="absolute left-3 flex flex-col justify-between gap-3" style={{ top: bandTop, bottom: bandBottom }}>
               <Shake seed={31}><LeftPanel compact={compact} /></Shake>
-              <Log compact={compact} />
+              {showLog && <Log compact={compact} />}
             </div>
 
             <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': `${ringsH + 12}px` }}>

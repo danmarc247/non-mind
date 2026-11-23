@@ -98,8 +98,9 @@ function Band() {
   );
 }
 
-export default function Book() {
-  const [open, setOpen] = useState(false);
+export default function Book({ initialOpen = false } = {}) {
+  const [open, setOpen] = useState(initialOpen);
+  const wasOpen = useRef(initialOpen);
   const [sel, setSel] = useState(null);
   const selRef = useRef(null); selRef.current = sel;
   const [seen, setSeen] = useState(readSeen);
@@ -120,8 +121,9 @@ export default function Book() {
   }, []);
   // closing the book counts as having seen everything in it
   useEffect(() => {
-    if (open) return;
-    setSel(null);
+    if (open) { wasOpen.current = true; return; }
+    if (!wasOpen.current) return;
+    wasOpen.current = false; setSel(null);
     setSeen((s) => { const n = new Set(s); let add = false; for (const id of held) if (!n.has(id)) { n.add(id); add = true; } if (add) writeSeen(n); return add ? n : s; });
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const openCard = (id) => { setSel(id); setSeen((s) => { if (s.has(id)) return s; const n = new Set(s); n.add(id); writeSeen(n); return n; }); };

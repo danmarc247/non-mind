@@ -63,6 +63,7 @@ function Rig({ sheet = false }) {
     const dt = Math.min(dtRaw, 0.1);
     mood.time += dt; mood.flash += (0 - mood.flash) * (1 - Math.exp(-4 * dt));
     window.__frames = (window.__frames || 0) + 1;
+    if (G().events.length) flush();   // a click on the card acts directly: hand its events to onEvent (toast)
     const o = G().cardOffer;
     if (o && autoClock) { o.t -= dt; if (o.t <= 0) window.__let(); }
     // screen position of the card, for pointer tests
@@ -167,7 +168,7 @@ function App() {
         <Rig />
         <PainterSky />
         <Sea />
-        <DriftingCard fixedYaw={yaw} />
+        <DriftingCard fixedYaw={yaw} timeScale={num('slow', 1)} />
         <OrbitControls makeDefault enablePan={false} target={q.get('near') ? [0, 2.6, 2] : [0, -1, 0]} enableDamping={false} />
         {q.get('post') === '1' && <PainterPost quality="med" />}
       </Canvas>

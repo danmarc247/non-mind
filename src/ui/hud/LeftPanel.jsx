@@ -376,7 +376,7 @@ export default function LeftPanel({ compact }) {
   return (
     <Appear from="left" className={cn('pointer-events-auto', compact ? 'w-[280px]' : 'w-[316px]')}>
       <Panel bodyClassName="px-3 pt-3 pb-3">
-        <div className="mb-2 flex flex-wrap gap-x-1 gap-y-1 border-b-2 border-ink/15 pb-1.5">
+        <div className={cn('mb-2 flex gap-x-0.5 gap-y-1 border-b-2 border-ink/15 pb-1.5', compact ? 'nm-scroll flex-nowrap overflow-x-auto pt-2 -mt-1' : 'flex-wrap')}>
           <AnimatePresence initial={false}>
             {tabs.map((t) => {
               const b = t.badge?.(G) || 0;
@@ -393,7 +393,7 @@ export default function LeftPanel({ compact }) {
                   transition={fresh === t.id ? { duration: 0.5, repeat: 3 } : POP}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    'relative px-1 pt-[3px] pb-[5px] font-head text-[15px] leading-none tracking-wide uppercase transition-colors',
+                    'relative shrink-0 px-1 pt-[3px] pb-[5px] font-head text-[15px] leading-none tracking-wide uppercase transition-colors',
                     t.id === cur.id ? 'text-ink' : 'text-ink-2/75 hover:text-ink',
                   )}
                 >
@@ -411,7 +411,7 @@ export default function LeftPanel({ compact }) {
                     />
                   </svg>
                   <span className="relative"><Scr k={t.id.length}>{t.label}</Scr></span>
-                  {b > 0 && <span className="absolute -top-1.5 -right-3 grid h-[17px] min-w-[17px] place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-head text-[11px] leading-none text-ink">{b}</span>}
+                  {b > 0 && <span className="relative ml-0.5 inline-grid align-middle h-[16px] min-w-[16px] place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-head text-[11px] leading-none text-ink">{b}</span>}
                 </motion.button>
               );
             })}

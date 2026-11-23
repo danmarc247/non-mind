@@ -67,8 +67,8 @@ function fxMesh(count, kind) {
   return m;
 }
 
-// fixedYaw (galleries only): hold the slow turn at this angle (0 shows the front to a camera on +z).
-export function DriftingCard({ y = CARD_Y, scale = 1.6, groundY = 0.1, fixedYaw = null }) {
+// fixedYaw / timeScale (galleries only): hold the slow turn at this angle (0 shows the front to a camera on +z); slow the card's clock.
+export function DriftingCard({ y = CARD_Y, scale = 1.6, groundY = 0.1, fixedYaw = null, timeScale = 1 }) {
   const { camera } = useThree();
   const mesh = useRef();
   const parts = useMemo(() => {
@@ -96,7 +96,7 @@ export function DriftingCard({ y = CARD_Y, scale = 1.6, groundY = 0.1, fixedYaw 
   }, [st]);
 
   useFrame((_, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.1), m = mesh.current, u = parts.mat.uniforms, G = game.G, o = G.cardOffer;
+    const dt = Math.min(dtRaw, 0.1) * timeScale, m = mesh.current, u = parts.mat.uniforms, G = game.G, o = G.cardOffer;
     st.clock += dt * (1 + 0.6 * (st.phase === 'live' ? smooth(URGENT_S, 0, o ? o.t : 99) : 0));
     // phase changes, by polling
     if (o && st.id !== o.id && st.phase !== 'collect') {

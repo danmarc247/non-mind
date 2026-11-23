@@ -7,7 +7,7 @@ import { cn } from '../../lib/cn';
 import { POP } from './shared.jsx';
 
 const KIND_COLOR = {
-  stage: 'magenta', link: 'ultra', ending: 'leaf', warn: 'blood', op: 'violet', verb: 'violet', season: 'tangerine', reset: 'violet', koan: 'ink-2',
+  stage: 'magenta', link: 'ultra', ending: 'leaf', warn: 'blood', op: 'violet', verb: 'violet', season: 'tangerine', reset: 'violet', koan: 'ink-2', gift: 'yolk',
 };
 const keyOf = (l) => `${l.t.toFixed(3)}:${l.text}`;
 export const LOG_HEAD = 'what was said';
@@ -117,12 +117,13 @@ export function Log({ compact, mobile }) {
   const items = folded.slice(compact || mobile ? -2 : -3);
   const fs = mobile ? 15 : compact ? 17 : 19;
   return (
-    <div className={cn('pointer-events-none flex flex-col justify-end', mobile ? 'w-[min(300px,70vw)]' : compact ? 'w-[300px]' : 'w-[340px]')} style={{ height: mobile ? undefined : 'var(--log-h)' }}>
+    <div className={cn('pointer-events-none flex shrink-0 flex-col justify-end', mobile ? 'w-[min(300px,70vw)]' : compact ? 'w-[300px]' : 'w-[340px]')} style={{ height: mobile ? undefined : 'var(--log-h)' }}>
       <div className="mb-1 flex items-center gap-1.5">
         <span className="h-2 w-2 rotate-45 border-[1.5px] border-ink bg-violet" />
         <span className="font-head text-[13px] leading-none tracking-wider text-ink-2 uppercase">{LOG_HEAD}</span>
       </div>
-      <div className="flex min-h-0 flex-col gap-1 overflow-hidden">
+      {/* column-reverse + wrap: a line that no longer fits the height wraps into a column pushed out of view, so the stack never grows under the left panel */}
+      <div className="flex min-h-0 flex-1 flex-col-reverse flex-wrap content-start gap-1 overflow-hidden" style={{ columnGap: '100vw' }}>
         {items.map((l, i) => {
           const age = items.length - 1 - i;
           return (
@@ -134,7 +135,7 @@ export function Log({ compact, mobile }) {
               animate={{ opacity: Math.max(0.62, 1 - age * 0.19) }}
               transition={{ opacity: { duration: 0.3 }, layout: { type: 'spring', stiffness: 170, damping: 21, mass: 0.9 } }}
               className={cn(
-                'line-clamp-2 w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
+                'w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
               style={{ fontSize: fs, borderLeftColor: `var(--color-${KIND_COLOR[l.kind] || 'ink-2'})` }}
@@ -142,7 +143,7 @@ export function Log({ compact, mobile }) {
               {l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[12px] not-italic">x{l.n}</span>}
             </motion.p>
           );
-        })}
+        }).reverse()}
       </div>
     </div>
   );

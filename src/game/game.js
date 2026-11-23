@@ -13,6 +13,16 @@ import { CARDS } from './content/cards.js';
 export const cardBoon = (G, kind, field = 'pct') => (G.cards || []).reduce((n, id) => { const c = CARDS.find((x) => x.id === id); return n + (c && c.boon.kind === kind ? c.boon[field] || 0 : 0); }, 0);
 export const CARD_LIFETIME = 35;
 
+// Surprises: now and then an extra action appears beside Attend for a short while. Each does something
+// generous with what is already there; none can cost anything. Long, irregular pauses between them.
+export const GIFT_LIFETIME = 15;
+export const GIFTS = {
+  transcend: { name: 'Transcend', text: 'The least of them stops being the least.', plain: 'The lowest seated regulator climbs one link, for nothing.' },
+  actualize: { name: 'Actualize', text: 'What was only possible is, for a moment, simply so.', plain: 'A minute of yield at once, insight filled, everything under way is finished.' },
+  convolute: { name: 'Convolute', text: 'The arrivals fold back toward what is already here.', plain: 'The arrivals are replaced by kin of those you hold, and two attention comes with them.' },
+};
+const giftPause = (G) => 240 + G.rng() * 360; // four to ten minutes
+
 // A line from the pools, never the same twice in a row per pool.
 function koan(G, pool, kind = 'koan') { const lastKoan = (G.lastKoan ||= {}); const list = pool.includes('.') ? KOANS.byStage[pool.split('.')[1]] : KOANS[pool]; if (!list || !list.length) return; const line = pickKoan(G.rng, list, lastKoan[pool]); lastKoan[pool] = line; say(G, line, kind); }
 
@@ -39,6 +49,7 @@ export function createGame(seed = 1, meta = {}) {
     v: 1, seed, t: 0,
     mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], ...meta,
     cardOffer: null, cardT: 70,
+    gift: null, giftT: 150,
     affect: 0, attention: 3 + Math.min(20, Math.floor(Math.sqrt(meta.mu || 0))), insight: 0, insightMax: 100,
     level: 1, xp: 0, composure: 100, composureMax: 100,
     units: [], nextUid: 1, shop: [], habits: {}, upgrades: {}, attendants: 0, attendT: 0, mirrors: 0,
@@ -261,6 +272,31 @@ export const actions = {
     if (!unlocked(G, 'mirror') || G.affect < cost) return fail(G);
     G.affect -= cost; G.mirrors++; G.events.push({ type: 'mirror', n: G.mirrors }); say(G, 'The same assembly, in every direction, under the same names, as in a glass at night.', 'op'); return true;
   },
+  // Take the surprise that is on offer. Never costs anything, never takes anything away.
+  takeGift(G) {
+    const g = G.gift; if (!g) return false;
+    G.gift = null;
+    let note = '';
+    if (g.kind === 'transcend') {
+      const u = seated(G).filter((x) => x.link < 11).sort((a, b) => a.link - b.link || a.id - b.id)[0];
+      if (u) { u.link++; u.traits = u.traits.concat(traitForLink(u.link)).slice(-10); G.events.push({ type: 'link', id: u.id, gone: null, link: u.link }); note = `${nameOf(u.g)}: ${LINKS[u.link - 1].name}.`; }
+      else { G.attention += 2; note = 'No one was seated, so attention came instead.'; }
+    } else if (g.kind === 'actualize') {
+      const gain = G.gain(Math.max(G.prod * 60 / Math.max(1e-9, affectMul(G)), clickValue(G) * 20), 'gift');
+      if (unlocked(G, 'insight')) G.insight = G.insightMax;
+      for (const id of Object.keys(G.verbs)) if (G.verbs[id]) G.verbs[id].t = 0;
+      G.composure = G.composureMax;
+      note = `Affect, all at once (${Math.round(gain)}).`;
+    } else {
+      const held = [...new Set(G.units.map((u) => { let x = u.g; while (x.t === 'node') x = x.a; return x.f; }))];
+      if (held.length) G.shop = G.shop.map(() => held[Math.floor(G.rng() * held.length)]); else rollShop(G, true);
+      G.attention += 2;
+      note = 'The arrivals are kin now.';
+    }
+    G.events.push({ type: 'giftTake', kind: g.kind });
+    say(G, `${GIFTS[g.kind].name}. ${GIFTS[g.kind].text} ${note}`.trim(), 'gift');
+    return g.kind;
+  },
   collectCard(G) {
     const o = G.cardOffer; if (!o) return false;
     const c = CARDS.find((x) => x.id === o.id); G.cardOffer = null;
@@ -342,7 +378,18 @@ export function step(G, dt) {
       }
     }
   }
-  // complexity and overwhelm
+  // a surprise beside Attend: appears rarely, stays 15 seconds, leaves without complaint
+  if (G.stage >= 2) {
+    if (G.gift) { G.gift.t -= dt; if (G.gift.t <= 0) { G.events.push({ type: 'giftGone', kind: G.gift.kind }); G.gift = null; } }
+    else if (G.giftT == null) G.giftT = giftPause(G);
+    else if ((G.giftT -= dt) <= 0) {
+      G.giftT = giftPause(G);
+      const kinds = Object.keys(GIFTS).filter((k) => k !== 'transcend' || seated(G).some((u) => u.link < 11));
+      const kind = kinds[Math.floor(G.rng() * kinds.length)];
+      G.gift = { kind, t: GIFT_LIFETIME };
+      G.events.push({ type: 'gift', kind });
+    }
+  }
   let C = 0; for (const u of G.units) C += complexityOf(u);
   C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 50 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);

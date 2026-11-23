@@ -461,7 +461,7 @@ export function UnitCard({
           </span>
         </div>
 
-        <div className="mt-2 line-clamp-2 min-h-[2.1em] px-0.5 font-head text-lg leading-[1.05] break-words text-ink" title={name}>
+        <div className="mt-2 line-clamp-2 min-h-[2.1em] px-0.5 font-head text-lg leading-[1.05] text-ink" title={name}>
           {name}
         </div>
 
