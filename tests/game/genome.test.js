@@ -56,7 +56,7 @@ describe('genome: structure and keys', () => {
 describe('genome: nameOf', () => {
   it('names whole leaves and poles', () => {
     expect(nameOf(L('reappraisal'))).toBe('Reappraisal');
-    expect(nameOf(L('reappraisal', 1))).toBe('Idealized Reappraisal');
+    expect(nameOf(L('reappraisal', 1))).toBe('Idealised Reappraisal');
     expect(nameOf(L('reappraisal', -1))).toBe('Devalued Reappraisal');
   });
 

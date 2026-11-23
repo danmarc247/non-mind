@@ -10,7 +10,7 @@ import { CARDS } from '../game/content/cards.js';
 import { t } from '../i18n/index.js';
 import CardMark from './book/CardMark.jsx';
 import CardToast from './book/CardToast.jsx';
-import { boonText, readSeen, writeSeen } from './book/boon.js';
+import { boonText, quoteText, readSeen, writeSeen } from './book/boon.js';
 import { toneVar } from './bits/tones.js';
 
 export { CardToast };
@@ -58,7 +58,7 @@ function Place({ card, held, fresh, onOpen, stagger }) {
           <span className="mt-0.5 block font-head text-[15px] leading-[1.05]">{card.name}</span>
         </span>
       </span>
-      <span className="mt-1 line-clamp-2 shrink-0 font-body text-[12.5px] leading-[1.25] italic">{card.quote}</span>
+      <span className="mt-1 line-clamp-2 shrink-0 font-body text-[12.5px] leading-[1.25] italic">{quoteText(card.quote)}</span>
       <span className="mt-0.5 line-clamp-2 min-h-0 font-body text-[11px] leading-[1.25] text-ink-2">{card.principle}</span>
       <Boon card={card} className="mt-auto shrink-0 pt-0.5 whitespace-nowrap" />
     </motion.button>
@@ -78,7 +78,7 @@ function Enlarged({ card, onClose }) {
         </motion.span>
         <h3 className="font-head text-[30px] leading-none">{card.name}</h3>
         <svg className="mt-1.5 mb-3 h-2.5 w-40" viewBox="0 0 160 10" aria-hidden="true"><path d="M2 6 C 30 1, 55 9, 85 5 S 135 2, 158 6" fill="none" stroke={toneVar(card.tone)} strokeWidth="4.5" strokeLinecap="round" /></svg>
-        <p className="font-body text-[19px] leading-snug italic">{card.quote}</p>
+        <p className="font-body text-[19px] leading-snug italic">{quoteText(card.quote)}</p>
         <p className="mt-3 font-body text-[14.5px] leading-snug text-ink-2">{card.principle}</p>
         <Boon card={card} className="mt-4 rounded-full border-[2.5px] border-ink bg-paper-2 px-3 py-1 text-[12px]" />
         <button type="button" onClick={onClose} className="absolute top-3 right-3 rounded-full border-[3px] border-ink bg-paper px-2.5 font-head text-sm leading-6 hover:rotate-3">{t('back')}</button>
@@ -129,7 +129,7 @@ export default function Book({ initialOpen = false } = {}) {
   const openCard = (id) => { setSel(id); setSeen((s) => { if (s.has(id)) return s; const n = new Set(s); n.add(id); writeSeen(n); return n; }); };
 
   const count = ORDER.filter((c) => heldSet.has(c.id)).length, done = count === ORDER.length;
-  const line = count === 0 ? t('Twenty-two places, numbered, and nothing yet to put in them.')
+  const line = count === 0 ? t('22 places, numbered, and nothing yet to put in them.')
     : done ? t('Every place holds what it waited for, as a harbour holds at night.')
     : t('What drifted in and was caught stays here, through every reset.');
   const selCard = sel && ORDER.find((c) => c.id === sel);

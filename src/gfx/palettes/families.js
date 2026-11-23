@@ -1,5 +1,7 @@
 // NON-MIND family palettes, link grading and aspect tones.
-// Colours are sRGB hex strings. Pure data and pure functions, no imports.
+// Colours are sRGB hex strings. Pure data and pure functions; the one import is hexToRgb from stages.js.
+import { hexToRgb } from './stages.js';
+
 
 // Each family: a = body, b = second colour, c = highlight.
 export const FAMILY_PALETTES = {
@@ -54,13 +56,6 @@ const MUD = [0x5a / 255, 0x4a / 255, 0x52 / 255];
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 const lerp = (a, b, t) => a + (b - a) * t;
-
-function hexToRgb(hex) {
-  let h = hex.replace('#', '');
-  if (h.length === 3) h = h.split('').map((ch) => ch + ch).join('');
-  const n = parseInt(h, 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-}
 
 function rgbToHsl([r, g, b]) {
   const max = Math.max(r, g, b);

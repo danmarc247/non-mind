@@ -93,7 +93,7 @@ There are three layers. Each one is pure data plus pure functions.
   - links 6-7: saturated peak (sat 1.3-1.4, mud ~0)
   - link 12: simple, pale, luminous, nearly transparent (lightness +0.4, glow 1, translucency 0.9)
 - `unitColors(familyId, link)` returns `{a,b,c}` (sRGB 0..1) plus `glow` and `translucency`. `sculpt.js` remaps the game link into a grade with `Math.round(4 + (link-1)*8/11)`, so a unit on the board never looks fully mud.
-- Poles tint the colour: idealized (+1) lifts toward white by 45%, devalued (-1) darkens to 45%.
+- Poles tint the colour: idealised (+1) lifts toward white by 45%, devalued (-1) darkens to 45%.
 
 ### 2c. Depth rotation (prestige)
 - `PainterSky` rotates `STROKE_KEYS` (`yolk, tangerine, magenta, teal, violet, sky, rose, blood`) by `depth*3`, and the ring fills by `depth*2`. Each reset therefore leads with different colours that are still on-token.

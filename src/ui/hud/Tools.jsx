@@ -47,11 +47,10 @@ export default function Tools({ size = 56, layout = 'grid', hotkeys = true, clas
   );
   const row = layout === 'row';
   return (
-    <div className={cn('flex items-center', row ? 'gap-3' : 'flex-col gap-3')}>
+    <div className={cn('flex items-center', row ? 'gap-5' : 'flex-col gap-4')}>
       <div className={cn(layout === 'grid' ? 'grid grid-cols-2 gap-2.5' : layout === 'col' ? 'flex flex-col gap-2.5' : 'flex gap-2.5', className)}>
         {play.map((t, i) => ring(t, i, size))}
       </div>
-      <span aria-hidden="true" className={cn('rounded-full bg-ink/35', row ? 'h-8 w-[3px]' : 'h-[3px] w-10')} />
       <div className={cn('flex items-center justify-center gap-2', layout === 'col' && 'flex-col')}>
         {session.map((t, i) => ring(t, play.length + i, small))}
       </div>

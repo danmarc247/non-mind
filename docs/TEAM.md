@@ -20,15 +20,19 @@ One mediator, many specialists. Nobody edits outside their lane; everything cros
 | Backgrounds | Sonnet | `src/ui/bits/backgrounds/**` | done |
 | Audio | Opus | `src/audio/**`, `tests/audio/**` | done |
 | Type | Fable | `src/ui/type/**`, `public/fonts/**` | done |
-| HUD | Opus | `src/ui/Hud.jsx`, `src/ui/hud/**` (includes idle nudges and the ask button) | running |
+| HUD | Opus | `src/ui/Hud.jsx`, `src/ui/hud/**` (includes idle nudges and the question button) | running |
 | Tests + balance | Sonnet | `tests/game/**` | running |
-| Content x2 | Sonnet | `src/game/content/**` (mutations, stressor affixes, names, ambient line pools) | done |
+| Content x2 | Sonnet | `src/game/content/**` (mutations, stressor affixes, ambient line pools, cards) | done |
 | Arena | Opus | `src/gfx/arena/**`, `src/gfx/glsl/arena.*` (portals, seat rings, core aura, caustics, glass vessel) | done |
 | Fx | Opus | `src/gfx/fx/**`, `src/gfx/glsl/fx.*` (paint fx, ten arc veils) | done |
 | Drift | Opus | `src/gfx/drift/**`, `src/gfx/glsl/drift.*` (mobiles, strata, motes, tethers) | done |
 | Sea | Opus | `src/gfx/sea/**`, `src/gfx/glsl/sea2.*` (seven-movement contained sea) | done |
 | Forms | Opus | `src/gfx/sculpt.js` (three growth stages per family, siblings, mutation deformation) | done |
-| Lineage | Opus | `src/ui/Lineage.jsx`, `src/ui/lineage/**`, `src/ui/Ceremony.jsx` (PixiJS map; Ceremony is built but not mounted) | done |
+| Lineage | Opus | `src/ui/Lineage.jsx`, `src/ui/lineage/**`, `src/ui/Ceremony.jsx` (PixiJS map; the Ceremony is mounted in `src/App.jsx`, lazily loaded) | done |
+| Book | Opus | `src/ui/Book.jsx`, `src/ui/book/**` (the book that keeps what drifted in) | done |
+| Drifting keepsake | Opus | `src/gfx/cards/**`, `src/gfx/glsl/card.*`, `cards-gallery.html` (what drifts in over the sea) | done |
+| Surprise ring | Opus | `src/ui/hud/Surprise.jsx` (the rare ring above Attend) | done |
+| Question button | Fable | `src/ui/hud/Ask.jsx` (asks the advisor for the next hint) | done |
 | Save | Sonnet | `src/ui/SaveMenu.jsx`, `src/game/savecode.js` (export, import) | done |
 | Advisor | Fable | `src/game/advisor.js` (idle suggestions; the HUD side is in `hud/Nudge.jsx`) | done |
 | Palettes x2 | Haiku | `src/gfx/palettes/**` | done |
@@ -53,5 +57,6 @@ One mediator, many specialists. Nobody edits outside their lane; everything cros
 
 - No `npm install`, no git, no config edits by specialists. Mediator only.
 - Each lane has its own gallery page and dev-server port, so parallel verification never collides. Galleries are development-only (`npm run dev`, then `/<lane>-gallery.html`); the production build ships `index.html` alone.
+- Gallery naming exceptions: `bits-backgrounds.html` (the backgrounds of the HUD kit) and `audio-lab.html` (the audio bench) do not follow `<lane>-gallery.html`.
 - Nothing in the repo names the games, music or traditions that inspired the work. Describe the system instead (see `nonmind-team`).
 - Contracts change only through the mediator, announced in the log.

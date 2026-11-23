@@ -25,7 +25,7 @@ The game lives in `src/game/`. It is pure JS with no DOM, and it is deterministi
 ## 1. Structural skeleton (structure only, never content)
 
 The skeleton is a formal ten-fold structure. Only its shape is used:
-- **One center**: the core (composure), which you click to `attend`.
+- **One centre**: the core (composure), which you click to `attend`.
 - **10 directions**: `DIRECTIONS = 10` gates on a disc (`gatePos`). Seats are in 3 rings × 10 directions (`ARENA.rings [3.2, 5.4, 7.6]`), with odd rings offset by half a step.
 - **10 leaders**: the 10 families, one per gate (`dir 0..9`). Each fills a **5-slot tuple** (direction, name, home field, witness, retinue):
   - direction is `dir`
@@ -87,7 +87,7 @@ Each stage also:
 
 ## 3. Units: genome, families, aspects, stats, traits
 
-- **Genome** (`genome.js`): a binary tree. Leaves are `leaf(family, pole)`, with pole -1 devalued, 0 whole or +1 idealized. Nodes are `node(op, a, b, k)`, with op `blend|carve|mix`. `key(g)` is the identity string; fusion and material caching use it.
+- **Genome** (`genome.js`): a binary tree. Leaves are `leaf(family, pole)`, with pole -1 devalued, 0 whole or +1 idealised. Nodes are `node(op, a, b, k)`, with op `blend|carve|mix`. `key(g)` is the identity string; fusion and material caching use it.
 - **Weights**:
   - A blend gives children 0.5/0.5 ×1.15.
   - A carve gives the base ×1.25 and the carved-in part 0.35 ×1.15.
@@ -106,7 +106,7 @@ Each stage also:
 
   How they combine:
   - `baseStats` is the weighted blend of the leaves' stats.
-  - Poles skew them: idealized gives tol ×0.6, sal ×1.7, lat ×0.85; devalued gives tol ×1.5, sal ×0.7; and any pole adds lab +0.25.
+  - Poles skew them: idealised gives tol ×0.6, sal ×1.7, lat ×0.85; devalued gives tol ×1.5, sal ×0.7; and any pole adds lab +0.25.
   - Synergy is `1 + 0.12·(leaves-1)`.
   - `unitStats` then multiplies by `LINKS[link-1].mult`, stance, aspect tiers, `crowd` (`1 + C/60`), endings, and a momentum term from lifetime earnings and residue.
 - **Aspects** (8): vagal, limbic, cortical, somatic, shadow, relational, void, mythic.

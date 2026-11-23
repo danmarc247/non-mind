@@ -22,13 +22,13 @@ Three moments from the live build.
 1. What if?
 2. How it feels to play
 3. Mechanics reference
-5. Tech stack
-6. Architecture
-7. Design system
-8. How it was built
-9. Development
-10. Fonts and third-party licences
-11. Roadmap
+4. Tech stack
+5. Architecture
+6. Design system
+7. How it was built
+8. Development
+9. Fonts and third-party licences
+10. Roadmap
 
 ---
 
@@ -46,13 +46,13 @@ A regulator is a binary tree of family genes joined by `blend` (integrate) or `c
 Two identical genomes at the same link fuse into the next of twelve (from link 4 a copy one link away will do, so the climb turns from doubling to something closer to Fibonacci). The stat multiplier climbs from x1 to x150, and each link adds a heritable trait. Low links are knotted and muddy, high links are pale, luminous and plain, and link 12 dissolves the unit into a permanent ending. Each family has three forms along the way, raw, grown and refined, and every unit is a slightly different sibling of the others.
 
 **What if each thing learned were a door, and the game began as one button?**
-Eighteen stages, each unlocking one system: the shop, habits, integrate, repurpose, insight, split, a second ring, subtract, attendants, verbs, exchange, echo, stance, seasons, mirror, a wildcard, and finally non-mind. The conditions are things the player does, such as fusing, splitting and subtracting.
+Eighteen stages, each unlocking one system: the arrivals, habits, integrate, repurpose, insight, split, a second ring, subtract, attendants, verbs, exchange, echo, stance, seasons, mirror, a wildcard, and finally non-mind. The conditions are things the player does, such as fusing, splitting and subtracting.
 
 **What if the structure were small and strict, so the strangeness had somewhere to stand?**
 One centre, ten gates, ten families, ten waves of ten beats, and a ten-step arc of modifiers that bends each wave in turn. These numbers never change. Everything else does.
 
 **What if the music started as a few slow loops that never line up, and only later learned to run?**
-At low complexity there are eight ambient loops with incommensurate periods of about 17 to 34 seconds, played by felt piano and wordless voice, each circling the listener in HRTF space. As complexity rises, interlocking arpeggio ostinati of different lengths enter and phase against each other. Under overwhelm the pulse speeds from 132 to 168 bpm, detunes and saturates. Everything is synthesized in the Web Audio API, and the mode changes with each prestige depth.
+At low complexity there are eight ambient loops with incommensurate periods of about 17 to 34 seconds, played by felt piano and wordless voice, each circling the listener in HRTF space. As complexity rises, interlocking arpeggio ostinati of different lengths enter and phase against each other. Under overwhelm the pulse speeds from 132 to 168 bpm, detunes and saturates. Everything is synthesised in the Web Audio API, and the mode changes with each prestige depth.
 
 **What if the whole picture were wet paint that never dries?**
 Sky, sea and a five-pass post chain render as acrylic: anisotropic Kuwahara strokes, impasto relief, canvas weave, ink edges. Eighteen stage palettes morph into one another. The sky switches on one more painted motif at every stage and wears one of ten compositions as the waves pass. The sea moves through seven movements (canvas, marbling, kaleidoscope, colonies, reaction, fold, flood) as the stages rise, and every game event drops paint on it. Overwhelm lets the paint run.
@@ -74,16 +74,16 @@ The first minutes are small on purpose. One thing is on the screen, and it can b
 | Step | Do this | What happens |
 |---|---|---|
 | 1 | Press the title button | Audio unlocks, the sea appears, the core pulses. |
-| 2 | Click the **core** (or press `Space`) | Affect rises. Five clicks unlock the shop (stage 1). |
-| 3 | Buy a regulator from the shop (cost equals its tier in attention) | It arrives and takes the first free seat, as long as there is room. If you hold nothing and cannot afford anything, something simple arrives on its own. |
+| 2 | Click the **core** (or press `Space`) | Affect rises. Five clicks unlock the arrivals (stage 1). |
+| 3 | Take a regulator from the arrivals (cost equals its tier in attention) | It arrives and takes the first free seat, as long as there is room. If you hold nothing and cannot afford anything, something simple arrives on its own. |
 | 4 | Move it if you prefer: click it, then click a **seat** ring | Swaps if occupied. With auto on, a wave starts about 5 seconds into prep. |
-| 5 | Watch the wave | Stressors enter through gates and walk toward the core. Settled stressors pay affect. A held wave pays attention and refreshes the shop. |
+| 5 | Watch the wave | Stressors enter through gates and walk toward the core. Settled stressors pay affect. A held wave pays attention and refreshes the arrivals. |
 | 6 | Buy a second copy of the same family | The two **fuse** into link 2. This is the ladder, and the next stage opens integrate. |
 | 7 | Keep going | Each stage hint in the log points at what to try next. If you go still for about 25 seconds, a quiet arrow and a line of text suggest one thing that can be done right now. |
 
 A wave not held is not a wall. It pays 3 attention, refills composure, and each one softens that wave's stressors by 12 percent (`x0.88`, up to 12 stacks) until the wave is held.
 
-Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. A stage unlock, a link of 5 or more, an ending, a wave's arc and a reset also get a short painted banner from the Ceremony overlay. The director leans on the camera and lets go. It never takes it away. The camera also turns slowly by itself, faster at every stage, and a fuse, integrate, subtract, split, new stage or reset gives the turning a push that settles.
+Moments of realisation (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. A stage unlock, a link of 5 or more, an ending, a wave's arc and a reset also get a short painted banner from the Ceremony overlay. The director leans on the camera and lets go. It never takes it away. The camera also turns slowly by itself, faster at every stage, and a fuse, integrate, subtract, split, new stage or reset gives the turning a push that settles.
 
 ### Controls
 
@@ -94,20 +94,20 @@ Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) a
 | Click a unit | Select it; the inspector shows genome, mutations, traits and operations |
 | Click a seat | Place the selected unit (swaps if occupied) |
 | Integrate / Subtract | Select a unit, press the operation, then click the second unit |
-| `1` to `5` | Buy the shop slot with that number |
-| `R` | Reroll the shop (2 attention) |
+| `1` to `5` | Take the arrival in that slot |
+| `R` | Reroll the arrivals (2 attention) |
 | `X` | Buy experience (5 attention for 4 xp) |
 | `C` | Open or close the codex |
 | `M` | Open or close this manual |
 | `L` | Open or close the Lineage map |
 | `B` | Open or close the book |
-| `?` or `H`, or the `?` ring | Ask for a hint: the next suggestion appears at once |
+| `?` or `H`, or the question button | Ask for a hint: the next suggestion appears at once |
 | `Esc` | Close the open panel, cancel a pending operation, or deselect |
 | Drag, scroll | Orbit and zoom (distance 5 to 70, panning off) |
 
-The shop keys work once the shop is unlocked. Typing in a box and open panels silence the game's hotkeys, and `Space` never presses a button that happens to have focus.
+The number keys work once the arrivals are unlocked. Typing in a box and open panels silence the game's hotkeys, and `Space` never presses a button that happens to have focus.
 
-The tools come in two groups. Above, what belongs to play: the codex, the manual, **lineage** and the **book**. Below, smaller and set apart, what belongs to the session: **save**, **again** (a confirmed wipe of everything, including residue) and **sound** (on or off, remembered). The save menu keeps the game now, copies it as a line of text, downloads it as a `.txt` file, or puts such a line back (a rejected code changes nothing). Apart from that the game saves to `localStorage` every 10 seconds.
+The tools come in two groups. Above, what belongs to play: the codex, the manual, **lineage** and the **book**. Below, smaller and set apart, what belongs to the session: **save**, **again** (a confirmed fresh start that erases everything, residue included) and **sound** (on or off, remembered). The save menu saves the game now, exports it as a line of text or a `.txt` file, loads such a line back (a rejected code changes nothing), or starts again. Apart from that the game saves to `localStorage` every 10 seconds.
 
 The **Lineage** map is a paper folio drawn with PixiJS: every body you have grown this run, and what it grew from. It loads only while open.
 
@@ -132,45 +132,45 @@ The rules, as the code currently states them. Constants live in `src/game/data.j
 
 Interest on attention is `floor(attention / 10)`, capped at 5 (10 with Thrift Of Attention). A held wave also pays 2 xp, one not held 1 xp.
 
-### Shop, levels and seats
+### Arrivals, levels and seats
 
-The shop shows 5 slots, rolled again after every wave and on every reroll. Your level sets the odds of each tier, and the unit cap grows with it.
+Five arrivals are shown, rolled again after every wave and on every reroll. Your level sets the odds of each tier, and the unit cap grows with it.
 
 | Level | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | xp to reach the next | 2 | 3 | 6 | 10 | 16 | 26 | 40 | 60 | 90 | max |
 | Tier 1 / 2 / 3 / 4 / 5 odds (%) | 100 / 0 / 0 / 0 / 0 | 80 / 20 / 0 / 0 / 0 | 65 / 30 / 5 / 0 / 0 | 50 / 35 / 15 / 0 / 0 | 38 / 35 / 24 / 3 / 0 | 28 / 33 / 30 / 8 / 1 | 20 / 28 / 34 / 15 / 3 | 15 / 22 / 33 / 24 / 6 | 12 / 18 / 28 / 30 / 12 | 8 / 14 / 24 / 34 / 20 |
 
-From stage 3 the shop leans toward the family you are already climbing: each slot has a 30 percent chance to show the family of your highest-link regulator, so the ladder reads as a path and not a lottery. If you hold nothing, cannot afford the cheapest slot and cannot afford a reroll, a tier 1 family arrives in the first slot and you are given the attention for it.
+From stage 3 the arrivals lean toward the family you are already climbing: each slot has a 30 percent chance to show the family of your highest-link regulator, so the ladder reads as a path and not a lottery. If you hold nothing, cannot afford the cheapest slot and cannot afford a reroll, a tier 1 family arrives in the first slot and you are given the attention for it.
 
 ### The 18 stages
 
 | # | Stage | Unlocks | Condition, in plain words |
 |---|---|---|---|
 | 0 | appear | attend | Start |
-| 1 | explore | shop | Attend 5 times |
+| 1 | explore | arrivals | Attend 5 times |
 | 2 | grow | habits | Reach wave 2, or settle 6 stressors |
 | 3 | combine | integrate | Fuse one link |
 | 4 | repurpose | repurpose | Integrate once |
 | 5 | increase | insight, spells | Own 8 habits |
-| 6 | regroup | split | Reach wave 4 |
+| 6 | regroup | split | Reach wave 5 |
 | 7 | expand | second ring | Level 4 |
 | 8 | ingest | subtract | Split once |
 | 9 | support | attendants | Subtract once |
-| 10 | evoke | verbs | Finish a cycle, or reach wave 9 |
-| 11 | interchange | exchange | Complete 2 verbs |
+| 10 | evoke | verbs | Finish a cycle, or reach wave 8 |
+| 11 | interchange | exchange | Complete 3 verbs |
 | 12 | evoke | echo | 3 exchanges (stage 10 and stage 12 share a name on purpose) |
-| 13 | inhabit | stance | 10 echoes |
+| 13 | inhabit | stance | 12 echoes |
 | 14 | sustain | seasons | Choose a stance |
 | 15 | penetrate | mirror | Survive 5 seasons |
 | 16 | embrace | wildcard aspect | Own a mirror |
-| 17 | overwhelm | non-mind at full strength | Overwhelm reaches 1 |
+| 17 | overwhelm | nothing new to press | Overwhelm reaches 1 |
 
-Non-mind itself is available from stage 1; being fully overwhelmed (which unlocks stage 17) doubles the residue you get.
+Non-mind itself is available from stage 1. Stage 17 adds nothing to press: it marks the first time overwhelm is full, and whenever overwhelm is full the residue you get is doubled.
 
 ### The 10 families
 
-One per gate. Tier sets shop rarity and cost.
+One per gate. Tier sets how rare an arrival is, and its cost.
 
 | Family | Tier | Aspects | Ability | Text |
 |---|---|---|---|---|
@@ -193,7 +193,7 @@ Abilities fire when **charge** reaches 100. Charge fills 14 per answer (scaled b
 | Lid | Keeps most of the weight it takes and hardens; returns it to those near when the unit is spent |
 | Loop | Answers five times, and is worn by it |
 | Withdraw | Leaps to the far rim, unseen a moment, and answers thrice from there |
-| Mend | Mends the ally who needs it most |
+| Mend | Mends the regulator who needs it most |
 | Cast Out | Hands its own weight to the nearest stressor, and is eased by it |
 | Vanish | Returns beside the stressor with the most tolerance, heavily |
 | Transmute | Burns everything near; the ashes are affect |
@@ -214,21 +214,21 @@ Base stats per family live in `src/game/data.js` (for example Containment 2100 t
 | **Lability** | Ease variance | An answer eases by `salience x (1 +/- lability)` |
 | **Recursion** | % chance to answer twice | Rolled each answer |
 
-A **veil** is a shield that soaks weight before tolerance. Poles skew a gene: *idealized* (+1) is x0.6 tolerance, x1.7 salience, 0.85 latency; *devalued* (-1) is x1.5 tolerance, x0.7 salience.
+A **veil** is a shield that soaks weight before tolerance. Poles skew a gene: *idealised* (+1) is x0.6 tolerance, x1.7 salience, x0.85 latency; *devalued* (-1) is x1.5 tolerance, x0.7 salience.
 
 ### Aspects and thresholds
 
-Each unit votes its genes' aspects (weighted by tree position) and keeps the top 2 (top 3 with four or more leaves). Seated units count once per distinct first-gene family. Thresholds are **2, 4 and 6** members for tiers 1 to 3. The wildcard (stage 16) adds one member to every aspect.
+Each unit votes its genes' aspects (weighted by tree position) and keeps the top 2 (top 3 with four or more leaves). Seated units count once per distinct first-gene family. Thresholds are **2, 4 and 6** regulators for tiers 1 to 3. The wildcard (stage 16) adds one regulator to every aspect.
 
 | Aspect | Tone | Tier 1 / 2 / 3 effect |
 |---|---|---|
-| Vagal | teal | Members mend 2 / 5 / 10 % of tolerance per second |
-| Limbic | blood | Members gain 25 / 60 / 130 % salience |
+| Vagal | teal | Regulators with it mend 2 / 5 / 10 % of tolerance per second |
+| Limbic | blood | Regulators with it gain 25 / 60 / 130 % salience |
 | Cortical | ultra | Charge fills 20 / 45 / 90 % faster for all |
-| Somatic | tangerine | Members gain 30 / 70 / 150 % tolerance |
+| Somatic | tangerine | Regulators with it gain 30 / 70 / 150 % tolerance |
 | Shadow | violet | Stressors lose 8 / 16 / 30 % tolerance on arrival |
-| Relational | rose | Members share 25 / 40 / 60 % of the weight with neighbours |
-| Void | ink | Members gain 12 / 25 / 45 opacity |
+| Relational | rose | Regulators with it share 25 / 40 / 60 % of the weight with neighbours |
+| Void | ink | Regulators with it gain 12 / 25 / 45 opacity |
 | Mythic | yolk | Affect from all sources +15 / 40 / 100 % |
 
 ### The ladder: 12 links
@@ -247,7 +247,7 @@ Two units of the same genome at the same link fuse into the next. From link 4 a 
 | 8 | Seeing As It Is | 26 | see | Ignores opacity and veils |
 | 9 | Disenchantment | 40 | tire | Stressors nearby lose salience |
 | 10 | Dispassion | 62 | fade | Counts as every aspect |
-| 11 | Release | 95 | release | On falling, mends every ally |
+| 11 | Release | 95 | release | On falling, mends every regulator |
 | 12 | Knowing The Ending | 150 | end | Dissolves into a permanent ending |
 
 ### Operations
@@ -260,7 +260,7 @@ A genome is a tree, maximum **6 leaves**. Beyond that the lightest leaves are pr
 | **Subtract** | stage 8 | 35 insight | `carve` the second out of the first; carved genes weigh less; keeps the first's link |
 | **Split** | stage 6 | 10 insight | Undo a node into its two children, each returning at the link its parent brought to the integrate (so joining then parting mints no link), or split a whole gene at link 2+ into an idealized and a devalued half at link minus 1 |
 | **Repurpose** | stage 4 | free | Dissolve a unit into habits. The habit is chosen by worth: `tier - 1 + floor((link - 1) / 3)` indexes the ten habits. The count is `round(link x (1 + parts) / 2)`, at least 1, so a cheap unit never becomes a late habit |
-| **Fuse** | automatic | free | Identical genome and link merge into link + 1 (from link 4, a neighbour link works too) |
+| **Fuse** | automatic | free | Identical genome and link fuse into link + 1 (from link 4, a neighbour link works too) |
 
 ```
 leaf            Reappraisal                       one gene
@@ -280,10 +280,10 @@ Names are generated from the tree: heaviest gene is the noun, others become adje
 
 ### Waves, beats and the ten arc modifiers
 
-A wave is 10 beats of 2.4 s (0.7x once overwhelm passes one half). Each beat spawns `1 + floor(gw / 4)` stressors at a gate (one more on every fifth beat, 1.5x while three Dreads are held, at most 14), where `gw` is the global wave number. Waves 1 to 10 cycle, then the cycle counter rises. Wave 10 (the Return arc) ends on a great one, and the four great ones take turns by cycle.
+A wave is 10 beats of 2.4 s (0.7x once overwhelm passes one half). Each beat spawns `1 + floor(gw / 5)` stressors at a gate (one more on every fifth beat, 1.5x while three Dreads are held, at most 14), where `gw` is the global wave number. Waves 1 to 10 cycle, then the cycle counter rises. Wave 10 (the Light Appears arc) ends on a great one, and the four great ones take turns by cycle.
 
 ```
-tolerance = base x 3.4 x 1.1^min(gw-1, 18) x 1.04^clamp(gw-19, 0, 10) x 1.015^max(0, gw-29)
+tolerance = base x 5.2 x 1.03^min(gw-1, 6) x 1.13^max(0, min(gw-1, 18) - 6) x 1.04^clamp(gw-19, 0, 10) x 1.015^max(0, gw-29)
             x (1 + 1.2 x overwhelm) x (1 + 0.2 x mirrors) x 0.88^habituation
 salience  = base x 1.04^(gw-1)
 ```
@@ -337,7 +337,7 @@ Moods decay: **Dread** (180 s; three of them open the gates wider, 1.5x stressor
 
 ```
 unit complexity = (leaves + 0.5*depth + 0.5*ghosts) * (1 + 0.35*(link-1)) + 0.25*traits
-C   = sum(units) + 1.2*sqrt(habits) + 1.5*upgrades + moods + 70*mirrors
+C   = sum(units) + 1.2*sqrt(habits) + 1.5*upgrades + moods + 50*mirrors
       + 0.6*attendants + 3 if stance + 2.5*log10(1+earned) + 1.5*global wave
 capacity  = 40 * (1 + 0.3 * stage)
 overwhelm = clamp( (C - capacity) / (0.12 * capacity), 0, 1 )
@@ -366,11 +366,11 @@ Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs
 
 | System | Rule |
 |---|---|
-| **Mirror** | Cost `6e10 x 25^n` affect. Doubles affect, +2 unit cap, opens the third ring, +70 complexity, stressors +20% tolerance each |
+| **Mirror** | Cost `1.5e11 x 50^n` affect. Doubles affect, +2 unit cap, opens the third ring, +50 complexity, stressors +20% tolerance each |
 | **Stance** | Toward: mending x2, reach x0.8. Away: opacity +20, reach x1.3, affect x0.8. Against: salience x1.6, tolerance x0.8 |
 | **Seasons** | Every 60 s the season takes 3 attention, or, if you cannot pay, adds a Dread |
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
-| **Seats** | 3 rings of 10 (the second opens at stage 7, the third with a mirror). Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
+| **Seats** | 3 rings of 10 (the second opens at stage 7, the third with a mirror). Unit cap `min(30, level + 1 + 2 x mirrors)`. The waiting row holds 8. New arrivals take the first free seat while there is room |
 
 ### Rare surprises
 
@@ -418,7 +418,7 @@ The stack was chosen so one painted look could run in the browser without a serv
 | lucide-react, clsx, tailwind-merge, class-variance-authority, @radix-ui/react-slot, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
 | @fontsource packages | https://fontsource.org | Self-hosted fonts |
 | Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl` (`vite-plugin-singlefile` is installed but not enabled) |
-| Vitest 5 | https://vitest.dev | 192 engine tests in node, run in CI before every deploy |
+| Vitest 5 | https://vitest.dev | 409 engine tests in node, run in CI before every deploy |
 | Web Audio API | https://developer.mozilla.org/docs/Web/API/Web_Audio_API | All music and SFX, no samples and no libraries |
 
 ---
@@ -455,7 +455,7 @@ flowchart LR
 1. A unit is `{ g, link, traits, ghosts, muts }`; `g` is a tree of `leaf` and `node` records.
 2. `treeSrc` walks the tree. Each leaf emits a Shader Park form for its family (lens, slab, knot, shard, rings, spike, shell, flame, bowl, orbit) in one of three growth stages (raw for links 1 to 4, grown 5 to 8, refined 9 to 12), jittered by a seed from the genome, mutations and unit id so siblings differ, coloured by family and link grade.
 3. Each node emits `blend(k)`, `difference()` or `mixGeo(k)`, a displacement and a rotation, then the second child.
-4. `unitSource` wraps it: low links get a domain-warp "knot", high links gain halo rings (`floor(link / 3)`).
+4. `unitSource` wraps it: low links get a domain-warped tangle, high links gain halos (`floor(link / 3)` of them).
 5. `sculptToThreeJSShaderSource` turns the program into vertex and fragment GLSL.
 6. `compile` swaps in a custom `main()`: quantised light bands, a paper-white rim, touch flash, dither fade, and `gl_FragDepth` written from the contact point so sculptures sort correctly against the sea and each other.
 7. Materials are cached by `key(g)|link`, so identical genomes share a shader.
@@ -473,7 +473,7 @@ flowchart LR
 | Fx | Paint marks per game event (pools of 192 ground, 64 ribbon, 640 air, 16 invert) and one of ten veils per wave-arc modifier | `gfx/fx/`, `glsl/fx.*` |
 | Post chain | 1 Kuwahara, 2 Relief, 3 Bloom, 4 Grade, 5 Overwhelm; one pass each, `mergeMode="none"` | `PainterPost.jsx`, `glsl/post.*` |
 
-The post stages: anisotropic generalized Kuwahara (4 sectors, structure tensor); impasto height with bristle line-integral lighting, canvas weave and ink edges (reads depth), preceded inside the same pass by a detachment stage (tilt-shift soft focus, a paper halo and ink line around near silhouettes, aerial perspective) that lifts the arena off the far picture; low bloom pumped by flashes; a filmic grade with a torn paper vignette; and the overwhelm pass (wobble, chroma smear, posterise, splashes, drips, whiteout). Quality presets are `low`, `med`, `high`.
+The post stages: anisotropic generalised Kuwahara (4 sectors, structure tensor); impasto height with bristle line-integral lighting, canvas weave and ink edges (reads depth), preceded inside the same pass by a detachment stage (tilt-shift soft focus, a paper halo and ink line around near silhouettes, aerial perspective) that lifts the arena off the far picture; low bloom pumped by flashes; a filmic grade with a torn paper vignette; and the overwhelm pass (wobble, chroma smear, posterise, splashes, drips, whiteout). Quality presets are `low`, `med`, `high`.
 
 ### Director
 
@@ -501,8 +501,8 @@ master -> mute -> compressor -> makeup -> soft clip -> analyser -> out
 | Overwhelm | Tempo 132 to 168 bpm, detune, saturation, a rising Shepard glissando |
 | Aspects and stance | Colour the mix: vagal breath, somatic heartbeat, shadow bends the drone, mythic adds a choir fifth, relational adds ping-pong delay |
 | Depth | Eight modes and keys cycle with prestige depth |
-| Reset | About 2 s collapse to a single tone, then regrowth |
-| SFX | 32 named procedural effects, pitched to the current mode, budgeted at 48 oscillators; a sound ring mutes everything |
+| Non-mind | About 2 s collapse to a single tone, then regrowth |
+| SFX | 32 named procedural effects, pitched to the current mode, budgeted at 48 oscillators; the sound tool mutes everything |
 
 ### Directory map
 
@@ -510,17 +510,19 @@ master -> mute -> compressor -> makeup -> soft clip -> analyser -> out
 src/
   game/        data.js genome.js battle.js game.js store.js index.js   (the engine; no DOM)
                advisor.js (idle suggestions) savecode.js (export and import codec)
-    content/   mutations, stressor affixes, names, cryptic line pools  (authored text)
+    content/   mutations, stressor affixes, cryptic line pools, cards (what drifts in)  (authored text)
   gfx/         Scene.jsx sculpt.js mood.js PainterSky.jsx PainterPost.jsx
-    glsl/      sea.* sky.* post.*
+    glsl/      arena.* card.* drift.* fx.* post.* sea.* sea2.* sky.*
     palettes/  stages.js (18 stage palettes) families.js (family + link grade + aspect tones)
     arena/ fx/ drift/ sea/ Director.jsx                               (vessel parts, paint fx, floating bodies, the sea, camera)
+    cards/     what drifts in over the sea, and is caught or missed
     galleries/ one development page per area
   audio/       engine.js music.js instruments.js sfx.js util.js lab.js
   ui/          Hud.jsx  bits/ (HUD kit + backgrounds/)  hud/ (panels, codex, tutorial, nudges)  type/ (typography)
                Lineage.jsx lineage/ (PixiJS map)  Ceremony.jsx  SaveMenu.jsx  Manual.jsx
+               Book.jsx book/ (the book)  hud/Surprise.jsx (the rare ring)  hud/Ask.jsx (the question button)
   index.css    palette and font tokens
-tests/         game/ (vitest + balance probe)  audio/ (offline render harness, run by hand)
+tests/         game/ (vitest + balance probe; endless.test.js and lifecycle.test.js run whole lives)  audio/ (offline render harness, run by hand)
 docs/          TEAM.md team-log.md
 ```
 
@@ -564,8 +566,6 @@ Stage palettes (`stages.js`) hold 18 entries with five hue slots each. Neighbour
 
 The game was made by a team of models with one mediator, each in its own lane.
 
-A small agent team with one mediator.
-
 | Role | Model | Lanes |
 |---|---|---|
 | Mediator | Fable | Architecture, contracts, engine, genome-to-shader pipeline, arena, integration, git |
@@ -585,7 +585,7 @@ Everything runs locally with Node.
 npm i --legacy-peer-deps      # install
 npm run dev                   # vite dev server, port 5173
 npm run build                 # production build to dist/ (base './', hosted under /non-mind/)
-npm test                      # 192 tests (vitest, node environment); CI runs this before the build
+npm test                      # 409 tests (vitest, node environment); CI runs this before the build
 ```
 
 Parallel dev servers need separate caches: `NM_CACHE_DIR=/tmp/cache-x npx vite --port 5181 --strictPort`.
@@ -613,6 +613,7 @@ Each area has a gallery page at the repository root for checking it alone. They 
 | `save-gallery.html` | The save menu |
 | `type-gallery.html` | Typography components (flash, flow, 3D, glyph ticker) |
 | `audio-lab.html` | Audio bench: mood sliders, aspects, every SFX |
+| `cards-gallery.html` | What drifts in, and the book that keeps it |
 
 ### Headless simulation
 
@@ -651,7 +652,7 @@ What has changed since the first version, and what has not.
 
 ### Done since the first version
 
-- Save export and import: a copied line of text or a `.txt` file, with a checksum, and a menu to save now or wipe.
+- Save export and import: a copied line of text or a `.txt` file, with a checksum, and a menu to save, export, load or start again.
 - More sculpture forms: three growth-stage forms per family, seeded siblings, six axes of mutation-driven deformation, a reflective painted finish.
 - The per-event cryptic line pools are wired into the log, with idle and overwhelm lines in between.
 - The idle libraries are used or gone: PixiJS draws the Lineage map, GSAP runs the Ceremony overlays (mounted, lazily loaded), and OGL and zustand were removed.
@@ -669,7 +670,7 @@ What has changed since the first version, and what has not.
 
 ### Balance
 
-The late-stage balance was tuned (stressor scaling, pay, mirror cost, a neighbour fuse from link 4, shop leaning, the xp table, a narrower overwhelm band), and it is still being refined. The latest run of `node tests/game/balance.mjs` reports, honestly:
+The late-stage balance was tuned (stressor scaling, pay, mirror cost, a neighbour fuse from link 4, arrivals leaning, the xp table, a narrower overwhelm band), and it is still being refined. The latest run of `node tests/game/balance.mjs` reports, honestly:
 
 - G1 fail: stage 17 reached in 10 of 10 seeds, median 23.4 minutes (target 25 to 45), and the largest gap between stages after minute 5 is longer than wanted.
 - G2 pass: each seed buys 1 to 3 mirrors before stage 17.

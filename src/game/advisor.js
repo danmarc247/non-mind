@@ -70,7 +70,7 @@ const RULES = [
     return null;
   },
   (G) => unlocked(G, 'stance') && !G.stance && { id: 'stance', target: 'stance', weight: 60, text: 'A stance is a house worn close, like a coat in the cold.', plain: 'Choose Toward, Away or Against. Each bends every regulator.' },
-  (G) => unlocked(G, 'mirror') && G.affect >= mirrorCost(G) && { id: 'mirror', target: 'mirror', weight: 48, text: 'The same assembly, in every direction.', plain: 'A mirror doubles yield and adds seats. The gates widen too.' },
+  (G) => unlocked(G, 'mirror') && G.affect >= mirrorCost(G) && { id: 'mirror', target: 'mirror', weight: 48, text: 'The same assembly, in every direction.', plain: 'A mirror doubles yield and adds seats. Waves weigh more, too.' },
   (G) => unlocked(G, 'attendants') && G.affect >= attendantCost(G) && { id: 'attendant', target: 'attendant', weight: 32, text: 'Attention can be lent.', plain: 'An attendant attends for you, forever.' },
   (G) => { const canInt = unlocked(G, 'integrate') && bench(G).length >= 2 && (!unlocked(G, 'insight') || G.insight >= COSTS.integrate), canXp = G.attention >= COSTS.xp && G.level < 10; return (G.habituation || 0) >= 3 && (canInt || canXp) && { id: 'stuck', target: canInt ? `op:integrate:${bench(G)[0].id}` : 'xp', weight: 52, text: 'The same wave, again. It is softer each time. So could you be different.', plain: 'A wave not held softens by itself. Fusing, integrating or growing changes you.' }; },
   (G) => G.stats.links + G.stats.integrations >= 3 && { id: 'lineage', target: 'lineage', weight: 8, text: 'Everything here came from something here, and was once held.', plain: 'The Lineage map shows what you have grown and what it grew from.' },

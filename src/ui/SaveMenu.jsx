@@ -1,4 +1,4 @@
-// Save menu: export, import, save now, wipe. Self-contained; opens on the `nonmind:save` window event.
+// Save menu: save, export, load, start again. Self-contained; opens on the `nonmind:save` window event.
 // Key S is deliberately not bound (S belongs to the game).
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -65,7 +65,7 @@ export default function SaveMenu({ initialOpen = false } = {}) {
     if (f.size > 8 * 1024 * 1024) return say('blood', 'This is not a save that can be held. (too large)');
     try { doImport(await f.text()); } catch { say('blood', 'The file could not be read.'); }
   };
-  const doSave = () => { const r = saveNow(); say(r.ok ? 'teal' : 'blood', r.ok ? 'Kept.' : 'Nothing here will keep it. (storage unavailable)'); };
+  const doSave = () => { const r = saveNow(); say(r.ok ? 'teal' : 'blood', r.ok ? 'Saved.' : 'Nothing here will save it. (storage unavailable)'); };
   const doWipe = () => {
     if (!confirm) { setConfirm(true); return; }
     wipe(); setConfirm(false); setOpen(false);
@@ -83,28 +83,28 @@ export default function SaveMenu({ initialOpen = false } = {}) {
               transition={POP}>
               <div className="flex shrink-0 items-start justify-between gap-3 border-b-[3px] border-ink/15 px-5 pb-3 pt-4 sm:px-6">
               <div className="min-w-0">
-                <h2 className="font-title text-4xl leading-none" style={{ color: 'var(--color-magenta)', WebkitTextStroke: '1.5px var(--color-ink)' }}>Keep</h2>
-                <div className="mt-1 font-body text-[13px] italic text-ink-2">What is kept can be carried. Save, export or load a game.</div>
+                <h2 className="font-title text-4xl leading-none" style={{ color: 'var(--color-magenta)', WebkitTextStroke: '1.5px var(--color-ink)' }}>Save</h2>
+                <div className="mt-1 font-body text-[13px] italic text-ink-2">What is saved can be carried. Save, export or load a game.</div>
               </div>
               <button onClick={() => setOpen(false)} className="shrink-0 whitespace-nowrap rounded-full border-[3px] border-ink bg-yolk px-3 py-0.5 font-head text-sm text-ink shadow-[2px_3px_0_var(--color-ink)] hover:rotate-3">close · esc</button>
               </div>
               <div className="nm-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-5 sm:p-6">
 
-              <Row tone="yolk" title="Now" line="Nothing is kept until it is kept. The game also keeps itself every ten seconds.">
+              <Row tone="yolk" title="Save" line="Nothing is saved until it is saved. The game also saves itself every ten seconds.">
                 <div className="flex flex-wrap items-center gap-3">
                   <button className={`${btn} bg-yolk`} onClick={doSave}>Save now</button>
                   <span className="font-stat text-xs text-ink-2">{lastSavedAt ? `last saved ${clock(lastSavedAt)}` : 'not saved this visit'}</span>
                 </div>
               </Row>
 
-              <Row tone="teal" title="Carry" line="Turn this life into a line of text. Copy it, or keep it as a file.">
+              <Row tone="teal" title="Export" line="Turn this life into a line of text. Copy it, or export it as a file.">
                 <div className="flex flex-wrap gap-3">
-                  <button className={`${btn} bg-teal`} onClick={copy}>Copy save to clipboard</button>
-                  <button className={`${btn} bg-paper`} onClick={download}>Download as file</button>
+                  <button className={`${btn} bg-teal`} onClick={copy}>Export to clipboard</button>
+                  <button className={`${btn} bg-paper`} onClick={download}>Export as file</button>
                 </div>
               </Row>
 
-              <Row tone="ultra" title="Return" line="Put a line of text back. This life is replaced by the one it holds.">
+              <Row tone="ultra" title="Load" line="Put a line of text back. This life is replaced by the one it holds.">
                 <textarea value={text} onChange={(e) => setText(e.target.value)} spellCheck={false} rows={3} placeholder="NM1.…"
                   className="mb-2 w-full resize-none rounded-xl border-[3px] border-ink bg-paper p-2 font-stat normal-case text-xs text-ink outline-none focus:border-ultra" />
                 <div className="flex flex-wrap gap-3">
@@ -124,9 +124,9 @@ export default function SaveMenu({ initialOpen = false } = {}) {
               </AnimatePresence>
 
               <div className="rounded-2xl border-[3px] border-blood bg-paper p-3">
-                <div className="font-head text-lg leading-none text-blood">Wipe</div>
-                <div className="mb-2 mt-1 font-body text-[13px] italic text-ink-2">{confirm ? 'Once more, and it is gone. The saved copy goes with it.' : 'Erases the saved game and begins a new one. Export first to keep a copy.'}</div>
-                <button className={`${btn} ${confirm ? 'bg-blood text-paper' : 'bg-paper'}`} onClick={doWipe}>{confirm ? 'Yes, wipe everything' : 'Wipe'}</button>
+                <div className="font-head text-lg leading-none text-blood">Start again</div>
+                <div className="mb-2 mt-1 font-body text-[13px] italic text-ink-2">{confirm ? 'Once more, and it is gone. The saved copy goes with it.' : 'Erases the saved game and starts again. Export first to keep a copy.'}</div>
+                <button className={`${btn} ${confirm ? 'bg-blood text-paper' : 'bg-paper'}`} onClick={doWipe}>{confirm ? 'Yes, start again' : 'Start again'}</button>
               </div>
               </div>
             </motion.div>

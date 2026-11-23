@@ -33,7 +33,7 @@ function Gene({ g, depth = 0 }) {
     const p = FAMILY_PALETTES[g.f];
     const dark = ['ink', 'ultra', 'violet', 'blood'].map((t) => toneHex(t)).includes(p.a);
     return (
-      <Tooltip content={`${g.pole > 0 ? 'Idealized ' : g.pole < 0 ? 'Devalued ' : ''}${f.name}`}>
+      <Tooltip content={`${g.pole > 0 ? 'Idealised ' : g.pole < 0 ? 'Devalued ' : ''}${f.name}`}>
         <span
           className="inline-flex h-[20px] items-center rounded-[6px] border-2 border-ink px-1 font-stat text-[11px] pointer-coarse:text-[12px] leading-none"
           style={{ background: p.a, color: dark ? 'var(--color-paper)' : 'var(--color-ink)' }}
@@ -116,8 +116,8 @@ function Ops({ G, u }) {
           disabled: seatedN >= unitCap(G) || !firstFreeSeat(G),
           tip: 'Give it the first open place in the circle.',
         })}
-        {btn('bench', !!u.seat, 'to bench', 'paper', () => act('place', u.id, null), { tip: 'Take it out of the circle. It waits.' })}
-        {btn('sell', true, 'release', 'paper-2', gone(() => act('sell', u.id)), { cost: `+${sellVal}`, tip: 'Let it go. Some attention comes back.' })}
+        {btn('bench', !!u.seat, 'to waiting', 'paper', () => act('place', u.id, null), { tip: 'Take it out of the circle. It waits.' })}
+        {btn('sell', true, 'release', 'paper-2', gone(() => act('sell', u.id)), { cost: `+${sellVal}`, tip: 'It goes for good. Some attention comes back.' })}
       </AnimatePresence>
     </div>
   );
@@ -150,7 +150,7 @@ export function Body({ G, u }) {
   const echo = unlocked(G, 'echo') ? echoAbilityOf(u.g) : null;
   const tc = {}; for (const t of u.traits) tc[t] = (tc[t] || 0) + 1;
   const [tab, setTab] = useState('nature');
-  const where = u.busy ? `away: ${u.busy}` : u.seat ? `held, ring ${u.seat.ring + 1}, gate ${u.seat.dir + 1}` : 'waiting';
+  const where = u.busy ? `away: ${u.busy}` : u.seat ? `seated, ring ${u.seat.ring + 1}, seat ${u.seat.dir + 1}` : 'waiting';
   return (
     <>
       <div className="flex items-start gap-2">

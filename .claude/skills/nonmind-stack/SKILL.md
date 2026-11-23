@@ -65,7 +65,7 @@ Only the **mediator** installs packages or edits `package.json`, `vite.config.js
 - The chain is one `EffectPass` per effect with `mergeMode="none"` (Kuwahara, Relief with the detachment stage inside it, Bloom, Grade, Overwhelm); custom effects need unique uniform names. Test with the post gallery (`post-gallery.html`).
 
 **React Bits backgrounds**
-- Each background owns a raw WebGL2 context. Mount at most one or two at a time; unmount on route change. Respect `src/ui/bits/backgrounds/README.md` (license note).
+- Each background owns a raw WebGL2 context. Mount at most one or two at a time; unmount on route change. Respect `src/ui/bits/backgrounds/README.md` (licence note).
 
 **PixiJS v8**
 - Async init (`await app.init({...})`); create the app in an effect, destroy on cleanup (`app.destroy(true)`), and guard the double-mount in React StrictMode. The Lineage scene is imported lazily (about 600 kB raw, 180 kB gzip) so it never enters the entry chunk.

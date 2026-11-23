@@ -27,3 +27,11 @@ export function readSeen() {
 export function writeSeen(set) {
   try { localStorage.setItem(KEY, JSON.stringify([...set])); } catch { /* storage blocked */ }
 }
+
+// A card's quotation, shown as a sentence: first letter capital, a full stop if it has no end mark.
+export function quoteText(q) {
+  let s = String(q || '').trim();
+  if (!s) return s;
+  s = s.charAt(0).toUpperCase() + s.slice(1);
+  return /[.!?…"”')]$/.test(s) ? s : s + '.';
+}

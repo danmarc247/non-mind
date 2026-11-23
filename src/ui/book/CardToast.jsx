@@ -7,6 +7,7 @@ import { onEvent } from '../../game/store.js';
 import { cardById } from '../../game/content/cards.js';
 import { t } from '../../i18n/index.js';
 import CardMark from './CardMark.jsx';
+import { quoteText } from './boon.js';
 
 const LIFE_MS = 4000;
 const POP = { type: 'spring', stiffness: 520, damping: 26, mass: 0.7 };
@@ -45,7 +46,7 @@ export default function CardToast({ className = 'bottom-[10.5rem]', life = LIFE_
                 <span className="font-head text-[17px] leading-tight">{card.name}</span>
                 <span className="font-stat text-[11px] text-ink-2">{card.n}</span>
               </span>
-              <span className="mt-0.5 block font-body text-[14px] leading-snug italic text-ink-2">{card.quote}</span>
+              <span className="mt-0.5 block font-body text-[14px] leading-snug italic text-ink-2">{quoteText(card.quote)}</span>
               <span className="mt-1 block font-head text-[13px] text-ink-2">{t('kept in the book')} · b</span>
             </span>
           </motion.button>

@@ -56,18 +56,18 @@ export const TRAITS = {
   see: { text: 'Ignores opacity and veils.' },
   tire: { text: 'Stressors nearby lose salience.' },
   fade: { text: 'Counts as every aspect.' },
-  release: { text: 'On being spent, mends every ally, a last tenderness.' },
+  release: { text: 'On being spent, mends every regulator, a last tenderness.' },
   end: { text: 'Dissolves into a permanent ending.' },
 };
 
 export const ASPECTS = {
-  vagal: { name: 'Vagal', tone: 'teal', text: 'Members mend %v% of tolerance each second.', v: [2, 5, 10] },
-  limbic: { name: 'Limbic', tone: 'blood', text: 'Members gain %v% salience.', v: [25, 60, 130] },
+  vagal: { name: 'Vagal', tone: 'teal', text: 'Regulators with it mend %v% of tolerance each second.', v: [2, 5, 10] },
+  limbic: { name: 'Limbic', tone: 'blood', text: 'Regulators with it gain %v% salience.', v: [25, 60, 130] },
   cortical: { name: 'Cortical', tone: 'ultra', text: 'Charge fills %v% faster for all.', v: [20, 45, 90] },
-  somatic: { name: 'Somatic', tone: 'tangerine', text: 'Members gain %v% tolerance.', v: [30, 70, 150] },
+  somatic: { name: 'Somatic', tone: 'tangerine', text: 'Regulators with it gain %v% tolerance.', v: [30, 70, 150] },
   shadow: { name: 'Shadow', tone: 'violet', text: 'Stressors lose %v% tolerance on arrival.', v: [8, 16, 30] },
-  relational: { name: 'Relational', tone: 'rose', text: 'Members share %v% of the weight with neighbours.', v: [25, 40, 60] },
-  void: { name: 'Void', tone: 'ink', text: 'Members gain %v% opacity.', v: [12, 25, 45] },
+  relational: { name: 'Relational', tone: 'rose', text: 'Regulators with it share %v% of the weight with neighbours.', v: [25, 40, 60] },
+  void: { name: 'Void', tone: 'ink', text: 'Regulators with it gain %v% opacity.', v: [12, 25, 45] },
   mythic: { name: 'Mythic', tone: 'yolk', text: 'Affect from all sources +%v%.', v: [15, 40, 100] },
 };
 export const ASPECT_IDS = Object.keys(ASPECTS);
@@ -117,7 +117,7 @@ export const ABILITIES = {
   lid: { name: 'Lid', kind: 'store', power: 0.6, text: 'Keeps most of the weight it takes and hardens. Returns it to those near when it is spent.' },
   loop: { name: 'Loop', kind: 'flurry', power: 5, text: 'Answers five times, and is worn thin by the circling.' },
   withdraw: { name: 'Withdraw', kind: 'retreat', power: 3, text: 'Leaps to the far rim, unseen a moment, and answers thrice from there.' },
-  mend: { name: 'Mend', kind: 'heal', power: 2.5, text: 'Mends the ally who needs it most, as warmth finds the coldest hand.' },
+  mend: { name: 'Mend', kind: 'heal', power: 2.5, text: 'Mends the regulator who needs it most, as warmth finds the coldest hand.' },
   cast_out: { name: 'Cast Out', kind: 'transfer', power: 2, text: 'Hands its own weight to the nearest stressor, and is eased by it.' },
   vanish: { name: 'Vanish', kind: 'blink', power: 4, text: 'Is not here. Returns beside the stressor with most tolerance, heavily.' },
   transmute: { name: 'Transmute', kind: 'burst_affect', power: 2.2, text: 'Burns everything near. The ashes are affect.' },
@@ -172,8 +172,8 @@ export const UPGRADES = [
   { id: 'old_wound', name: 'Old Ache', cost: 2500, text: 'Affect scales with composure you are missing, the way longing does.', stage: 5 },
   { id: 'long_view', name: 'Long View', cost: 2e4, text: 'Affect scales with seconds spent in this run, slowly, as dusk gathers.', stage: 5 },
   { id: 'crowd', name: 'Inner Crowd', cost: 2.5e5, text: 'Salience of all regulators scales with complexity.', stage: 6 },
-  { id: 'thrift', name: 'Thrift Of Attention', cost: 3e6, text: 'Interest cap doubles.', stage: 7 },
-  { id: 'second_arrow', name: 'Second Answer', cost: 5e7, text: 'Recursion +10 for everyone. So is weight taken, by 10%.', stage: 9 },
+  { id: 'thrift', name: 'Thrift Of Attention', cost: 3e6, text: 'Held attention earns up to 10 interest a wave, not 5.', stage: 7 },
+  { id: 'second_arrow', name: 'Second Answer', cost: 5e7, text: 'Recursion +10 for every regulator. Each takes 10% more weight.', stage: 9 },
   { id: 'lending', name: 'Lending', cost: 8e8, text: 'Attendants attend twice as often.', stage: 10 },
 ];
 

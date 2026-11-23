@@ -265,7 +265,7 @@ export async function createLineageScene(host, { getGame, getSelected, onHover, 
       dashed(spokes, seg, 2, c.a, 0.28, 1);
       const seed = new Graphics(); drawBody(seed, f.form, 8, c, 2); seed.position.set(Math.cos(a) * R_SEED, Math.sin(a) * R_SEED);
       const label = new Text({ text: f.name, style: { fontFamily: 'Londrina Solid', fontSize: 14, fill: T['ink-2'], letterSpacing: 0.5 }, resolution: 3 });
-      label.anchor.set(0.5); label.position.set(Math.cos(a) * (R_SEED + 62), Math.sin(a) * (R_SEED + 50)); // clear of the family mark label.alpha = 0.85;
+      label.anchor.set(0.5); label.position.set(Math.cos(a) * (R_SEED + 62), Math.sin(a) * (R_SEED + 50)); label.alpha = 0.85; // clear of the family mark
       ground.addChild(seed, label);
     }
     // outer faint ring: where the gone are kept
@@ -337,7 +337,7 @@ export async function createLineageScene(host, { getGame, getSelected, onHover, 
       p: old ? old.p : null, cause: snap.gone?.why,
       title: snap.full || snap.name,
       note: ghost ? LINEAGE_TEXT.gone[snap.gone?.why] || '' : noteLive(snap, born),
-      meta: `link ${snap.link} · ${leavesN} gene${leavesN > 1 ? 's' : ''}${muts.length ? ` · ${muts.length} mark${muts.length > 1 ? 's' : ''}` : ''}`,
+      meta: `link ${snap.link} · ${leavesN} gene${leavesN > 1 ? 's' : ''}${muts.length ? ` · ${muts.length} mutation${muts.length > 1 ? 's' : ''}` : ''}`,
       tone: Object.keys(TONES).find((k) => fam.colors[0] === k) || 'ink',
     };
     c.on('pointerover', (e) => { hovered = n; onHover?.({ x: e.global.x, y: e.global.y, title: n.title, note: n.note, meta: n.meta, tone: n.tone, ghost }); });

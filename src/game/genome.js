@@ -33,7 +33,7 @@ const ADJ = {
 };
 // Naming is locale-aware: src/i18n swaps this table. `inflect(stem, familyId)` lets a language decline
 // its adjectives to the head noun (German: strong endings by gender); English returns the word unchanged.
-export const NAMING = { adj: ADJ, idealized: 'Idealized', devalued: 'Devalued', hollowed: 'Hollowed', inflect: (w) => w };
+export const NAMING = { adj: ADJ, idealized: 'Idealised', devalued: 'Devalued', hollowed: 'Hollowed', inflect: (w) => w };
 export const NAMING_EN = { ...NAMING };
 const poleName = (l) => (l.pole > 0 ? `${NAMING.inflect(NAMING.idealized, l.f)} ` : l.pole < 0 ? `${NAMING.inflect(NAMING.devalued, l.f)} ` : '') + FAMILY[l.f].name;
 

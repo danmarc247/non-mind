@@ -72,7 +72,7 @@ function Restart() {
     <div aria-modal="true" role="dialog" data-modal="restart" className="pointer-events-auto fixed inset-0 z-[60] flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]" onClick={() => setOpen(false)}>
       <div onClick={(e) => e.stopPropagation()} className="max-h-full w-[min(440px,100%)] overflow-y-auto rounded-[28px] border-4 border-ink bg-paper p-6 text-center shadow-[10px_12px_0_var(--color-ink)]">
         <div className="font-title text-4xl text-ink">again?</div>
-        <p className="mt-2 font-body italic text-ink-2">Everything here goes, including what the resets kept.</p>
+        <p className="mt-2 font-body italic text-ink-2">Everything here goes, residue and everything the resets kept.</p>
         <p className="font-body text-sm text-ink-2">This erases the whole save and starts a new game.</p>
         <div className="mt-4 flex justify-center gap-3 font-head">
           <button className="rounded-full border-[3px] border-ink bg-paper px-5 py-1.5 hover:-translate-y-0.5" onClick={() => setOpen(false)}>keep it</button>

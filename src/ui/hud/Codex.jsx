@@ -104,7 +104,7 @@ export default function Codex({ onClose }) {
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
             <p className="min-w-[200px] flex-1 font-body text-[13px] italic leading-snug text-ink-2 [@media(max-height:500px)]:hidden">{CODEX_INTRO}</p>
             <div className="flex flex-wrap items-center gap-1.5">
-              <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the way again</InkButton>
+              <InkButton size="sm" tone="yolk" onClick={() => { emitHud({ type: 'tutReplay' }); onClose(); }}>show the guide again</InkButton>
               <HintToggle />
             </div>
           </div>

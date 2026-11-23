@@ -226,7 +226,7 @@ export default function Tutorial() {
             <div className="mb-1.5 flex items-center gap-2">
               <span className={cn('h-3 w-3 rounded-full border-2 border-ink', step.intro ? 'bg-ultra' : 'bg-magenta')} />
               <span className="font-head text-[13px] leading-none tracking-wider text-ink-2 uppercase">
-                {step.intro ? 'something new' : `the way in · ${coreIdx + 1} of ${CORE.length}`}
+                {step.intro ? 'something new' : `the guide · ${coreIdx + 1} of ${CORE.length}`}
               </span>
             </div>
             <p className="font-body text-[16px] italic leading-snug text-ink-2">{step.voice}</p>

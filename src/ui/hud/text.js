@@ -27,9 +27,9 @@ export const CODEX = [
   'Affect, attention and insight can each be traded for another, at poor rates that follow the yield.',
   'Where a shape carries a second family, that family\'s ability now sounds as well, at half strength, each time the first one does.',
   'There are three ways to stand among others: toward, away, against. Each makes one thing stronger and another weaker. Standing at all adds to complexity.',
-  'Every sixty seconds a season takes three attention. Where there are not three to take, it leaves a dread instead.',
+  'Every 60 seconds a season takes 3 attention. Where there are not 3 to take, it leaves a Dread instead.',
   'The whole assembly can be reflected. Affect doubles, two more may be held, a third ring opens, and the stressors grow heavier. Each reflection costs twenty-five times the last.',
-  'Every aspect now counts one member more than is seated.',
+  'Every aspect now counts one regulator more than is seated.',
   'When complexity passes capacity far enough, composure drains, beats come faster and stressors swell. Letting go from there keeps twice the residue.',
 ];
 

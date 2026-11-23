@@ -156,7 +156,7 @@ function Verbs({ G }) {
   const sel = G.units.find((u) => u.id === game.selected && !u.busy);
   return (
     <div className="flex flex-col gap-2">
-      <p className="font-body text-[12px] italic text-ink-2">A verb takes something and gives it back changed, in time. {sel ? <>Holding <b className="not-italic font-head">{nameOf(sel.g)}</b>.</> : 'Choose one to give.'}</p>
+      <p className="font-body text-[12px] italic text-ink-2">A verb takes something and gives it back changed, in time. {sel ? <>Chosen: <b className="not-italic font-head">{nameOf(sel.g)}</b>.</> : 'Choose one to give.'}</p>
       {VERBS.map((v) => {
         const run = G.verbs[v.id];
         const u = run && G.units.find((x) => x.id === run.unit);
@@ -268,7 +268,7 @@ function Mirror({ G }) {
   const cost = mirrorCost(G);
   return (
     <div className="flex flex-col gap-2">
-      <p className="font-body text-[13px] leading-snug">The whole assembly, reflected into itself. Affect doubles, more may be held, a third ring opens. The weather answers in kind.</p>
+      <p className="font-body text-[13px] leading-snug">The whole assembly, reflected into itself. Affect doubles, more may be seated, a third ring opens. The weather answers in kind.</p>
       <div className="flex items-center gap-2">
         <span className="font-stat text-[22px] leading-none nm-tab">{G.mirrors}</span><Label>mirrors</Label>
         <span className="flex-1" />
@@ -307,7 +307,7 @@ export function Bonds({ G }) {
   const rows = ASPECT_IDS.map((a) => ({ a, n: tiers[a + '_n'] || 0, t: tiers[a] || 0 })).filter((r) => r.n > 0).sort((x, y) => y.t - x.t || y.n - x.n);
   return (
     <div className="flex flex-col gap-2">
-      {!rows.length && <p className="font-body text-[13px] italic text-ink-2">Nothing held shares anything yet. Two of one aspect, seated, begin to agree.</p>}
+      {!rows.length && <p className="font-body text-[13px] italic text-ink-2">Nothing seated shares anything yet. Two of one aspect, seated, begin to agree.</p>}
       {G.battle?.arc?.mod?.noAspects && <p className="font-body text-[12px] italic text-blood">This wave, bonds are silent.</p>}
       <AnimatePresence initial={false}>
         {rows.map(({ a, n, t }) => {

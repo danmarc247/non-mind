@@ -50,7 +50,7 @@ export function Shop({ G, compact, mobile }) {
               </span>
             </span>
           </Tooltip>
-          <Tooltip content="Seated, of how many may be seated at once.">
+          <Tooltip content="Seated, out of how many may sit at once.">
             <span className={cn('font-stat text-base leading-none nm-tab', seatedN >= cap ? 'text-magenta' : 'text-ink')}>{seatedN}/{cap}</span>
           </Tooltip>
         </div>
@@ -103,7 +103,7 @@ export function Shop({ G, compact, mobile }) {
           </InkButton>
           {!compact && !mobile && (
             <p className="px-0.5 font-body text-[12px] italic leading-snug text-ink-2">
-              Two alike become one, further along.
+              Two alike fuse: one, further along.
             </p>
           )}
         </div>
@@ -201,7 +201,7 @@ export function Seated({ G, compact }) {
   if (!seated.length) return null;
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
-      {!compact && <Label className="shrink-0 pl-2">held</Label>}
+      {!compact && <Label className="shrink-0 pl-2">seated</Label>}
       <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1 pr-7 pl-0.5 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] [touch-action:pan-x]">
         <AnimatePresence initial={false}>
           {seated.map((u) => (

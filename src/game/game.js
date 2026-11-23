@@ -164,7 +164,7 @@ export const actions = {
     const cost = TIER_COST[f.tier - 1];
     if (G.attention < cost) return fail(G);
     const twinExists = G.units.some((o) => !o.busy && o.link === 1 && key(o.g) === f.id); // a twin away in a verb cannot fuse
-    if (waiting(G) >= BENCH && !twinExists) return fail(G, 'The bench is full.');
+    if (waiting(G) >= BENCH && !twinExists) return fail(G, 'The waiting row is full.');
     G.attention -= cost; G.shop[i] = null;
     const nu = addUnit(G, leaf(f.id));
     autoSeat(G, nu);
