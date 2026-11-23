@@ -7,6 +7,11 @@ import { leaf, node, key, prune, complexityOf, inheritTraits, traitForLink, aspe
 import { startWave, stepBattle, aspectTiers } from './battle.js';
 import { rollMutation, epithet } from './content/mutations.js';
 import { KOANS, pickKoan } from './content/koans.js';
+import { CARDS } from './content/cards.js';
+
+// The 22 cards: found now and then, kept forever (they survive every reset). Each grants a small boon.
+export const cardBoon = (G, kind, field = 'pct') => (G.cards || []).reduce((n, id) => { const c = CARDS.find((x) => x.id === id); return n + (c && c.boon.kind === kind ? c.boon[field] || 0 : 0); }, 0);
+export const CARD_LIFETIME = 35;
 
 // A line from the pools, never the same twice in a row per pool.
 function koan(G, pool, kind = 'koan') { const lastKoan = (G.lastKoan ||= {}); const list = pool.includes('.') ? KOANS.byStage[pool.split('.')[1]] : KOANS[pool]; if (!list || !list.length) return; const line = pickKoan(G.rng, list, lastKoan[pool]); lastKoan[pool] = line; say(G, line, kind); }
@@ -32,7 +37,8 @@ function mulberry(seed) {
 export function createGame(seed = 1, meta = {}) {
   const G = {
     v: 1, seed, t: 0,
-    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, ...meta,
+    mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, cards: [], ...meta,
+    cardOffer: null, cardT: 70,
     affect: 0, attention: 3 + Math.min(20, Math.floor(Math.sqrt(meta.mu || 0))), insight: 0, insightMax: 100,
     level: 1, xp: 0, composure: 100, composureMax: 100,
     units: [], nextUid: 1, shop: [], habits: {}, upgrades: {}, attendants: 0, attendT: 0, mirrors: 0,
@@ -52,7 +58,7 @@ export function createGame(seed = 1, meta = {}) {
 
 const say = (G, text, kind = 'koan') => { G.log.push({ t: G.t, text, kind }); if (G.log.length > 40) G.log.shift(); G.events.push({ type: 'say', text, kind }); };
 export const unlocked = (G, what) => STAGES.findIndex((s) => s.unlock === what) <= G.stage;
-export const capacityOf = (G) => 40 * (1 + 0.3 * G.stage);
+export const capacityOf = (G) => 40 * (1 + 0.3 * G.stage) * (1 + cardBoon(G, 'capacity') / 100);
 export const unitCap = (G) => Math.min(30, G.level + 1 + 2 * G.mirrors);
 export const ringsOpen = (G) => 1 + (unlocked(G, 'ring2') ? 1 : 0) + (G.mirrors > 0 ? 1 : 0);
 const moodN = (G, k) => G.moods.filter((m) => m.kind === k).length;
@@ -64,6 +70,7 @@ export function affectMul(G) {
   if (G.upgrades.old_wound) m *= 1 + 1.5 * Math.min(1, Math.max(0, 1 - G.composure / G.composureMax));
   if (G.upgrades.long_view) m *= 1 + Math.pow(G.t, 0.45) / 40;
   if (moodN(G, 'fascination')) m *= 1.5;
+  m *= 1 + cardBoon(G, 'affect') / 100;
   if (G.stance === 'away') m *= 0.8;
   return m;
 }
@@ -248,20 +255,29 @@ export const actions = {
     if (!unlocked(G, 'mirror') || G.affect < cost) return fail(G);
     G.affect -= cost; G.mirrors++; G.events.push({ type: 'mirror', n: G.mirrors }); say(G, 'The same assembly, in every direction, under the same names, as in a glass at night.', 'op'); return true;
   },
+  collectCard(G) {
+    const o = G.cardOffer; if (!o) return false;
+    const c = CARDS.find((x) => x.id === o.id); G.cardOffer = null;
+    if (!c || (G.cards || []).includes(c.id)) return false;
+    (G.cards ||= []).push(c.id);
+    G.events.push({ type: 'cardCollect', id: c.id, n: c.n, x: o.x, z: o.z, count: G.cards.length });
+    say(G, `${c.name}. ${c.quote}`, 'card');
+    return c;
+  },
   ready(G) { if (G.phase === 'prep') G.phaseT = 99; },
   setAuto(G, on) { G.auto = !!on; },
   // The reset. Returns the new game.
   nonMind(G) {
     if (G.stage < 1) return G;
     const gain = muGain(G);
-    const meta = { mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
+    const meta = { cards: (G.cards || []).slice(), mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
     const N = createGame(G.seed, meta);
     N.events.push({ type: 'reset', gain, depth: N.depth });
     say(N, 'Simple again.', 'reset'); koan(N, 'reset', 'reset');
     return N;
   },
 };
-export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth));
+export const muGain = (G) => Math.floor((Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth))) * (1 + cardBoon(G, 'residue') / 100));
 export const mirrorCost = (G) => 1.5e11 * Math.pow(50, G.mirrors);
 export const attendantCost = (G) => 300 * Math.pow(2.2, G.attendants);
 
@@ -298,7 +314,7 @@ export function step(G, dt) {
   G.habitsOwned = HABITS.reduce((n, h) => n + (G.habits[h.id] || 0), 0);
   G.prod = habitYield(G) * affectMul(G);
   G.affect += G.prod * dt; G.stats.earned += G.prod * dt;
-  if (unlocked(G, 'insight')) G.insight = Math.min(G.insightMax, G.insight + (1 + 0.15 * G.level) * dt);
+  if (unlocked(G, 'insight')) G.insight = Math.min(G.insightMax, G.insight + (1 + 0.15 * G.level) * (1 + cardBoon(G, 'insight') / 100) * dt);
   if (G.attendants) { G.attendT += dt * G.attendants * (G.upgrades.lending ? 2 : 1); while (G.attendT >= 1) { G.attendT -= 1; G.gain(clickValue(G) * 0.5, 'attendant'); G.clicksThisWave += 0.25; } }
   G.labelT = Math.max(0, G.labelT - dt);
   // moods decay; verbs tick
@@ -307,6 +323,19 @@ export function step(G, dt) {
   for (const id of Object.keys(G.verbs)) { const v = G.verbs[id]; if (!v) continue; v.t -= dt; if (v.t <= 0) finishVerb(G, id); }
   // seasons: something is always asked for
   if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three, as evening takes the light.', 'season'); } else addMood(G, 'dread'); } }
+  // a card drifts in now and then; unfound ones are favoured, so the set can be completed
+  if (G.stage >= 1) {
+    if (G.cardOffer) { G.cardOffer.t -= dt; if (G.cardOffer.t <= 0) { G.events.push({ type: 'cardGone', id: G.cardOffer.id }); G.cardOffer = null; } }
+    else if ((G.cardT -= dt) <= 0) {
+      G.cardT = 80 + G.rng() * 90;
+      const have = new Set(G.cards || []), missing = CARDS.filter((c) => !have.has(c.id));
+      if (missing.length && G.rng() < 0.6) {
+        const c = missing[Math.floor(G.rng() * missing.length)], a = G.rng() * 6.283, r = 4 + G.rng() * 5;
+        G.cardOffer = { id: c.id, t: CARD_LIFETIME, x: Math.cos(a) * r, z: Math.sin(a) * r };
+        G.events.push({ type: 'cardAppear', id: c.id, x: G.cardOffer.x, z: G.cardOffer.z });
+      }
+    }
+  }
   // complexity and overwhelm
   let C = 0; for (const u of G.units) C += complexityOf(u);
   C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 50 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
@@ -348,7 +377,7 @@ function endWave(G, won) {
     const cap = G.upgrades.thrift ? 10 : 5;
     const interest = Math.min(cap, Math.floor(G.attention / 10));
     const pay = 7 + interest + Math.min(3, Math.floor(G.streak / 3));
-    G.attention += pay; addXp(G, 2);
+    G.attention += pay + cardBoon(G, 'attention', 'flat'); addXp(G, 2);
     G.gain(20 * Math.pow(1.35, G.cycle * 10 + G.wave - 1), 'wave');
     G.composure = Math.min(G.composureMax, G.composure + G.composureMax * 0.25);
     G.events.push({ type: 'waveWin', pay, interest }); koan(G, 'waveWin');

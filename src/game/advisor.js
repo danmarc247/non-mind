@@ -14,6 +14,7 @@ const dread = (G) => G.moods.filter((m) => m.kind === 'dread').length;
 // Targets: attend | shop:<i> | reroll | xp | unit:<id> | seat | op:<integrate|subtract|split|repurpose>:<id>
 //          habit:<id> | upgrade:<id> | spell:<id> | verb:<id>:<unitId> | stance | mirror | attendant | reset | lineage | codex
 const RULES = [
+  (G) => G.cardOffer && { id: `card-${G.cardOffer.id}`, target: 'card', weight: 85, text: 'Something has drifted in that was not sent.', plain: 'A card is floating over the sea. Click it before it leaves.' },
   (G) => G.overwhelm >= 1 && { id: 'reset-now', target: 'reset', weight: 100, text: 'It is too much. It was always this much.', plain: `Let go: NON-MIND returns you to simple and keeps ${muGain(G)} residue.` },
   (G) => G.overwhelm > 0.6 && G.overwhelm < 1 && { id: 'reset-soon', target: 'reset', weight: 40, text: 'The vessel is nearly full of what you made, and humming.', plain: 'Complexity is close to capacity. Resetting is a reward, not a loss.' },
   (G) => {

@@ -67,6 +67,7 @@ function validate(G, s) {
       break;
     }
     case 'xp': case 'attend': case 'reroll': case 'stance': case 'mirror': case 'attendant': case 'reset': case 'lineage': case 'codex': break;
+    case 'card': expect(G.cardOffer).toBeTruthy(); break;
     default: throw new Error('unknown target ' + s.target);
   }
 }

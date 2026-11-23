@@ -16,12 +16,13 @@ const snap = (G, tally) => ({
   win: tally.win, lose: tally.lose, mu: G.mu, peak: G.stats.peak, mirrors: G.mirrors,
 });
 
+const WAVEW = {}; // per global wave [wins, losses] in section 1
 // Advance one tick: bot, step, tally wave results and stage arrivals (several stages can unlock in a single tick).
 function tick(G, t, bot, tally, first) {
   bot(G, t);
-  const before = G.stage;
+  const before = G.stage, gw0 = G.battle?.gw;
   step(G, DT);
-  for (const e of G.events) { if (e.type === 'waveWin') tally.win++; else if (e.type === 'waveLose') tally.lose++; }
+  for (const e of G.events) { if (e.type === 'waveWin') { tally.win++; if (G.stage < 17) { (WAVEW[gw0] ||= [0, 0])[0]++; } } else if (e.type === 'waveLose') { tally.lose++; if (G.stage < 17) { (WAVEW[gw0] ||= [0, 0])[1]++; } } }
   G.events.length = 0;
   if (first) for (let s = before + 1; s <= G.stage; s++) first[s] ??= G.t;
 }
@@ -92,6 +93,7 @@ function stageTable(first, seeds, label) {
   }
 }
 stageTable(first1, SEEDS, 'extended bot');
+if (process.env.NM_SEEDLINES) console.log('  win% per global wave:', Object.keys(WAVEW).slice(0, 25).map((g) => `${g}:${Math.round(100 * WAVEW[g][0] / (WAVEW[g][0] + WAVEW[g][1]))}`).join(' '));
 { // which gate stalls: per stage, the longest wait after minute 5 across seeds
   const w = []; for (let s = 2; s <= 17; s++) { const d = SEEDS.map((k) => (first1[k][s] ?? Infinity) - Math.max(300, first1[k][s - 1] ?? 0)).filter((x) => Number.isFinite(x) && x > 0); if (d.length) w.push(`${s}:${Math.round(Math.max(...d))}s`); }
   console.log('  longest wait per stage after min 5 (s):', w.join(' '));

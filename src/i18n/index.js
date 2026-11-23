@@ -7,6 +7,7 @@ import {
 import { MUTATIONS } from '../game/content/mutations.js';
 import { STRESSOR_EXTRA, STRESSOR_AFFIXES } from '../game/content/stressors.js';
 import { KOANS } from '../game/content/koans.js';
+import { CARDS } from '../game/content/cards.js';
 import { NAMING, NAMING_EN } from '../game/genome.js';
 
 export const LOCALES = ['en', 'de'];
@@ -18,12 +19,12 @@ export const onLocale = (fn) => { listeners.add(fn); return () => listeners.dele
 /** Interface string lookup, keyed by the English source text. */
 export const t = (s) => (locale === 'en' ? s : ui[s] ?? s);
 
-const FIELDS = ['name', 'text', 'field', 'witness', 'hint', 'basis', 'epithet', 'label'];
+const FIELDS = ['name', 'text', 'field', 'witness', 'hint', 'basis', 'epithet', 'label', 'principle', 'quote'];
 const pick = (o) => Object.fromEntries(FIELDS.filter((k) => k in o).map((k) => [k, o[k]]));
 const byId = (list) => (Array.isArray(list) ? list.map((o) => [o.id, o]) : Object.entries(list));
 
 function snapshot() {
-  const tables = { families: FAMILIES, abilities: ABILITIES, traits: TRAITS, aspects: ASPECTS, arcs: WAVE_ARC, habits: HABITS, upgrades: UPGRADES, spells: SPELLS, verbs: VERBS, moods: MOODS, stances: STANCES, stressors: [...STRESSORS, ...STRESSOR_EXTRA], affixes: STRESSOR_AFFIXES, mutations: MUTATIONS };
+  const tables = { families: FAMILIES, abilities: ABILITIES, traits: TRAITS, aspects: ASPECTS, arcs: WAVE_ARC, habits: HABITS, upgrades: UPGRADES, spells: SPELLS, verbs: VERBS, moods: MOODS, stances: STANCES, stressors: [...STRESSORS, ...STRESSOR_EXTRA], affixes: STRESSOR_AFFIXES, mutations: MUTATIONS, cards: CARDS };
   const en = {};
   for (const [k, list] of Object.entries(tables)) en[k] = Object.fromEntries(byId(list).map(([id, o]) => [id, pick(o)]));
   en.links = LINKS.map(pick); en.stages = STAGES.map(pick);
@@ -50,12 +51,12 @@ export async function setLocale(next) {
   if (!LOCALES.includes(next)) next = 'en';
   if (!snap) snap = snapshot();
   if (next === 'de') {
-    const [d, m, k, u] = await Promise.all([
+    const [d, m, k, u, c] = await Promise.all([
       import('./de/data.js'), import('./de/mutations.js'), import('./de/koans.js'),
-      import('./de/ui.js').catch(() => ({ default: {} })),
+      import('./de/ui.js').catch(() => ({ default: {} })), import('./de/cards.js'),
     ]);
     const D = d.default;
-    write({ ...D, mutations: m.default, koans: k.default });
+    write({ ...D, mutations: m.default, koans: k.default, cards: c.default });
     Object.assign(NAMING, {
       adj: D.adj, idealized: D.poles.idealizedStem, devalued: D.poles.devaluedStem, hollowed: D.poles.hollowedStem,
       inflect: (stem, familyId) => { const w = stem + (END[D.gender[familyId]] || 'e'); return w.charAt(0).toUpperCase() + w.slice(1); },

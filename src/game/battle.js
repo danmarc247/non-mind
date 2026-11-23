@@ -4,6 +4,8 @@ import { STRESSORS, STRESSOR, WAVE_ARC, ABILITIES, ASPECT_THRESHOLDS, ASPECTS, A
 import { baseStats, aspectsOf, abilityOf, echoAbilityOf, leaves } from './genome.js';
 import { LINKS } from './data.js';
 import { applyMutations } from './content/mutations.js';
+import { CARDS } from './content/cards.js';
+const cardBoon = (G, kind) => (G.cards || []).reduce((n, id) => { const c = CARDS.find((x) => x.id === id); return n + (c && c.boon.kind === kind ? c.boon.pct || 0 : 0); }, 0);
 import { STRESSOR_EXTRA, STRESSOR_AFFIXES, affixChance } from './content/stressors.js';
 
 // every stressor the gates can send: the base six plus the extended roster
@@ -58,6 +60,7 @@ export function unitStats(G, u, tiers) {
   // the incremental layer feeds the board: lifetime yield and residue both strengthen regulators
   const momentum = (1 + 0.12 * Math.log10(1 + G.stats.earned)) * (1 + 0.05 * Math.pow(G.mu, 0.7));
   sal *= (1 + 0.1 * G.endings) * momentum; tol *= momentum;
+  sal *= 1 + cardBoon(G, 'salience') / 100; tol *= 1 + cardBoon(G, 'tolerance') / 100;
   return {
     tol, sal, lat: Math.max(0.15, s.lat), reach: s.reach * (stance.reach || 1),
     opa: Math.min(80, s.opa + (stance.opa || 0) + (has('void') ? av(tiers, 'void') : 0)),
@@ -95,7 +98,7 @@ function spawnBeat(G) {
   let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));
-  if (mod.byClicks) n = Math.max(1, Math.min(n * 3, Math.round(n * 0.5 + G.clicksThisWave / 12)));
+  if (mod.byClicks) n = Math.max(1, Math.min(n * 2, Math.round(n * 0.5 + G.clicksThisWave / 12)));
   if (G.moods.filter((m) => m.kind === 'dread').length >= 3) n = Math.ceil(n * 1.5);
   if (mod.fuse) n = beat === 0 ? 1 : 0;
   n = Math.min(n, 14);
