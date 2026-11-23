@@ -1,4 +1,5 @@
 // Right-side inspector for game.selected.
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { InkButton, Panel, Tooltip, toneHex } from '../bits';
 import {
@@ -148,6 +149,7 @@ export function Body({ G, u }) {
   const ab = ABILITIES[abilityOf(u.g)];
   const echo = unlocked(G, 'echo') ? echoAbilityOf(u.g) : null;
   const tc = {}; for (const t of u.traits) tc[t] = (tc[t] || 0) + 1;
+  const [tab, setTab] = useState('nature');
   const where = u.busy ? `away: ${u.busy}` : u.seat ? `held, ring ${u.seat.ring + 1}, gate ${u.seat.dir + 1}` : 'waiting';
   return (
     <>
@@ -167,6 +169,28 @@ export function Body({ G, u }) {
         ))}
       </div>
 
+      <Section label="do">
+        <Ops G={G} u={u} />
+      </Section>
+
+      {unlocked(G, 'verbs') && (
+        <Section label="give it to">
+          <Verbs G={G} u={u} />
+        </Section>
+      )}
+
+      {/* actions come first; everything descriptive lives in tabs below them */}
+      <div className="mt-3 flex gap-1 border-b-[3px] border-ink/15 pb-1">
+        {[['nature', 'nature'], ['measures', 'measures'], ['lineage', 'lineage']].map(([id, label]) => (
+          <button key={id} type="button" onClick={() => setTab(id)}
+            className={cn('rounded-full border-2 px-2.5 py-[2px] font-head text-[13px] tracking-wide transition-transform duration-150 hover:-translate-y-0.5', tab === id ? 'border-ink bg-ink text-paper' : 'border-ink/40 bg-paper text-ink')}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'nature' && (
+        <>
       <Section label={`link ${u.link}/12`}>
         <div className="flex gap-[3px]">
           {LINKS.map((l) => (
@@ -181,6 +205,10 @@ export function Body({ G, u }) {
         <p className="mt-0.5 font-body text-[13px] italic leading-snug text-ink">{L.text}</p>
       </Section>
 
+        </>
+      )}
+
+      {tab === 'measures' && (
       <Section label="measures">
         <div className="grid grid-cols-[auto_58px_1fr] items-baseline gap-x-2 gap-y-1">
           {STAT_LINES.map((r) => (
@@ -193,6 +221,10 @@ export function Body({ G, u }) {
         </div>
       </Section>
 
+      )}
+
+      {tab === 'nature' && (
+        <>
       <Section label="ability">
         <p className="font-body text-[13px] leading-snug"><b className="font-head text-[14px] tracking-wide">{ab.name}.</b> {ab.text}</p>
         {echo && <p className="mt-0.5 font-body text-[12px] leading-snug text-ink-2"><b className="font-head">Echo, {ABILITIES[echo].name}.</b> {ABILITIES[echo].text} At half strength.</p>}
@@ -208,6 +240,11 @@ export function Body({ G, u }) {
         </div>
       </Section>
 
+        </>
+      )}
+
+      {tab === 'lineage' && (
+        <>
       {(u.muts || []).length > 0 && (
         <Section label="marks">
           <div className="flex flex-col gap-1">
@@ -226,14 +263,7 @@ export function Body({ G, u }) {
         <div className="max-w-full overflow-x-auto nm-scroll pb-1"><Gene g={u.g} /></div>
       </Section>
 
-      <Section label="do">
-        <Ops G={G} u={u} />
-      </Section>
-
-      {unlocked(G, 'verbs') && (
-        <Section label="give it to">
-          <Verbs G={G} u={u} />
-        </Section>
+        </>
       )}
     </>
   );

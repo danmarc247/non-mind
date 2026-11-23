@@ -81,7 +81,7 @@ const RING_SEEDS = Array.from({ length: RING_COUNT }, (_, i) => {
 
 const tmpV = new THREE.Vector3();
 
-export function PainterSky({ radius = 400 }) {
+export function PainterSky({ radius = 400, fadeSeconds = 2.5 }) {
   const mesh = useRef();
   const clock = useRef({ t: 0, last: null, key: null, density: 0, prev: -1, cur: -1, blend: 1, motifD: [0, 0, 0] });
   const pals = useMemo(() => ({ A: [], B: [] }), []);
@@ -142,7 +142,7 @@ export function PainterSky({ radius = 400 }) {
     const compNow = skyComposition(mood.wave, cycle);
     if (c.cur < 0) { c.cur = c.prev = compNow; c.blend = 1; }
     if (compNow !== c.cur) { c.prev = c.cur; c.cur = compNow; c.blend = 0; c.key = null; }
-    c.blend = Math.min(1, c.blend + dt / 2.5);
+    c.blend = Math.min(1, c.blend + dt / Math.max(fadeSeconds, 1e-3));
     const bl = c.blend * c.blend * (3 - 2 * c.blend);
     u.uBlend.value = bl;
 

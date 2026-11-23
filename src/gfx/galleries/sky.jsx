@@ -52,7 +52,7 @@ function App() {
         <Ticker />
         <ambientLight intensity={0.6} />
         <directionalLight position={[3, 5, 4]} intensity={2} />
-        <PainterSky />
+        <PainterSky fadeSeconds={+(new URLSearchParams(location.search).get('fade') || 2.5)} />
         <Spheres />
         <OrbitControls enablePan={false} />
       </Canvas>
