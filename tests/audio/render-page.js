@@ -53,15 +53,32 @@ export function analyze(buf, from = 0, to = Infinity) {
     dc += mono[i];
   }
   const rms = Math.sqrt(ss / (2 * n));
-  // silent 100 ms windows (< -60 dBFS)
+  // silent 100 ms windows (< -60 dBFS); maxGap = longest run of windows below -50 dBFS (s)
   const W = SR / 10;
-  let silent = 0, wins = 0;
+  let silent = 0, wins = 0, run = 0, maxRun = 0;
   for (let s = 0; s + W <= n; s += W) {
     let e = 0;
     for (let i = 0; i < W; i++) e += mono[s + i] * mono[s + i];
     wins++;
-    if (Math.sqrt(e / W) < 0.001) silent++;
+    const r = Math.sqrt(e / W);
+    if (r < 0.001) silent++;
+    run = r < 0.00316 ? run + 1 : 0;
+    maxRun = Math.max(maxRun, run);
   }
+  // click metric: largest sample-to-sample step
+  let maxStep = 0;
+  for (let i = 1; i < n; i++) { const d = Math.abs(mono[i] - mono[i - 1]); if (d > maxStep) maxStep = d; }
+  // pitch-class histogram (C..B, sums to 1): magnitude of 80-2500 Hz bins, FFT 8192
+  const pcs = new Array(12).fill(0);
+  spectra(mono, 8192, 4096, (mag) => {
+    for (let k = 15; k < 465; k++) {
+      if (mag[k] < mag[k - 1] || mag[k] < mag[k + 1]) continue; // spectral peaks only
+      const f = (k * SR) / 8192;
+      pcs[((Math.round(12 * Math.log2(f / 261.626)) % 12) + 12) % 12] += mag[k];
+    }
+  });
+  const pcSum = pcs.reduce((x, y) => x + y, 0) || 1;
+  for (let i = 0; i < 12; i++) pcs[i] = Math.round((pcs[i] / pcSum) * 1000) / 1000;
   // spectral centroid (magnitude weighted, all frames)
   let num = 0, den = 0;
   spectra(mono, 2048, 2048, (mag) => {
@@ -115,7 +132,7 @@ export function analyze(buf, from = 0, to = Infinity) {
   for (let i = n - tailN; i < n; i++) tailE += mono[i] * mono[i];
   const r3 = (x) => Math.round(x * 1000) / 1000;
   return {
-    onsetTimes, peak: r3(peak), rms: r3(rms), rmsDb: Math.round(20 * Math.log10(rms + 1e-12) * 10) / 10,
+    onsetTimes, pcs, maxGap: Math.round(maxRun) / 10, maxStep: r3(maxStep), peak: r3(peak), rms: r3(rms), rmsDb: Math.round(20 * Math.log10(rms + 1e-12) * 10) / 10,
     dc: Number(((dc / n) || 0).toExponential(2)), silentPct: Math.round((silent / Math.max(1, wins)) * 1000) / 10,
     centroid: Math.round(num / Math.max(den, 1e-12)), nan, onsets,
     onsetsPerMin: Math.round((onsets / (n / SR)) * 60),
@@ -166,7 +183,8 @@ async function renderMusic(cfg) {
   }
   const t0 = performance.now();
   const buf = await ctx.startRendering();
-  const res = { ...analyze(buf), notes: eng.debug().notes, noteLog: eng._E ? eng._E.stats.log : undefined, maxOsc, renderMs: Math.round(performance.now() - t0) };
+  const dbg = eng.debug();
+  const res = { ...analyze(buf), scale: dbg.scale, gifts: dbg.gifts, rests: dbg.rests, transitions: dbg.transitions, notes: eng.debug().notes, noteLog: eng._E ? eng._E.stats.log : undefined, maxOsc, renderMs: Math.round(performance.now() - t0) };
   if (cfg.segments) res.segments = cfg.segments.map(([a, b]) => ({ from: a, to: b, ...analyze(buf, a, b) }));
   if (cfg.wav) res.wav = toWavB64(buf, cfg.wav[0], cfg.wav[1]);
   eng.dispose();
@@ -210,7 +228,8 @@ async function soak(dur = 300) {
   for (let t = 1; t < dur - 12; t += 1) {
     eng.at(t, () => {
       const ph = (t % 90) / 90; // complexity ramps up over 90 s, then reset
-      eng.setMood({ complexity: Math.min(1, ph * 1.3), overwhelm: Math.max(0, ph * 3 - 2), tension: ph, stance: ['toward', 'away', 'against', null][Math.floor(t / 23) % 4], aspects: { mythic: ph, cortical: 1 - ph, somatic: ph > 0.5 ? 1 : 0 }, depth: Math.floor(t / 90) });
+      eng.setMood({ complexity: Math.min(1, ph * 1.3), overwhelm: Math.max(0, ph * 3 - 2), tension: ph, stance: ['toward', 'away', 'against', null][Math.floor(t / 23) % 4], aspects: { mythic: ph, cortical: 1 - ph, somatic: ph > 0.5 ? 1 : 0 }, depth: Math.floor(t / 90),
+        wave: 1 + (Math.floor(t / 35) % 10), cycle: Math.floor(t / 350), stage: Math.min(17, t / 16), phase: ['prep', 'fight', 'fight', 'fight', t % 70 < 35 ? 'won' : 'lost'][Math.floor((t % 35) / 7)] });
       if (t % 90 === 89) eng.reset();
       for (let k = 0; k < 4; k++) eng.sfx(SFX_NAMES[(t * 4 + k) % (SFX_NAMES.length - 1)], { position: [Math.sin(t) * 5, 0, Math.cos(t) * 5], aspect: ASPECTS[t % 8], gate: t % 10 });
       // camera soft-zoom: listener moves every 100 ms
@@ -228,7 +247,8 @@ async function soak(dur = 300) {
   const a = analyze(buf);
   const kinds = {};
   for (const n of live) kinds[n.constructor.name] = (kinds[n.constructor.name] || 0) + 1;
-  return { samples, liveAtEnd: after, liveAfterDispose: live.size, leftover: kinds, maxOsc, peak: a.peak, nan: a.nan, rmsDb: a.rmsDb };
+  const dbg = eng.debug();
+  return { gifts: dbg.gifts, rests: dbg.rests, transitions: dbg.transitions, samples, liveAtEnd: after, liveAfterDispose: live.size, leftover: kinds, maxOsc, peak: a.peak, nan: a.nan, rmsDb: a.rmsDb };
 }
 
 /** Realtime smoke test through the getAudio() singleton. */
