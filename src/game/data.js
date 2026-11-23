@@ -13,7 +13,7 @@ export const STAGES = [
   { id: 'combine', unlock: 'integrate', hint: 'Two that lean together are not two.', need: (g) => g.stats.links >= 1 },
   { id: 'repurpose', unlock: 'repurpose', hint: 'A function is a habit of a form.', need: (g) => g.stats.integrations >= 1 },
   { id: 'increase', unlock: 'insight', hint: 'More is a direction, like a light far down the shore.', need: (g) => g.habitsOwned >= 8 },
-  { id: 'regroup', unlock: 'split', hint: 'What was joined remembers the warmth of its seam.', need: (g) => g.wave >= 4 },
+  { id: 'regroup', unlock: 'split', hint: 'What was joined remembers the warmth of its seam.', need: (g) => g.wave >= 5 },
   { id: 'expand', unlock: 'ring2', hint: 'The edge was only where the light gave out.', need: (g) => g.level >= 4 },
   { id: 'ingest', unlock: 'subtract', hint: 'To take in is to be shaped, gently, by the taken.', need: (g) => g.stats.splits >= 1 },
   { id: 'support', unlock: 'attendants', hint: 'Attention can be lent.', need: (g) => g.stats.subtractions >= 1 },
