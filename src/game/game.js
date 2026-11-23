@@ -257,7 +257,7 @@ export const actions = {
   },
 };
 export const muGain = (G) => Math.floor(Math.pow(G.stats.peak / 8, 0.8) * (1 + G.stage / 17) * (G.overwhelm >= 1 ? 2 : 1) * (1 + 0.15 * G.depth));
-export const mirrorCost = (G) => 1e13 * Math.pow(25, G.mirrors);
+export const mirrorCost = (G) => 4e12 * Math.pow(25, G.mirrors);
 export const attendantCost = (G) => 300 * Math.pow(2.2, G.attendants);
 
 const firstFamily = (u) => { let g = u.g; while (g.t === 'node') g = g.a; return g.f; };
@@ -306,7 +306,7 @@ export function step(G, dt) {
   C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 50 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
-  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.22)));
+  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.12)));
   if (G.overwhelm >= 1) G.composure -= G.composureMax * 0.02 * dt;
   // the log is never quite silent: an idle line now and then, an overwhelm line when it is too much
   G.koanT = (G.koanT || 45) - dt;

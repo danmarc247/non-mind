@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Meter, Panel, toneVar } from '../bits';
-import { RingButton } from '../bits/kit.jsx';
 import { STAGES, unlocked, WAVE_ARC, BEATS_PER_WAVE } from '../../game/index.js';
 import { game, select, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
@@ -14,6 +13,7 @@ import { AttendButton, Bench, Shop } from './Bottom.jsx';
 import { TABS } from './LeftPanel.jsx';
 import { Body as InspectorBody } from './Inspector.jsx';
 import Reset from './Reset.jsx';
+import Tools from './Tools.jsx';
 import { Log } from './Log.jsx';
 import { POP, Scr, Shake } from './shared.jsx';
 
@@ -112,9 +112,6 @@ export default function Mobile({ w, h }) {
         <div className={cn('flex items-start gap-2', !portrait && 'pr-[calc(50%+150px)]')}>
           <Shake seed={11} className="pointer-events-auto min-w-0 flex-1"><StageWave G={G} /></Shake>
           <div className="pointer-events-auto flex shrink-0 items-start gap-1.5">
-            <RingButton tone="paper" size={48} onClick={() => window.dispatchEvent(new CustomEvent('nonmind:codex'))} label="codex">
-              <span className="font-head text-[12px] uppercase">codex</span>
-            </RingButton>
             {G.stage >= 1 && <Reset compact small />}
           </div>
         </div>
@@ -123,6 +120,13 @@ export default function Mobile({ w, h }) {
         </Shake>
         {portrait && unlocked(G, 'shop') && <Shake seed={13} className="pointer-events-auto"><Gauges G={G} /></Shake>}
       </div>
+
+      {/* tool rings down the right edge (codex, manual, save, lineage) */}
+      {!cur && (
+        <div className="pointer-events-auto absolute right-2" style={{ top: portrait ? `calc(env(safe-area-inset-top, 0px) + ${unlocked(G, 'shop') ? 196 : 130}px)` : 'calc(env(safe-area-inset-top, 0px) + 112px)' }}>
+          <Tools size={46} layout={portrait ? 'col' : 'grid'} hotkeys={false} />
+        </div>
+      )}
 
       {/* log, quietly, above the dock */}
       <div className="pointer-events-none absolute left-2" style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${cur ? 0 : 66}px)`, display: cur ? 'none' : undefined }}>

@@ -15,6 +15,7 @@ import Codex from './hud/Codex.jsx';
 import Title from './hud/Title.jsx';
 import Tutorial from './hud/Tutorial.jsx';
 import Mobile from './hud/Mobile.jsx';
+import Tools from './hud/Tools.jsx';
 import { Log, StageFlash } from './hud/Log.jsx';
 import { attend } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
@@ -159,18 +160,10 @@ export default function Hud() {
               <Log compact={compact} />
             </div>
 
-            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': compact && selU ? '0px' : '112px' }}>
+            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': compact && selU ? '0px' : compact ? '120px' : '132px' }}>
           <AnimatePresence initial={false}>{!(compact && selU) && (
           <motion.div key="rings" className="pointer-events-auto flex items-start gap-2.5" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }} transition={POP}>
-            <div className="flex">
-            <Shake seed={41}>
-              <span data-tut="codex" className="inline-flex">
-                <RingButton tone="paper" size={compact ? 56 : 64} hotkey="c" hotkeyPos="corner" onClick={() => setCodex(true)} label="codex">
-                  <span className={cn('font-head tracking-wide uppercase', compact ? 'text-[13px]' : 'text-[14px]')}><Scr k={60}>codex</Scr></span>
-                </RingButton>
-              </span>
-            </Shake>
-            </div>
+            <Shake seed={41}><Tools size={compact ? 50 : 56} layout="grid" /></Shake>
             <AnimatePresence>
               {G.stage >= 1 && (
                 <motion.div key="reset" initial={{ opacity: 0, scale: 0.8, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={POP}>
