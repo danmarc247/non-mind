@@ -22,7 +22,7 @@ export function ArcVeil() {
   const uniforms = useMemo(() => {
     const v = (k) => ({ value: new THREE.Vector3(...PALETTE[k]) });
     return {
-      uTime: { value: 0 }, uCur: { value: -1 }, uPrev: { value: -1 }, uMix: { value: 1 }, uStr: { value: 0 }, uR: { value: FX_ARENA.SEA_R }, uPulse: { value: 0 },
+      uTime: { value: 0 }, uCur: { value: -1 }, uPrev: { value: -1 }, uMix: { value: 1 }, uStr: { value: 0 }, uR: { value: FX_ARENA.SEA_R - 0.6 }, uPulse: { value: 0 },
       uPaper: v('paper'), uInk: v('ink'), uMagenta: v('magenta'), uUltra: v('ultra'), uYolk: v('yolk'), uTangerine: v('tangerine'), uA: v('rose'),
       uPts: { value: Array.from({ length: NPTS }, () => new THREE.Vector4()) }, uNPts: { value: 0 },
     };
