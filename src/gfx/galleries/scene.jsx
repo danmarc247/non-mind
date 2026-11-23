@@ -12,4 +12,4 @@ setInterval(() => { if (window.__bot) defaultBot(game.G, performance.now() / 100
 window.__act = act; window.__tick = tick;
 const q = new URLSearchParams(location.search);
 if (q.get('ff')) window.__ff(+q.get('ff'));
-createRoot(document.getElementById('root')).render(<div className="fixed inset-0"><Scene quality={q.get('q') || 'low'} post={q.get('post') !== '0'} /></div>);
+createRoot(document.getElementById('root')).render(<div className="fixed inset-0"><Scene quality={q.get('q') || undefined} post={q.get('post') !== '0'} /></div>);

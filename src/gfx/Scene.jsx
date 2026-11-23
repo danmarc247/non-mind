@@ -1,5 +1,5 @@
 // The arena: a contained sea in a glass vessel, ten gates, seats in rings, a core, and living SDF sculptures.
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -17,6 +17,7 @@ import { Mobiles, Strata, Motes, Tethers } from './drift/index.js';
 import ContainedSea from './sea/index.js';
 import { DriftingCard } from './cards/index.js';
 import Director, { director } from './Director.jsx';
+import { quality, onQuality, governFrame, tierInfo, TIERS } from './quality.js';
 
 const PainterSky = SkyMod.PainterSky || PainterSkyDefault;
 const PainterPost = PostMod.PainterPost || PainterPostDefault;
@@ -209,6 +210,24 @@ function Fx() {
   );
 }
 
+// ---------- quality: frame-time governor + per-tier knobs ----------
+function Quality({ onTier }) {
+  const { setDpr } = useThree();
+  useEffect(() => {
+    const apply = () => {
+      const t = tierInfo();
+      setDpr(Math.min(window.devicePixelRatio || 1, t.dpr));
+      sculptEnv.stepK.value = t.steps; sculptEnv.hitK.value = t.hit;
+      mood.quality = quality.tier;
+      onTier(quality.tier);
+    };
+    apply();
+    return onQuality(apply);
+  }, [setDpr, onTier]);
+  useFrame((_, dt) => governFrame(dt));
+  return null;
+}
+
 // ---------- loop: sim + mood ----------
 function Loop({ audioRef }) {
   useFrame((state, dtRaw) => {
@@ -238,10 +257,14 @@ function Loop({ audioRef }) {
 const SMALL = typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches || Math.min(window.innerWidth, window.innerHeight) < 620);
 const PORTRAIT = typeof window !== 'undefined' && window.innerHeight > window.innerWidth * 1.15;
 
-export default function Scene({ audioRef, quality = SMALL ? 'low' : 'med', post = true }) {
+// `postQuality` forces a post preset (galleries); otherwise the quality tier picks it (src/gfx/quality.js).
+export default function Scene({ audioRef, quality: postQuality, post = true }) {
+  const [tier, setTier] = useState(quality.tier);
+  const t = TIERS[tier];
   return (
-    <Canvas linear legacy flat camera={{ position: PORTRAIT ? [0, 30, 42] : [0, 21, 29], fov: PORTRAIT ? 52 : 44, near: 0.5, far: 900 }} dpr={SMALL ? [1, 1.25] : [1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
+    <Canvas linear legacy flat camera={{ position: PORTRAIT ? [0, 30, 42] : [0, 21, 29], fov: PORTRAIT ? 52 : 44, near: 0.5, far: 900 }} dpr={Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, t.dpr)} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
+      <Quality onTier={setTier} />
       <Loop audioRef={audioRef} />
       <Director />
       <PainterSky />
@@ -255,12 +278,12 @@ export default function Scene({ audioRef, quality = SMALL ? 'low' : 'med', post 
       <DriftingCard />
       <ArcVeil />
       <PaintFx />
-      <Mobiles count={SMALL ? 8 : 14} />
+      <Mobiles count={Math.round((SMALL ? 8 : 14) * t.mobiles)} />
       <Tethers />
-      <Motes max={SMALL ? 180 : 420} />
+      <Motes max={Math.round((SMALL ? 180 : 420) * t.motes)} />
       <GlassVessel />
       <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={5} maxDistance={70} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
-      {post && <PainterPost quality={quality} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
+      {post && <PainterPost quality={postQuality || t.post} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
     </Canvas>
   );
 }

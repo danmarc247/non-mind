@@ -107,7 +107,7 @@ Moments of realisation (a fuse, an integrate, a new stage, an ending, a reset) a
 
 The number keys work once the arrivals are unlocked. Typing in a box and open panels silence the game's hotkeys, and `Space` never presses a button that happens to have focus.
 
-The tools come in two groups. Above, what belongs to play: the codex, the manual, **lineage** and the **book**. Below, smaller and set apart, what belongs to the session: **save**, **again** (a confirmed fresh start that erases everything, residue included) and **sound** (on or off, remembered). The save menu saves the game now, exports it as a line of text or a `.txt` file, loads such a line back (a rejected code changes nothing), or starts again. Apart from that the game saves to `localStorage` every 10 seconds.
+The tools come in two groups. Above, what belongs to play: the codex, the manual, **lineage** and the **book**. Below, smaller and set apart, what belongs to the session: **save**, **again** (a confirmed fresh start that erases everything, residue included), **sound** (on or off, remembered) and **picture quality** (the ring that reads auto, low, medium or high; remembered). On auto the game watches its own frame rate and eases the picture within a second or two when frames run slow, and climbs back cautiously. The save menu saves the game now, exports it as a line of text or a `.txt` file, loads such a line back (a rejected code changes nothing), or starts again. Apart from that the game saves to `localStorage` every 10 seconds.
 
 The **Lineage** map is a paper folio drawn with PixiJS: every body you have grown this run, and what it grew from. It loads only while open.
 

@@ -343,14 +343,32 @@ function stressorSource(defId, affix = null) {
 
 const MAIN = `
 uniform float uFlash; uniform float uFade; uniform vec3 uRim; uniform float uGlow; uniform float uSpark; uniform vec3 uEnvA; uniform vec3 uEnvB; uniform vec3 uEnvC; uniform float uReflect;
+uniform float uStepK; uniform float uHitK;
 void main() {
   vec3 ro = (cameraPosition - sculptureCenter) / _scale;
   vec3 rd = getRayDirection();
-  float t = intersect(ro, rd, stepSize);
-  if (t >= max_dist) discard;
+  // March only inside the bounding sphere (r 1.02, everything outside is discarded anyway): start at its
+  // entry, give up at its exit, and stop at a hit threshold that grows with ray length (a fraction of a
+  // pixel) instead of 1e-5. uStepK trims the iteration budget per quality tier.
+  float bb = dot(ro, rd), cc = dot(ro, ro) - 1.0404, hh = bb * bb - cc;
+  if (hh < 0.0) discard;
+  hh = sqrt(hh);
+  float t = max(-bb - hh, 0.0), tEnd = -bb + hh, d0 = 1.0;
+  float budget = float(MAX_ITERATIONS) * uStepK;
+  bool hit = false;
+  for (int i = 0; i < MAX_ITERATIONS; ++i) {
+    if (float(i) >= budget) break;
+    d0 = surfaceDistance(ro + rd * t);
+    if (d0 < max(1e-5, uHitK * t)) { hit = true; break; }
+    t += d0 * STEP_SIZE_CONSTANT;
+    if (t > tEnd) break;
+  }
+  if (!hit && t > tEnd) discard;
   vec3 p = ro + rd * t;
   if (length(p) > 1.02) discard;
-  vec3 n = calcNormal(p);
+  // forward-difference normal: three taps, reusing the distance at p from the march
+  const float NE = 0.0005;
+  vec3 n = normalize(vec3(surfaceDistance(p + vec3(NE, 0.0, 0.0)), surfaceDistance(p + vec3(0.0, NE, 0.0)), surfaceDistance(p + vec3(0.0, 0.0, NE))) - d0);
   ShadedMaterial sm = shade(p, n);
   // Solid, saturated paint with a wet surface: the albedo is used as the display colour (no washing
   // tone curve), lit in bands, with a painted environment reflected in it and a hard specular glint.
@@ -389,7 +407,7 @@ void main() {
 
 // The painted environment every sculpture reflects: three colours from the stage palette, shared by all
 // materials (one object, written once per frame by the scene loop).
-export const sculptEnv = { a: { value: new THREE.Vector3(1.0, 0.176, 0.478) }, b: { value: new THREE.Vector3(0.165, 0.169, 1.0) }, c: { value: new THREE.Vector3(1.0, 0.824, 0.122) }, reflect: { value: 1 } };
+export const sculptEnv = { a: { value: new THREE.Vector3(1.0, 0.176, 0.478) }, b: { value: new THREE.Vector3(0.165, 0.169, 1.0) }, c: { value: new THREE.Vector3(1.0, 0.824, 0.122) }, reflect: { value: 1 }, stepK: { value: 1 }, hitK: { value: 0.0003 } };
 const cache = new Map();
 function compile(src) {
   const s = sculptToThreeJSShaderSource(src);
@@ -404,14 +422,14 @@ function material(k, srcFn, rim, glow) {
     try { sh = compile(srcFn()); } catch (e) { console.warn('sculpt failed', k, e); sh = compile('sphere(0.35);'); }
     base = new THREE.ShaderMaterial({
       vertexShader: sh.vert, fragmentShader: sh.frag, side: THREE.BackSide,
-      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uEnvA: sculptEnv.a, uEnvB: sculptEnv.b, uEnvC: sculptEnv.c, uReflect: sculptEnv.reflect, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
+      uniforms: { time: { value: 0 }, opacity: { value: 1 }, _scale: { value: 1 }, mouse: { value: new THREE.Vector3() }, stepSize: { value: 0.8 }, resolution: { value: new THREE.Vector2(1, 1) }, msdf: { value: null }, uFlash: { value: 0 }, uFade: { value: 0 }, uSpark: { value: 0 }, uEnvA: sculptEnv.a, uEnvB: sculptEnv.b, uEnvC: sculptEnv.c, uReflect: sculptEnv.reflect, uStepK: sculptEnv.stepK, uHitK: sculptEnv.hitK, uRim: { value: new THREE.Vector3(...rim) }, uGlow: { value: glow } },
     });
     cache.set(k, base);
     // bounded cache: the oldest programs are released (units keep their own clones alive while on stage)
     if (cache.size > 96) { const old = cache.keys().next().value; cache.get(old).dispose(); cache.delete(old); }
   }
   const m = base.clone();
-  m.uniforms.uEnvA = sculptEnv.a; m.uniforms.uEnvB = sculptEnv.b; m.uniforms.uEnvC = sculptEnv.c; m.uniforms.uReflect = sculptEnv.reflect; // clone() copies uniforms: re-share
+  m.uniforms.uEnvA = sculptEnv.a; m.uniforms.uEnvB = sculptEnv.b; m.uniforms.uEnvC = sculptEnv.c; m.uniforms.uReflect = sculptEnv.reflect; m.uniforms.uStepK = sculptEnv.stepK; m.uniforms.uHitK = sculptEnv.hitK; // clone() copies uniforms: re-share
   m.uniforms.uRim.value = new THREE.Vector3(...rim);
   return m;
 }

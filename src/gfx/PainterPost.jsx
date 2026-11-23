@@ -29,6 +29,7 @@ import overwhelmGlsl from './glsl/post.overwhelm.glsl';
 //   kuwahara taps = 4 sectors * RINGS * ANGLES + 1 centre (+8 or +16 tensor taps)
 export const PAINTER_QUALITY = {
   low: { RINGS: 2, ANGLES: 2, WIDE_TENSOR: 0, LIC_TAPS: 2, SMEAR_TAPS: 3, FOCUS_TAPS: 4, HALO_TAPS: 4, bloomLevels: 4 },
+  lite: { RINGS: 2, ANGLES: 3, WIDE_TENSOR: 0, LIC_TAPS: 3, SMEAR_TAPS: 4, FOCUS_TAPS: 5, HALO_TAPS: 6, bloomLevels: 4 },
   med: { RINGS: 3, ANGLES: 3, WIDE_TENSOR: 0, LIC_TAPS: 4, SMEAR_TAPS: 5, FOCUS_TAPS: 6, HALO_TAPS: 8, bloomLevels: 5 },
   high: { RINGS: 3, ANGLES: 4, WIDE_TENSOR: 1, LIC_TAPS: 6, SMEAR_TAPS: 7, FOCUS_TAPS: 8, HALO_TAPS: 8, bloomLevels: 6 },
 };
