@@ -541,6 +541,6 @@ Built and in the repo, not yet wired into the live game:
 
 ## Screenshots
 
-<!-- Images will be added under docs/screenshots/. Planned: title, arena mid-wave, a deep hybrid sculpture, overwhelm, each stage palette. -->
-
-*Coming soon.*
+| Title | Early battle | Mid game |
+|---|---|---|
+| ![Title](docs/screenshots/title.png) | ![Early battle](docs/screenshots/early-battle.png) | ![Arena mid game](docs/screenshots/arena-mid.png) |
