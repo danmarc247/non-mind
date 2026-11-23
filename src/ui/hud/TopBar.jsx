@@ -131,14 +131,15 @@ function WaveBanner({ G, compact }) {
   );
 }
 
-export default function TopBar({ compact, children }) {
+export default function TopBar({ compact }) {
   const G = useGame();
   const fighting = unlocked(G, 'shop');
   return (
     <div className="pointer-events-none flex items-start gap-3">
       <Shake seed={11} className="pointer-events-auto" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
       <Shake seed={12} className="pointer-events-auto"><Resources G={G} compact={compact} /></Shake>
-      <div className="flex min-w-0 flex-1 justify-end">{children}</div>
+      {/* the top centre stays clear: the mediator's Manual / Save controls live there */}
+      <div className="flex-1" />
       <AnimatePresence initial={false}>
         {fighting && (
           <Appear key="g" from="down" className="pointer-events-auto" data-tut="complexity"><Shake seed={13}><Gauges G={G} compact={compact} /></Shake></Appear>

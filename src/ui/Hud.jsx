@@ -79,6 +79,7 @@ export default function Hud() {
   const [topRef, topH] = useHeight();
   const [botRef, botH] = useHeight();
   const started = game.started;
+  const selU = G.units.some((u) => u.id === game.selected);
 
   // overwhelm degradation: 0 below a quarter, full at 1
   const d = started ? smooth(0.25, 1, G.overwhelm) : 0;
@@ -135,20 +136,22 @@ export default function Hud() {
       >
         {started && (
           <>
-            <div ref={topRef} className="absolute inset-x-3 top-3"><TopBar compact={compact}>
-          <div className="pointer-events-auto flex items-start gap-2.5">
-            <div className={cn('flex gap-2', compact ? 'flex-col gap-1.5' : 'items-start')}>
+            <div ref={topRef} className="absolute inset-x-3 top-3"><TopBar compact={compact} /></div>
+            <div ref={botRef} className="absolute inset-x-3 bottom-3"><Bottom compact={compact} /></div>
+
+            <div className="absolute left-3 flex flex-col justify-between gap-3" style={{ top: bandTop, bottom: bandBottom }}>
+              <Shake seed={31}><LeftPanel compact={compact} /></Shake>
+              <Log compact={compact} />
+            </div>
+
+            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': compact && selU ? '0px' : '112px' }}>
+          <AnimatePresence initial={false}>{!(compact && selU) && (
+          <motion.div key="rings" className="pointer-events-auto flex items-start gap-2.5" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }} transition={POP}>
+            <div className="flex">
             <Shake seed={41}>
               <span data-tut="codex" className="inline-flex">
-                <RingButton tone="paper" size={compact ? 54 : 64} hotkey="c" hotkeyPos="corner" onClick={() => setCodex(true)} label="codex">
+                <RingButton tone="paper" size={compact ? 56 : 64} hotkey="c" hotkeyPos="corner" onClick={() => setCodex(true)} label="codex">
                   <span className={cn('font-head tracking-wide uppercase', compact ? 'text-[13px]' : 'text-[14px]')}><Scr k={60}>codex</Scr></span>
-                </RingButton>
-              </span>
-            </Shake>
-            <Shake seed={44}>
-              <span data-tut="manual" className="inline-flex">
-                <RingButton tone="sky" size={compact ? 54 : 64} hotkey="m" hotkeyPos="corner" onClick={() => window.dispatchEvent(new Event('nonmind:manual'))} label="manual">
-                  <span className={cn('font-head tracking-wide uppercase', compact ? 'text-[12px]' : 'text-[14px]')}><Scr k={61}>manual</Scr></span>
                 </RingButton>
               </span>
             </Shake>
@@ -160,16 +163,7 @@ export default function Hud() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-          </TopBar></div>
-            <div ref={botRef} className="absolute inset-x-3 bottom-3"><Bottom compact={compact} /></div>
-
-            <div className="absolute left-3 flex flex-col justify-between gap-3" style={{ top: bandTop, bottom: bandBottom }}>
-              <Shake seed={31}><LeftPanel compact={compact} /></Shake>
-              <Log compact={compact} />
-            </div>
-
-            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom }}>
+          </motion.div>)}</AnimatePresence>
               <Shake seed={43}><Inspector compact={compact} /></Shake>
             </div>
 

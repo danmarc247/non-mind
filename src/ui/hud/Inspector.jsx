@@ -263,7 +263,7 @@ export default function Inspector({ compact }) {
               </button>
             }
           >
-            <div style={{ maxHeight: 'calc(var(--band-h) - 66px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2">
+            <div style={{ maxHeight: 'calc(var(--band-h) - var(--rings-h, 0px) - 66px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2">
               <motion.div key={u.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
                 <Body G={G} u={u} />
               </motion.div>

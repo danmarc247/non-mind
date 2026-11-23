@@ -1,6 +1,7 @@
 // Thin reactive wrapper around the mutable game. The sim runs every frame; React reads at ~8 Hz.
 import { useSyncExternalStore } from 'react';
 import { createGame, step, actions, serialize, deserialize, SAVE_KEY } from './game.js';
+import { encodeSave, decodeSave } from './savecode.js';
 
 const listeners = new Set();
 let version = 0;

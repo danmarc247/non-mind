@@ -28,7 +28,7 @@ export default function Reset({ compact }) {
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Mu remains, and makes the next time wider.'}>
-          <RingButton tone={full ? 'magenta' : 'violet'} size={compact ? 80 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
+          <RingButton tone={full ? 'magenta' : 'violet'} size={compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
             <span className={compact ? 'font-title text-[11px] leading-none' : 'font-title text-[13px] leading-none'}>NON-MIND</span>
             <span className="mt-1 font-stat text-[13px] nm-tab">+{fmt(gain, { int: true })} mu</span>
           </RingButton>
