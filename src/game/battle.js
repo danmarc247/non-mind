@@ -94,7 +94,7 @@ function spawnBeat(G) {
   const pool = ALL_STRESSORS.filter((s) => !s.boss).slice(0, Math.min(16, 1 + Math.floor((gw + 1) / 2)));
   const bosses = ALL_STRESSORS.filter((s) => s.boss);
   // habituation: every loss on a wave makes its stressors a little more bearable, so no wall is permanent
-  const scale = 4 * Math.pow(1.03, Math.min(gw - 1, 6)) * Math.pow(1.13, Math.max(0, Math.min(gw - 1, 18) - 6)) * Math.pow(1.04, Math.max(0, Math.min(gw - 19, 10))) * Math.pow(1.015, Math.max(0, gw - 29)) * (1 + 1.2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
+  const scale = 5.2 * Math.pow(1.03, Math.min(gw - 1, 6)) * Math.pow(1.13, Math.max(0, Math.min(gw - 1, 18) - 6)) * Math.pow(1.04, Math.max(0, Math.min(gw - 19, 10))) * Math.pow(1.015, Math.max(0, gw - 29)) * (1 + 1.2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
   let n = 1 + Math.floor(gw / 5) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));
@@ -121,7 +121,7 @@ function spawnBeat(G) {
     const def = pool[Math.floor(G.rng() * pool.length)];
     mk(def, mod.allGates ? Math.floor(G.rng() * DIRECTIONS) : (gate0 + (i % 3 === 2 ? 5 : 0)) % DIRECTIONS);
   }
-  if (mod.fuse && beat === 0) B.enemies[B.enemies.length - 1] = Object.assign(B.enemies[B.enemies.length - 1], { hp: STRESSOR.shame.tol * scale * 6, max: STRESSOR.shame.tol * scale * 6, def: 'shame', fuse: 6 + Math.floor(gw / 2), speed: 0.5 });
+  if (mod.fuse && beat === 0) B.enemies[B.enemies.length - 1] = Object.assign(B.enemies[B.enemies.length - 1], { hp: STRESSOR.shame.tol * scale * 4, max: STRESSOR.shame.tol * scale * 4, def: 'shame', fuse: 6 + Math.floor(gw / 2), speed: 0.9 });
   if ((mod.boss || G.wave === 10) && beat === BEATS_PER_WAVE - 1) mk(bosses[(G.cycle + Math.floor(G.rng() * 2)) % bosses.length], gate0, 1 + G.cycle, 1, { boss: true });
   G.events.push({ type: 'beat', beat, gate: gate0 });
 }

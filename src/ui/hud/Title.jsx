@@ -66,6 +66,10 @@ export default function Title() {
         {saved && (
           <p className="font-body text-sm text-ink-2 italic">Begin again forgets everything, even what was kept.</p>
         )}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 1.2 }}
+          className="mt-6 font-body text-[15px] italic text-ink-2">
+          Dedicated to Dillon and Dillon&rsquo;s wonderful Mind
+        </motion.p>
       </div>
     </motion.div>
   );

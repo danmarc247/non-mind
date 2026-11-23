@@ -19,6 +19,7 @@ const Lineage = lazyOnOpen(() => import('./ui/Lineage.jsx'), 'nonmind:lineage', 
   return !(tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) && (e.key === 'l' || e.key === 'L');
 });
 import { getAudio } from './lib/audio.js';
+import { startTitleAmbience, stopTitleAmbience } from './lib/titleAmbience.js';
 
 // game event -> spatial sound. y is fixed at unit height; x/z come from the sim.
 const SFX = { attend: 'attend', waveStart: 'waveStart', waveWin: 'waveWin', waveLose: 'waveLose', link: 'merge', integrate: 'integrate', subtract: 'subtract', split: 'split', repurpose: 'repurpose', death: 'death', enemyDeath: 'enemyDeath', cast: 'cast', stage: 'unlock', level: 'upgrade', verbStart: 'verbStart', verbDone: 'verbDone', mood: 'decay', stance: 'stanceChoose', ending: 'unlock', mirror: 'unlock', spell: 'cast', mutation: 'mutation', miss: 'miss', coreHit: 'coreHit' };
@@ -99,7 +100,7 @@ export default function App() {
     return () => window.removeEventListener('nonmind:mute', t);
   }, []);
   const started = useGame(() => game.started);
-  useEffect(() => { if (started) whoosh(); }, [started]);
+  useEffect(() => { if (started) { stopTitleAmbience(); whoosh(); } else startTitleAmbience(); }, [started]);
   useEffect(() => {
     let last = 0;
     return onEvent((e) => {
