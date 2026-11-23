@@ -48,7 +48,7 @@ export default function Surprise({ size = 68, touch = false, className }) {
               </svg>
               <Tooltip side={touch ? 'left' : 'top'} content={def.plain}>
                 <RingButton tone={tone} size={size} onClick={() => act('takeGift')} label={def.name}>
-                  <span className={cn('font-head uppercase', def.name.length > 8 ? 'text-[11px] tracking-tight' : 'text-[12px] tracking-wide')}>{def.name}</span>
+                  <span className={cn('font-head uppercase', size < 64 ? 'text-[11px] tracking-tight' : def.name.length > 8 ? 'text-[14px] tracking-tight' : 'text-[15px] tracking-wide')}>{def.name}</span>
                 </RingButton>
               </Tooltip>
             </motion.div>

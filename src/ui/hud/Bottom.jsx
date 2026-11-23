@@ -135,7 +135,7 @@ export function AttendButton({ G, compact, size: sizeIn, touch }) {
   return (
     <div className="relative flex flex-col items-center" style={{ width: size + 24 }} data-tut="attend">
       {/* a surprise, when there is one: above Attend, never over it */}
-      <Surprise size={touch ? 54 : 68} touch={touch} className={cn('absolute z-10', touch ? 'right-1 bottom-[calc(100%+10px)]' : 'bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2')} />
+      <Surprise size={touch ? 58 : 80} touch={touch} className={cn('absolute z-10', touch ? 'right-1 bottom-[calc(100%+10px)]' : 'bottom-[calc(100%+14px)] left-1/2 -translate-x-1/2')} />
       <div className="pointer-events-none absolute bottom-full left-1/2 h-0 w-0">
         <AnimatePresence>
           {floats.map((f) => (
