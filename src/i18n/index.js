@@ -78,10 +78,40 @@ export function initialLocale() {
   return typeof navigator !== 'undefined' && /^de\b/i.test(navigator.language || '') ? 'de' : 'en';
 }
 
-// Self-wiring in the browser: apply the saved or browser language at start, and toggle on the
-// `nonmind:locale` window event (the language ring in the tool cluster fires it).
+// Self-wiring in the browser: apply the saved or browser language at start. The language ring fires
+// `nonmind:locale`: the player is asked first, then the game is saved and the whole page reloads, so
+// every element (tables, interface, manual) comes up in one language.
+function askSwitch() {
+  if (document.getElementById('nm-locale-ask')) return;
+  const next = locale === 'en' ? 'de' : 'en';
+  const txt = next === 'de'
+    ? { h: 'Auf Deutsch wechseln?', p: 'Das Spiel wird gespeichert und neu geladen.', yes: 'Deutsch', no: 'English bleiben' }
+    : { h: 'Switch to English?', p: 'The game is saved and reloads.', yes: 'English', no: 'bei Deutsch bleiben' };
+  const el = document.createElement('div');
+  el.id = 'nm-locale-ask'; el.setAttribute('aria-modal', 'true'); el.setAttribute('role', 'dialog'); el.dataset.modal = 'locale';
+  el.className = 'pointer-events-auto fixed inset-0 z-[70] flex items-center justify-center bg-ink/35 backdrop-blur-[3px]';
+  el.innerHTML = `<div class="w-[min(440px,92vw)] rounded-[26px] border-4 border-ink bg-paper p-6 text-center shadow-[8px_10px_0_var(--color-ink)]">
+    <div class="font-title text-3xl text-ink">${txt.h}</div>
+    <p class="mt-2 font-body italic text-ink-2">${txt.p}</p>
+    <div class="mt-4 flex justify-center gap-3 font-head">
+      <button data-no class="rounded-full border-[3px] border-ink bg-paper px-5 py-1.5">${txt.no}</button>
+      <button data-yes class="rounded-full border-[3px] border-ink bg-violet px-5 py-1.5 text-paper shadow-[3px_4px_0_var(--color-ink)]">${txt.yes}</button>
+    </div></div>`;
+  const close = () => { el.remove(); window.removeEventListener('keydown', onKey, true); };
+  const onKey = (e) => { if (e.key === 'Escape') close(); };
+  el.addEventListener('click', (e) => {
+    if (e.target === el || e.target.closest('[data-no]')) close();
+    else if (e.target.closest('[data-yes]')) {
+      try { localStorage.setItem(KEY, next); } catch { /* not persisted */ }
+      window.dispatchEvent(new Event('nonmind:before-reload'));
+      window.location.reload();
+    }
+  });
+  window.addEventListener('keydown', onKey, true);
+  document.body.appendChild(el);
+}
 if (typeof window !== 'undefined') {
-  window.addEventListener('nonmind:locale', () => { setLocale(locale === 'en' ? 'de' : 'en'); });
+  window.addEventListener('nonmind:locale', askSwitch);
   const first = initialLocale();
   if (first !== 'en') setLocale(first);
 }

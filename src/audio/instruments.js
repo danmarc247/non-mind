@@ -298,3 +298,33 @@ export function thump(kit, dest, t, o = {}) {
   kit.cleanup(s, [s, g]);
   return true;
 }
+
+// ---------------------------------------------------------------------------
+// Bowed-glass pad: three near-harmonic sines (1, 2.003, 3.01) with a slow bow
+// attack and a faint, slow shimmer between the upper partials. Unlocked late
+// in a run; also used for the rare high "harmonic bloom".
+export function glass(kit, dest, t, freq, o = {}) {
+  const vel = o.vel ?? 0.5, dur = o.dur ?? 7;
+  const end = t + dur + 0.1;
+  if (!kit.budget.request(t, end, 3, o.limit)) return false;
+  const out = kit.gain(0);
+  const peak = 0.12 * vel;
+  const att = Math.min(dur * 0.4, o.attack ?? 2.5);
+  out.gain.setValueAtTime(0, t);
+  out.gain.linearRampToValueAtTime(peak, t + att);
+  out.gain.linearRampToValueAtTime(peak * 0.7, t + dur * 0.7);
+  out.gain.linearRampToValueAtTime(0, t + dur);
+  const nodes = [out];
+  const srcs = [];
+  [[1, 1], [2.003, 0.32], [3.01, 0.12]].forEach(([r, g]) => {
+    const s = kit.osc('sine', freq * r, t);
+    const sg = kit.gain(g);
+    s.connect(sg).connect(out);
+    nodes.push(s, sg);
+    srcs.push(s);
+  });
+  out.connect(dest);
+  for (const s of srcs) { s.start(t); s.stop(end); }
+  kit.cleanup(srcs[0], nodes);
+  return out;
+}

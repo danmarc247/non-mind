@@ -27,6 +27,7 @@ import { createSfx, SFX_NAMES } from './sfx.js';
 export { SFX_NAMES };
 export const ASPECTS = ['vagal', 'limbic', 'cortical', 'somatic', 'shadow', 'relational', 'void', 'mythic'];
 export const STANCES = ['toward', 'away', 'against'];
+export const PHASES = ['prep', 'fight', 'won', 'lost'];
 
 const RT_LOOKAHEAD = 0.15;
 const RT_INTERVAL_MS = 25;
@@ -52,20 +53,28 @@ export function createAudioEngine(ctx, opts = {}) {
   const target = {
     complexity: 0, overwhelm: 0, tension: 0, depth: 0, stance: null,
     aspects: Object.fromEntries(ASPECTS.map((a) => [a, 0])),
+    // the score's journey: wave 1..10 (level within a cycle), cycle 0+, arc 0..9
+    // (the wave's modifier; picks the identity when given), stage 0..17 (float;
+    // null = everything unlocked), phase 'prep'|'fight'|'won'|'lost'|null,
+    // beat 0..9 (optional; estimated from fight time when absent)
+    wave: 1, cycle: 0, arc: null, stage: null, phase: null, beat: null,
   };
   const S = {
-    c: 0, o: 0, ten: 0, toward: 0, away: 0, against: 0,
+    c: 0, o: 0, ten: 0, toward: 0, away: 0, against: 0, stage: 99,
     asp: Object.fromEntries(ASPECTS.map((a) => [a, 0])),
   };
   function smooth(dt) {
     S.c += (target.complexity - S.c) * approach(dt, 2.0);
     S.o += (target.overwhelm - S.o) * approach(dt, target.overwhelm > S.o ? 1.2 : 0.8);
     S.ten += (target.tension - S.ten) * approach(dt, 2.0);
+    if (target.stage === null) S.stage = 99;
+    else S.stage = S.stage > 50 ? target.stage : S.stage + (target.stage - S.stage) * approach(dt, 2.5);
     for (const st of STANCES) S[st] += ((target.stance === st ? 1 : 0) - S[st]) * approach(dt, 3.0);
     for (const a of ASPECTS) S.asp[a] += (target.aspects[a] - S.asp[a]) * approach(dt, 3.0);
   }
   function snap() {
     S.c = target.complexity; S.o = target.overwhelm; S.ten = target.tension;
+    S.stage = target.stage === null ? 99 : target.stage;
     for (const st of STANCES) S[st] = target.stance === st ? 1 : 0;
     for (const a of ASPECTS) S.asp[a] = target.aspects[a];
   }
@@ -169,6 +178,7 @@ export function createAudioEngine(ctx, opts = {}) {
     reset: () => reset(),
     stats: { notes: 0 }, // count of music note events actually played (for tests)
   };
+  let scaleTarget = E.scale;
   const music = createMusic(E);
   const sfxEngine = createSfx(E);
 
@@ -288,13 +298,30 @@ export function createAudioEngine(ctx, opts = {}) {
     if (m.aspects && typeof m.aspects === 'object') {
       for (const a of ASPECTS) if (typeof m.aspects[a] === 'number') target.aspects[a] = clamp(m.aspects[a]);
     }
+    let depthChanged = false;
     if (typeof m.depth === 'number') {
       const d = Math.max(0, Math.floor(m.depth));
-      if (d !== target.depth) {
-        target.depth = d;
-        E.scale = makeScale(d);
-        if (started) music.keyChange(ctx.currentTime); // fade old-key notes, no clash
+      if (d !== target.depth) { target.depth = d; depthChanged = true; }
+    }
+    if (typeof m.wave === 'number' && Number.isFinite(m.wave)) target.wave = Math.max(1, Math.floor(m.wave));
+    if (typeof m.cycle === 'number' && Number.isFinite(m.cycle)) target.cycle = Math.max(0, Math.floor(m.cycle));
+    if ('arc' in m) target.arc = typeof m.arc === 'number' && Number.isFinite(m.arc) ? ((Math.floor(m.arc) % 10) + 10) % 10 : null;
+    if ('stage' in m) target.stage = typeof m.stage === 'number' && Number.isFinite(m.stage) ? clamp(m.stage, 0, 17) : null;
+    if ('beat' in m) target.beat = typeof m.beat === 'number' && Number.isFinite(m.beat) ? m.beat : null;
+    if ('phase' in m) {
+      const ph = PHASES.includes(m.phase) ? m.phase : null;
+      if (ph !== target.phase) {
+        target.phase = ph;
+        if (started) E.arcEvent = { phase: ph, t: ctx.currentTime }; // music plays the won / lost gesture
       }
+    }
+    // wave identity: depth palette x wave (arc picks it when given) x cycle
+    const sc = makeScale(target.depth, target.arc !== null ? target.arc + 1 : target.wave, target.cycle);
+    if (sc !== scaleTarget) {
+      scaleTarget = sc;
+      if (!started) { E.scale = sc; music.adopt(sc); } // before start(): take it at once
+      else if (depthChanged) { E.scale = sc; music.keyChange(ctx.currentTime); } // prestige: quick fade, no clash
+      else music.requestScale(sc, ctx.currentTime); // wave / cycle: 4-8 s cross-fade at a phrase boundary
     }
     if (!started) snap(); // before start(): apply immediately (deterministic offline renders)
   }
@@ -376,7 +403,7 @@ export function createAudioEngine(ctx, opts = {}) {
     get quality() { return quality; },
     get ctx() { return ctx; },
     /** Debug snapshot (smoothed mood, scale name, live oscillator count). */
-    debug: () => ({ ...S, asp: { ...S.asp }, scale: E.scale.name, quality, osc: budget.countAt(ctx.currentTime) + budget.persistent, notes: E.stats.notes }),
+    debug: () => ({ ...S, asp: { ...S.asp }, scale: E.scale.name, wave: E.scale.wave, cycle: E.scale.cycle, phase: target.phase, beat: E.X.beat, den: E.X.den, calm: E.X.calm, lost: E.X.lost, gifts: E.stats.gifts || 0, rests: E.stats.rests || 0, transitions: E.stats.transitions || 0, quality, osc: budget.countAt(ctx.currentTime) + budget.persistent, notes: E.stats.notes }),
   };
 }
 

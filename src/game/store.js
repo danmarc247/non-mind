@@ -45,7 +45,11 @@ export function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch { /* i
   // a wiped game is a first game: the guide and its hints start over too
   try { for (const k of Object.keys(localStorage)) if (/^non-?mind.*(tut|nudge-mem)/i.test(k)) localStorage.removeItem(k); } catch { /* ignore */ }
   notify(); }
-if (typeof window !== 'undefined') window.__game = game;
+if (typeof window !== 'undefined') {
+  window.__game = game;
+  // save before a deliberate reload (language change)
+  window.addEventListener('nonmind:before-reload', () => { try { localStorage.setItem(SAVE_KEY, serialize(game.G)); } catch { /* storage blocked */ } });
+}
 
 // Two-step operations (integrate / subtract): setPending('integrate') with a unit selected, then choose(otherId).
 export const setPending = (kind) => { game.pending = game.selected && kind ? { kind, a: game.selected } : null; notify(); };

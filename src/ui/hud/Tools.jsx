@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { RingButton } from '../bits/kit.jsx';
 import { cn } from '../../lib/cn';
+import { getLocale } from '../../i18n/index.js';
 import { Scr } from './shared.jsx';
 
 const fire = (name) => () => window.dispatchEvent(new Event(name));
@@ -27,7 +28,7 @@ export default function Tools({ size = 56, layout = 'grid', hotkeys = true, clas
     window.addEventListener('nonmind:muted', on);
     return () => window.removeEventListener('nonmind:muted', on);
   }, []);
-  const view = (t) => (t.id === 'sound' && muted ? { ...t, label: 'quiet', tone: 'paper-2' } : t);
+  const view = (t) => (t.id === 'sound' && muted ? { ...t, label: 'quiet', tone: 'paper-2' } : t.id === 'locale' ? { ...t, label: getLocale() === 'de' ? 'deutsch' : 'english' } : t);
   return (
     <div className={cn(layout === 'grid' ? 'grid grid-cols-2 gap-1.5' : layout === 'col' ? 'flex flex-col gap-1.5' : 'flex gap-1.5', className)}>
       {TOOLS.map(view).map((t, i) => (
