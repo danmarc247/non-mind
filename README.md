@@ -22,7 +22,6 @@ Three moments from the live build.
 1. What if?
 2. How it feels to play
 3. Mechanics reference
-4. Genres it folds together
 5. Tech stack
 6. Architecture
 7. Design system
@@ -371,19 +370,6 @@ Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs
 | **Seasons** | Every 60 s the season takes 3 attention, or, if you cannot pay, adds a Dread |
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
 | **Seats** | 3 rings of 10 (the second opens at stage 7, the third with a mirror). Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
-
----
-
-## Genres it folds together
-
-Several familiar genres share a table here. Only their systems were borrowed, and each was changed on the way in.
-
-| Genre system | NON-MIND system | What changed |
-|---|---|---|
-| Auto-battler drafting: shop, bench, board, level-gated odds, traits that need N members | Shop with 5 slots, tier odds by level, 3 seat rings, **aspect** thresholds 2 / 4 / 6 | Units are not fixed catalogue entries. Any two can be integrated or carved into a new genome, and merging copies climbs a 12-link ladder instead of a three-star cap. |
-| Idle and incremental layering: buildings, prestige, a reset that multiplies the next run | Ten habits at x1.15 cost growth, the **non-mind** reset paying residue | The reset is driven by overwhelm, not a timer. Complexity both multiplies income and is the pressure that forces the reset. |
-| Card-table occultism with timed verbs: slots, aspects, decaying moods | Verbs with aspect-gated slots, Dread / Contentment / Fascination, seasons | Verbs act on your own regulators, and aspects feed battle tiers as well as slots. |
-| Unlock-by-progress tutorials | 18 stages, each unlocking one system | The unlock conditions are things you do (fuse, split, subtract), so the tutorial is the game. |
 
 ---
 
