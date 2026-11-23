@@ -19,7 +19,7 @@ export function Log({ compact }) {
     const prev = folded[folded.length - 1];
     if (prev && prev.text === l.text) { prev.n++; prev.i = i; } else folded.push({ ...l, n: 1, i });
   });
-  const items = folded.slice(compact ? -4 : -5);
+  const items = folded.slice(compact ? -2 : -5);
   return (
     <div className={cn('pointer-events-none flex flex-col justify-end gap-0.5', compact ? 'w-[280px]' : 'w-[316px]')} style={{ height: 'var(--log-h)' }}>
       <AnimatePresence initial={false}>

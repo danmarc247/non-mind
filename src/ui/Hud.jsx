@@ -122,7 +122,7 @@ export default function Hud() {
   const bandTop = topH + 24;
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
-  const logH = compact ? 78 : 104;
+  const logH = compact ? 50 : 104;
 
   return (
     <DegradeCtx.Provider value={{ d, tick }}>

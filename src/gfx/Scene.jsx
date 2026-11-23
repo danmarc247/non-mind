@@ -251,7 +251,7 @@ function Loop({ audioRef }) {
 
 export default function Scene({ audioRef, quality = 'med', post = true }) {
   return (
-    <Canvas linear legacy flat camera={{ position: [0, 15, 21], fov: 46, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
+    <Canvas linear legacy flat camera={{ position: [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
       <Loop audioRef={audioRef} />
       <PainterSky />
@@ -261,7 +261,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Core />
       <Bodies />
       <Fx />
-      <OrbitControls enablePan={false} minDistance={12} maxDistance={34} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, 0.4, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
+      <OrbitControls enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}
     </Canvas>
   );
