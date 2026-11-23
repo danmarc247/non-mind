@@ -91,12 +91,21 @@ function Pointer({ card, t }) {
   const qx = (x1 + x2) / 2 + nx * bend, qy = (y1 + y2) / 2 + ny * bend;
   const a = Math.atan2(y2 - qy, x2 - qx), h = 13;
   const head = `M${x2 - h * Math.cos(a - 0.5)} ${y2 - h * Math.sin(a - 0.5)} L${x2} ${y2} L${x2 - h * Math.cos(a + 0.5)} ${y2 - h * Math.sin(a + 0.5)}`;
+  const line = `M${x1} ${y1} Q${qx} ${qy} ${x2} ${y2}`;
+  const both = `${line} ${head}`;
+  // the same layers as the idle hint's arrow: a yolk glow, a paper casing, ink, then the stroke in magenta
   return (
-    <g filter="url(#nm-tut-wobble)">
-      <motion.path d={`M${x1} ${y1} Q${qx} ${qy} ${x2} ${y2}`} fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round"
-        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.28, ease: 'easeOut' }} />
-      <motion.path d={head} fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.22, duration: 0.08 }} />
+    <g>
+      <motion.path d={both} fill="none" stroke="var(--color-yolk)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" style={{ filter: 'blur(4px)' }}
+        initial={{ opacity: 0 }} animate={{ opacity: [0.35, 0.7, 0.35] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} />
+      <motion.path d={both} fill="none" stroke="var(--color-paper)" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} />
+      <motion.path d={both} fill="none" stroke="var(--color-ink)" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} />
+      <motion.path d={line} fill="none" stroke="var(--color-magenta)" strokeWidth="4" strokeLinecap="round"
+        initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }} />
+      <motion.path d={head} fill="none" stroke="var(--color-magenta)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.26, duration: 0.08 }} />
     </g>
   );
 }
@@ -134,6 +143,13 @@ export default function Tutorial() {
   // a hint that is showing has the floor: the guide's card steps aside until it is gone
   const [yielding, setYielding] = useState(false);
   useEffect(() => onHud((e) => { if (e.type === 'nudge') setYielding(!!e.on); }), []);
+  // the Ceremony has the stage for a few seconds after a stage, reset or ending: the card waits
+  const [ceremony, setCeremony] = useState(false);
+  useEffect(() => {
+    let t = 0;
+    const off = onEvent((e) => { if (['stage', 'reset', 'ending'].includes(e.type)) { setCeremony(true); clearTimeout(t); t = setTimeout(() => setCeremony(false), 3200); } });
+    return () => { off(); clearTimeout(t); };
+  }, []);
   // a wiped or restarted game is a first game: read the guide's state again
   useEffect(() => { setTut(loadTut()); }, [G]);
   const stepRef = useRef(step);
@@ -190,16 +206,10 @@ export default function Tutorial() {
 
   return (
     <AnimatePresence>
-      {step && !yielding && !modal && (
+      {step && !yielding && !modal && !ceremony && (
         <motion.div key={step.id} className="pointer-events-none fixed inset-0 z-30"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={{ duration: 0.2 }}>
           <svg className="absolute inset-0 h-full w-full" aria-hidden="true">
-            <defs>
-              <filter id="nm-tut-wobble" x="-5%" y="-5%" width="110%" height="110%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n" />
-                <feDisplacementMap in="SourceGraphic" in2="n" scale="5" />
-              </filter>
-            </defs>
             <Spot t={rect} extra={extra} />
             <Pointer card={card} t={rect} />
           </svg>

@@ -2,7 +2,7 @@
 // staged by the Ceremony overlay, so stage/reset/ending lines are never heralded large here.)
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'motion/react';
-import { useGame } from '../../game/store.js';
+import { onEvent, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { POP } from './shared.jsx';
 
@@ -41,8 +41,17 @@ export function ArcaneProvider({ children }) {
     if (fresh.length) setSt((s) => ({ ...s, queue: [...s.queue, ...fresh].slice(-QUEUE) }));
   });
 
+  // the Ceremony has the stage for a few seconds after a stage, reset or ending: arrivals wait their turn
+  const [ceremony, setCeremony] = useState(false);
+  useEffect(() => {
+    let t = 0;
+    const off = onEvent((e) => { if (['stage', 'reset', 'ending'].includes(e.type)) { setCeremony(true); clearTimeout(t); t = setTimeout(() => setCeremony(false), 3200); } });
+    return () => { off(); clearTimeout(t); };
+  }, []);
+
   // advance the queue
   useEffect(() => {
+    if (ceremony && !st.herald) return undefined;
     if (!st.herald && st.queue.length) {
       setSt((s) => ({ herald: { ...s.queue[0], at: performance.now() }, queue: s.queue.slice(1) }));
       return undefined;
@@ -54,7 +63,7 @@ export function ArcaneProvider({ children }) {
     const hold = (dbg?.hold ?? (st.queue.length ? HOLD_BUSY : HOLD)) * 1000 - (performance.now() - st.herald.at);
     const t = setTimeout(() => setSt((s) => ({ ...s, herald: null })), Math.max(0, hold));
     return () => clearTimeout(t);
-  }, [st]);
+  }, [st, ceremony]);
 
   const value = useMemo(() => ({
     herald: st.herald, reduced,

@@ -15,6 +15,7 @@ import { GatePortals, SeatRings, GlassVessel, CoreAura, SeaCaustics } from './ar
 import { PaintFx, ArcVeil } from './fx/index.js';
 import { Mobiles, Strata, Motes, Tethers } from './drift/index.js';
 import ContainedSea from './sea/index.js';
+import { DriftingCard } from './cards/index.js';
 import Director, { director } from './Director.jsx';
 
 const PainterSky = SkyMod.PainterSky || PainterSkyDefault;
@@ -251,6 +252,7 @@ export default function Scene({ audioRef, quality = SMALL ? 'low' : 'med', post 
       <Core />
       <CoreAura />
       <Bodies />
+      <DriftingCard />
       <ArcVeil />
       <PaintFx />
       <Mobiles count={SMALL ? 8 : 14} />

@@ -14,6 +14,7 @@ export const TOOLS = [
   { id: 'manual', label: 'manual', tone: 'sky', key: 'm', event: 'nonmind:manual' },
   { id: 'save', label: 'save', tone: 'yolk', key: null, event: 'nonmind:save' },
   { id: 'lineage', label: 'lineage', tone: 'rose', key: 'l', event: 'nonmind:lineage' },
+  { id: 'book', label: 'book', tone: 'violet', key: 'b', event: 'nonmind:book' },
   { id: 'again', label: 'again', tone: 'tangerine', key: null, event: 'nonmind:restart' },
   { id: 'sound', label: 'sound', tone: 'teal', key: null, event: 'nonmind:mute' },
   // hidden until the German interface translation is complete (see LOCALE_SWITCH in src/i18n/index.js)

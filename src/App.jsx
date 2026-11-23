@@ -18,6 +18,11 @@ const Lineage = lazyOnOpen(() => import('./ui/Lineage.jsx'), 'nonmind:lineage', 
   const tag = e.target?.tagName;
   return !(tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) && (e.key === 'l' || e.key === 'L');
 });
+const Book = lazyOnOpen(() => import('./ui/Book.jsx'), 'nonmind:book', (e) => {
+  const tag = e.target?.tagName;
+  return !(tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) && (e.key === 'b' || e.key === 'B') && !document.querySelector('[aria-modal="true"]');
+});
+import CardToast from './ui/book/CardToast.jsx';
 import { getAudio } from './lib/audio.js';
 import { startTitleAmbience, stopTitleAmbience } from './lib/titleAmbience.js';
 
@@ -88,8 +93,8 @@ export default function App() {
     const down = (e) => {
       if (e.key === 'Escape') return;
       if (typing(e.target)) { e.stopPropagation(); return; }
-      if (document.querySelector('[aria-modal="true"]') && /^[ 1-5rRxXcClLmMhH?]$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
-        const own = { m: 'manual', M: 'manual', l: 'lineage', L: 'lineage' }[e.key];
+      if (document.querySelector('[aria-modal="true"]') && /^[ 1-5rRxXcClLmMhHbB?]$/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+        const own = { m: 'manual', M: 'manual', l: 'lineage', L: 'lineage', b: 'book', B: 'book' }[e.key];
         if (!own || !document.querySelector(`[data-modal="${own}"]`)) { e.stopPropagation(); if (e.key === ' ') e.preventDefault(); }
       }
     };
@@ -132,6 +137,8 @@ export default function App() {
       <Veil />
       <SaveMenu />
       <Lineage />
+      <Book />
+      <CardToast />
     </div>
   );
 }
