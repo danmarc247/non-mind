@@ -3,7 +3,7 @@
 // Opens on window event 'nonmind:book' or key B (not while typing, not over another modal); Esc closes.
 // Click a held card to enlarge it (shared layout). New cards glow until the book has shown them once.
 // Card text is read at render time: the locale swaps CARDS in place.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useGame } from '../game/store.js';
 import { CARDS } from '../game/content/cards.js';
@@ -101,6 +101,7 @@ function Band() {
 export default function Book() {
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState(null);
+  const selRef = useRef(null); selRef.current = sel;
   const [seen, setSeen] = useState(readSeen);
   const held = useGame((G) => G.cards || []);
   const heldSet = useMemo(() => new Set(held), [held, held.length]);
@@ -109,7 +110,7 @@ export default function Book() {
   useEffect(() => {
     const toggle = () => setOpen((o) => !o);
     const key = (e) => {
-      if (e.key === 'Escape') { setSel((s) => { if (s) return null; setOpen(false); return s; }); return; }
+      if (e.key === 'Escape') { if (selRef.current) setSel(null); else setOpen(false); return; }
       if (!bookKey(e)) return;
       if (document.querySelector('[aria-modal="true"]:not([data-modal="book"])')) return;
       toggle();

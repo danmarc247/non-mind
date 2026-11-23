@@ -55,7 +55,8 @@ function fxMesh(count, kind) {
   return m;
 }
 
-export function DriftingCard({ y = CARD_Y, scale = 1.35 }) {
+// fixedYaw (galleries only): hold the slow turn at this angle (0 shows the front to a camera on +z).
+export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
   const { camera } = useThree();
   const mesh = useRef();
   const parts = useMemo(() => {
@@ -115,6 +116,7 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35 }) {
       st.pop = ease(st.pop, 0, dt, 7); st.fade = ease(st.fade, 1, dt, 12);
       st.hov = ease(st.hov, st.hover ? 1 : 0, dt, st.hover ? 14 : 6);
       st.yaw += dt * (0.5 + 0.5 * urgency) * (1 - st.hov);
+      if (fixedYaw !== null) st.yaw = fixedYaw;
       const t = st.clock;
       m.position.set(st.pos.x, st.pos.y + 0.14 * Math.sin(t * 1.6 + st.pos.x) + 0.45 * st.hov + 0.6 * st.pop, st.pos.z);
       st.e.set(0.12 * Math.sin(t * 0.9), st.yaw, 0.07 * Math.sin(t * 1.3 + 1)); st.qIdle.setFromEuler(st.e);
