@@ -2,7 +2,7 @@
 import { createContext, useContext } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/cn';
-import { toneVar } from '../bits';
+import { toneVar, toneHex } from '../bits';
 import { ASPECTS, FAMILY, aspectsOf, leaves, nameOf, tierOf } from '../../game/index.js';
 import { FAMILY_PALETTES } from '../../gfx/palettes/families.js';
 
@@ -115,7 +115,7 @@ export function Dot({ tone, className }) {
 
 /** Small label in head font. */
 export function Label({ children, className }) {
-  return <span className={cn('font-head text-[11px] leading-none tracking-wider text-ink-2 uppercase', className)}>{children}</span>;
+  return <span className={cn('font-head text-[13px] leading-none tracking-wider text-ink-2 uppercase', className)}>{children}</span>;
 }
 
 /* ------------------------------------------------------------ units */
@@ -125,16 +125,18 @@ export const unitTone = (u) => ASPECTS[aspectsOf(u.g)[0]].tone;
 export const unitName = (u) => nameOf(u.g);
 export const unitTier = (u) => tierOf(u.g);
 
-const PAPER = '#fbf6ec';
+const PAPER = toneHex('paper');
+const INKH = toneHex('ink');
+const YOLK = toneHex('yolk');
 const pal = (f) => {
-  const p = FAMILY_PALETTES[f] || { a: '#1b1030', b: '#8a3ffc', c: PAPER };
-  const fix = (h) => (h.toLowerCase() === '#ffffff' ? PAPER : h);
+  const p = FAMILY_PALETTES[f] || { a: INKH, b: toneHex('violet'), c: PAPER };
+  const fix = (h) => (/^#f{6}$/i.test(h) ? PAPER : h); // pure white is not a token
   return { a: fix(p.a), b: fix(p.b), c: fix(p.c) };
 };
 
 // One painted mark per family form. Drawn in a 40x40 box centred on 20,20.
 function FormMark({ form, a, b, c }) {
-  const s = { stroke: '#1b1030', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' };
+  const s = { stroke: INKH, strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' };
   switch (form) {
     case 'lens': return <g {...s}><path d="M4 20 Q20 2 36 20 Q20 38 4 20Z" fill={a} /><circle cx="20" cy="20" r="6" fill={b} /></g>;
     case 'slab': return <g {...s}><rect x="6" y="9" width="28" height="22" rx="3" fill={a} /><path d="M6 17 H34" stroke={b} strokeWidth="3" /></g>;
@@ -170,14 +172,14 @@ export function UnitGlyph({ g, link, className }) {
       {marks.map(({ l, p, f, x, y, s }, i) => (
         <g key={i} transform={`translate(${x - 20 * s} ${y - 20 * s}) scale(${s})`} opacity={l.pole < 0 ? 0.7 : 1}>
           <FormMark form={f.form} {...p} />
-          {l.pole > 0 && <circle cx="34" cy="6" r="4" fill="#ffd21f" stroke="#1b1030" strokeWidth="2" />}
-          {l.pole < 0 && <path d="M30 6 H38" stroke="#1b1030" strokeWidth="3" />}
+          {l.pole > 0 && <circle cx="34" cy="6" r="4" fill={YOLK} stroke={INKH} strokeWidth="2" />}
+          {l.pole < 0 && <path d="M30 6 H38" stroke={INKH} strokeWidth="3" />}
         </g>
       ))}
       {link > 1 && (
         <g>
-          <rect x="2" y="44" width={link >= 10 ? 20 : 15} height="13" rx="4" fill="#fbf6ec" stroke="#1b1030" strokeWidth="2" />
-          <text x={link >= 10 ? 12 : 9.5} y="54.2" textAnchor="middle" fontSize="10" fontFamily="Hypermonosaturation, monospace" fill="#1b1030">{link}</text>
+          <rect x="2" y="44" width={link >= 10 ? 20 : 15} height="13" rx="4" fill={PAPER} stroke={INKH} strokeWidth="2" />
+          <text x={link >= 10 ? 12 : 9.5} y="54.2" textAnchor="middle" fontSize="10" fontFamily="Hypermonosaturation, monospace" fill={INKH}>{link}</text>
         </g>
       )}
     </svg>

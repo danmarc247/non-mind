@@ -84,11 +84,23 @@ describe('economy: yield multipliers', () => {
     G.endings = 0; G.mirrors = 2; expect(affectMul(G)).toBeCloseTo(base * 4);
   });
 
-  it('capacity grows with mu and stage', () => {
+  it('capacity grows with stage only (mu no longer matters)', () => {
     const G = gameAt(0);
     expect(capacityOf(G)).toBe(40);
-    G.mu = 10; const a = capacityOf(G); G.stage = 5; const b = capacityOf(G);
-    expect(a).toBeGreaterThan(40); expect(b).toBeGreaterThan(a);
+    G.mu = 10; expect(capacityOf(G)).toBe(40);
+    G.stage = 5; expect(capacityOf(G)).toBeCloseTo(40 * 2.5);
+  });
+
+  it('starting attention is 3 + min(20, floor(sqrt(mu)))', () => {
+    expect(createGame(1, { mu: 0 }).attention).toBe(3);
+    expect(createGame(1, { mu: 16 }).attention).toBe(7);
+    expect(createGame(1, { mu: 1e6 }).attention).toBe(23);
+  });
+
+  it('complexity includes earned-affect and wave-depth terms', () => {
+    const G = gameAt(0); step(G, 0.1); const c0 = G.complexity;
+    G.stats.earned = 1e9; G.wave = 5; step(G, 0.1);
+    expect(G.complexity).toBeGreaterThan(c0 + 20);
   });
 });
 

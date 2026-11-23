@@ -21,7 +21,7 @@ export function createGame(seed = 1, meta = {}) {
   const G = {
     v: 1, seed, t: 0,
     mu: 0, endings: 0, depth: 0, bestStage: 0, totalT: 0, ...meta,
-    affect: 0, attention: 3, insight: 0, insightMax: 100,
+    affect: 0, attention: 3 + Math.min(20, Math.floor(Math.sqrt(meta.mu || 0))), insight: 0, insightMax: 100,
     level: 1, xp: 0, composure: 100, composureMax: 100,
     units: [], nextUid: 1, shop: [], habits: {}, upgrades: {}, attendants: 0, attendT: 0, mirrors: 0,
     stance: null, moods: [], verbs: {}, seasonT: 60, labelT: 0,
@@ -40,7 +40,7 @@ export function createGame(seed = 1, meta = {}) {
 
 const say = (G, text, kind = 'koan') => { G.log.push({ t: G.t, text, kind }); if (G.log.length > 40) G.log.shift(); G.events.push({ type: 'say', text, kind }); };
 export const unlocked = (G, what) => STAGES.findIndex((s) => s.unlock === what) <= G.stage;
-export const capacityOf = (G) => 40 * (1 + 0.3 * Math.pow(G.mu, 0.6)) * (1 + 0.3 * G.stage);
+export const capacityOf = (G) => 40 * (1 + 0.3 * G.stage);
 export const unitCap = (G) => Math.min(30, G.level + 1 + 2 * G.mirrors);
 export const ringsOpen = (G) => 1 + (unlocked(G, 'ring2') ? 1 : 0) + (G.mirrors > 0 ? 1 : 0);
 const moodN = (G, k) => G.moods.filter((m) => m.kind === k).length;
@@ -220,6 +220,7 @@ export const actions = {
   setAuto(G, on) { G.auto = !!on; },
   // The reset. Returns the new game.
   nonMind(G) {
+    if (G.stage < 1) return G;
     const gain = muGain(G);
     const meta = { mu: G.mu + gain, endings: G.endings, depth: G.depth + 1, bestStage: Math.max(G.bestStage, G.stage), totalT: G.totalT + G.t };
     const N = createGame(G.seed, meta);
@@ -273,10 +274,10 @@ export function step(G, dt) {
   if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three.', 'season'); } else addMood(G, 'dread'); } }
   // complexity and overwhelm
   let C = 0; for (const u of G.units) C += complexityOf(u);
-  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 12 + G.attendants * 0.6 + (G.stance ? 3 : 0);
+  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 12 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.2;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
-  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.6)));
+  G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.35)));
   if (G.overwhelm >= 1) G.composure -= G.composureMax * 0.02 * dt;
   // stages
   while (G.stage < STAGES.length - 1 && STAGES[G.stage + 1].need(G)) {

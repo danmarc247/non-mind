@@ -1,0 +1,86 @@
+// Quiet koan stack + centre-screen stage flash.
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { KoanFlash } from '../type/index.js';
+import { STAGES } from '../../game/index.js';
+import { onEvent, useGame } from '../../game/store.js';
+import { cn } from '../../lib/cn';
+import { POP } from './shared.jsx';
+
+const KIND_TONE = {
+  stage: 'text-magenta', link: 'text-ultra', ending: 'text-leaf', warn: 'text-blood', op: 'text-ink', verb: 'text-violet', season: 'text-tangerine', reset: 'text-violet',
+};
+
+export function Log({ compact }) {
+  const G = useGame();
+  const items = G.log.slice(compact ? -4 : -5);
+  const base = G.log.length - items.length;
+  return (
+    <div className={cn('pointer-events-none flex flex-col justify-end gap-0.5', compact ? 'w-[280px]' : 'w-[316px]')} style={{ height: 'var(--log-h)' }}>
+      <AnimatePresence initial={false}>
+        {items.map((l, i) => {
+          const age = items.length - 1 - i;
+          return (
+            <motion.p
+              key={`${base + i}-${l.t}-${l.text}`}
+              layout="position"
+              initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
+              animate={{ opacity: Math.max(0.28, 1 - age * 0.2), y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0 }}
+              transition={{ ...POP, opacity: { duration: 0.25 } }}
+              className={cn(
+                'w-fit max-w-full rounded-[8px] bg-paper/80 px-2 py-[2px] font-body text-[12.5px] leading-snug italic',
+                KIND_TONE[l.kind] || 'text-ink-2',
+                age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
+              )}
+            >
+              {l.text}
+            </motion.p>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function StageFlash() {
+  const [flash, setFlash] = useState(null);
+  useEffect(() => {
+    let timer = 0;
+    const off = onEvent((e) => {
+      let text = null, tone = 'magenta';
+      if (e.type === 'stage') text = STAGES[e.stage]?.id.toUpperCase();
+      if (e.type === 'reset') { text = 'SIMPLE AGAIN'; tone = 'violet'; }
+      if (e.type === 'ending') { text = 'AN ENDING'; tone = 'leaf'; }
+      if (!text) return;
+      clearTimeout(timer);
+      setFlash({ text, tone, key: performance.now() });
+      timer = setTimeout(() => setFlash(null), 1500);
+    });
+    return () => { off(); clearTimeout(timer); };
+  }, []);
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-[38%] flex justify-center">
+      <AnimatePresence>
+        {flash && (
+          <motion.div
+            key={flash.key}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.08, transition: { duration: 0.2 } }}
+            transition={POP}
+            className="w-[min(80vw,900px)]"
+          >
+            <KoanFlash
+              text={flash.text}
+              wpm={flash.text.includes(' ') ? 110 : 52}
+              trail="rgb_split"
+              tone={flash.tone}
+              className="h-[120px] font-title text-[88px] text-ink [text-shadow:4px_5px_0_var(--color-paper)]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

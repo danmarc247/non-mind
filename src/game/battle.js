@@ -49,7 +49,9 @@ export function unitStats(G, u, tiers) {
   if (has('somatic')) tol *= 1 + av(tiers, 'somatic') / 100;
   if (has('limbic')) sal *= 1 + av(tiers, 'limbic') / 100;
   if (G.upgrades.crowd) sal *= 1 + G.complexity / 60;
-  sal *= 1 + 0.1 * G.endings;
+  // the incremental layer feeds the board: lifetime yield and residue both strengthen regulators
+  const momentum = (1 + 0.12 * Math.log10(1 + G.stats.earned)) * (1 + 0.05 * Math.pow(G.mu, 0.7));
+  sal *= (1 + 0.1 * G.endings) * momentum; tol *= momentum;
   return {
     tol, sal, lat: Math.max(0.15, s.lat), reach: s.reach * (stance.reach || 1),
     opa: Math.min(80, s.opa + (stance.opa || 0) + (has('void') ? av(tiers, 'void') : 0)),
@@ -81,7 +83,7 @@ function spawnBeat(G) {
   const B = G.battle, { arc, gw } = B, mod = arc.mod;
   const beat = B.beat;
   const pool = STRESSORS.filter((s) => !s.boss).slice(0, Math.min(5, 1 + Math.floor((gw + 1) / 2)));
-  const scale = Math.pow(1.24, gw - 1) * (1 + 2 * G.overwhelm) * (1 + 0.5 * G.mirrors);
+  const scale = Math.pow(1.15, gw - 1) * (1 + 2 * G.overwhelm) * (1 + 0.5 * G.mirrors);
   let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));
@@ -95,7 +97,7 @@ function spawnBeat(G) {
     const [gx, gz] = gatePos(gate), j = () => (G.rng() - 0.5) * 1.6;
     const tol = def.tol * scale * mulT * (mod.tolMul || 1) * shadow;
     B.enemies.push({
-      id: B.nextId++, side: 1, def: def.id, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.17, gw - 1) * mulS * (mod.salMul || 1),
+      id: B.nextId++, side: 1, def: def.id, x: gx + j(), z: gz + j(), hp: tol, max: tol, sal: def.sal * Math.pow(1.1, gw - 1) * mulS * (mod.salMul || 1),
       lat: def.lat, reach: def.reach, speed: def.speed, opa: mod.opa || 0, cd: G.rng(), alive: true, stun: 0, mark: 0, value: def.value,
       form: mod.mirrorForms && B.units.length ? { mirror: B.units[Math.floor(G.rng() * B.units.length)].uid } : null, flip: 0, ...extra,
     });

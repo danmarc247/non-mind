@@ -106,7 +106,8 @@ describe('progression: non-mind reset', () => {
   it('deeper runs have more capacity and a stronger multiplier; depth stacks', () => {
     const G = readyRun();
     const N = actions.nonMind(G);
-    expect(capacityOf(N)).toBeGreaterThan(capacityOf(createGame(5)));
+    expect(capacityOf(N)).toBe(capacityOf(createGame(5))); // capacity no longer depends on mu
+    expect(N.attention).toBeGreaterThan(createGame(5).attention); // but a start bonus does
     N.stats.peak = 600; N.stage = 5;
     const M = actions.nonMind(N);
     expect(M.depth).toBe(2);
@@ -119,10 +120,10 @@ describe('progression: non-mind reset', () => {
     expect(muGain(G)).toBeGreaterThanOrEqual(a * 2);
   });
 
-  // The reset button is stage-gated in the UI (stage 17 "nonmind"), but the action itself is not.
-  it.skip('BUG? actions.nonMind should refuse before the nonmind stage unlocks (game.js:222)', () => {
-    const G = gameAt(0); G.stats.peak = 1e6;
-    expect(actions.nonMind(G)).toBeFalsy();
+  it('nonMind returns the same game unchanged before stage 1', () => {
+    const G = gameAt(0); G.stats.peak = 1e6; const before = serialize(G);
+    expect(actions.nonMind(G)).toBe(G);
+    expect(serialize(G)).toBe(before);
   });
 
   it('a fresh run after reset can progress again', () => {

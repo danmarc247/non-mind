@@ -251,7 +251,7 @@ function Loop({ audioRef }) {
 
 export default function Scene({ audioRef, quality = 'med', post = true }) {
   return (
-    <Canvas camera={{ position: [0, 15, 21], fov: 46, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
+    <Canvas linear legacy flat camera={{ position: [0, 15, 21], fov: 46, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
       <Loop audioRef={audioRef} />
       <PainterSky />

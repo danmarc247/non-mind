@@ -1,6 +1,6 @@
 // Right-side inspector for game.selected.
 import { AnimatePresence, motion } from 'motion/react';
-import { InkButton, Panel, Tooltip } from '../bits';
+import { InkButton, Panel, Tooltip, toneHex } from '../bits';
 import {
   ASPECTS, ABILITIES, FAMILY, HABITS, LINKS, TRAITS, VERBS, COSTS,
   aspectsOf, aspectTiers, abilityOf, echoAbilityOf, leafCount, nameOf, tierOf, unitStats, unlocked, unitCap, ringsOpen,
@@ -8,18 +8,19 @@ import {
 import { act, game, select, setPending, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { fmt } from './fmt.js';
+import { STAT_TEXT } from './text.js';
 import { Appear, Dot, Label, Scr, POP } from './shared.jsx';
 import { FAMILY_PALETTES } from '../../gfx/palettes/families.js';
 
 // Oblique, but each line says what the number does.
 export const STAT_LINES = [
-  { k: 'tol', name: 'Tolerance', v: (s) => fmt(s.tol), line: 'How much may land on it before it leaves the circle.' },
-  { k: 'sal', name: 'Salience', v: (s) => fmt(s.sal), line: 'How much of a stressor each strike takes away.' },
-  { k: 'lat', name: 'Latency', v: (s) => `${s.lat.toFixed(2)}s`, line: 'The gap between impulse and act. Smaller is louder.' },
-  { k: 'reach', name: 'Reach', v: (s) => s.reach.toFixed(1), line: 'How far off a thing may be and still be its concern.' },
-  { k: 'opa', name: 'Opacity', v: (s) => `${Math.round(s.opa)}%`, line: 'The share of blows that arrive to find no one there.' },
-  { k: 'lab', name: 'Lability', v: (s) => `±${Math.round(s.lab * 100)}%`, line: 'How far one strike may stray from the last, up or down.' },
-  { k: 'rec', name: 'Recursion', v: (s) => `${Math.round(s.rec)}%`, line: 'The odds a strike happens again before it has finished.' },
+  { k: 'tol', name: 'Tolerance', v: (s) => fmt(s.tol), line: STAT_TEXT.tol },
+  { k: 'sal', name: 'Salience', v: (s) => fmt(s.sal), line: STAT_TEXT.sal },
+  { k: 'lat', name: 'Latency', v: (s) => `${s.lat.toFixed(2)}s`, line: STAT_TEXT.lat },
+  { k: 'reach', name: 'Reach', v: (s) => s.reach.toFixed(1), line: STAT_TEXT.reach },
+  { k: 'opa', name: 'Opacity', v: (s) => `${Math.round(s.opa)}%`, line: STAT_TEXT.opa },
+  { k: 'lab', name: 'Lability', v: (s) => `±${Math.round(s.lab * 100)}%`, line: STAT_TEXT.lab },
+  { k: 'rec', name: 'Recursion', v: (s) => `${Math.round(s.rec)}%`, line: STAT_TEXT.rec },
 ];
 
 const OP = { blend: '+', carve: '−', mix: '~' };
@@ -29,7 +30,7 @@ function Gene({ g, depth = 0 }) {
   if (g.t === 'leaf') {
     const f = FAMILY[g.f];
     const p = FAMILY_PALETTES[g.f];
-    const dark = ['#1b1030', '#2a2bff', '#8a3ffc', '#e3262f'].includes(p.a);
+    const dark = ['ink', 'ultra', 'violet', 'blood'].map((t) => toneHex(t)).includes(p.a);
     return (
       <Tooltip content={`${g.pole > 0 ? 'Idealized ' : g.pole < 0 ? 'Devalued ' : ''}${f.name}`}>
         <span
