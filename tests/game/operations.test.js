@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  actions, key, leaf, node, leaves, STAGES, COSTS, HABITS, FAMILY, tierOf, leafCount, unlocked, unitCap, ringsOpen, mirrorCost,
+  actions, step, key, leaf, node, leaves, STAGES, COSTS, HABITS, FAMILY, tierOf, leafCount, unlocked, unitCap, ringsOpen, mirrorCost,
 } from '../../src/game/index.js';
 import { gameAt, addLeaf, addRaw } from './helpers.js';
 
@@ -117,30 +117,60 @@ describe('operations: split of a whole leaf', () => {
 });
 
 describe('operations: repurpose', () => {
-  it('turns a unit into habit counts on its gate habit', () => {
+  // worth decides the habit: tier - 1 + floor((link - 1) / 3) picks it; n = max(1, round(link * (1 + leaves) / 2))
+  it('turns a tier-1 link-1 unit into one of the first habit', () => {
     const G = gameAt(17);
-    const u = addLeaf(G, 'suppression', { link: 1 }); // dir 1 -> pause; tier 1 * link 1 * (1 + 1 leaf) = 2
+    const u = addLeaf(G, 'suppression', { link: 1 });
     expect(actions.repurpose(G, u.id)).toBe(true);
-    expect(G.habits.pause).toBe(2);
+    expect(G.habits[HABITS[0].id]).toBe(1);
     expect(G.units).toHaveLength(0);
     expect(G.stats.repurposes).toBe(1);
   });
 
-  it('count scales with tier, link and leaves; habit follows the gate', () => {
+  it('habit follows tier and link, count follows link and leaves', () => {
     const G = gameAt(17);
-    const g = node('blend', leaf('equanimity'), leaf('rumination')); // first family: equanimity dir 9 -> identity
+    const g = node('blend', leaf('equanimity'), leaf('rumination')); // tier 5
     const u = addRaw(G, g, { link: 3 });
-    const n = Math.round(tierOf(g) * 3 * (1 + 2));
     actions.repurpose(G, u.id);
-    expect(G.habits[HABITS[9].id]).toBe(n);
-    expect(n).toBe(45);
+    const idx = Math.min(HABITS.length - 1, tierOf(g) - 1 + Math.floor((3 - 1) / 3));
+    expect(G.habits[HABITS[idx].id]).toBe(Math.round(3 * (1 + 2) / 2));
+  });
+
+  it('a cheap unit cannot become a late habit (no yield explosion)', () => {
+    const G = gameAt(17);
+    const u = addLeaf(G, 'projection', { link: 1 }); // tier 3
+    actions.repurpose(G, u.id);
+    expect(G.habits[HABITS[2].id]).toBe(1);
+    for (const h of HABITS.slice(3)) expect(G.habits[h.id] || 0).toBe(0);
   });
 
   it('accumulates onto existing habits', () => {
-    const G = gameAt(17); G.habits.breath = 5;
+    const G = gameAt(17); G.habits[HABITS[0].id] = 5;
     const u = addLeaf(G, 'reappraisal');
     actions.repurpose(G, u.id);
-    expect(G.habits.breath).toBe(7);
+    expect(G.habits[HABITS[0].id]).toBe(6);
+  });
+});
+
+describe('operations: scrutiny regressions', () => {
+  it('integrate then split gives back the parents own links (no link is minted)', () => {
+    const G = gameAt(17); G.insight = 1000;
+    const a = addLeaf(G, 'equanimity', { link: 6 }), b = addLeaf(G, 'reappraisal', { link: 1 });
+    const h = actions.integrate(G, a.id, b.id);
+    expect(actions.split(G, h.id)).toBe(true);
+    expect(G.units.map((u) => u.link).sort()).toEqual([1, 6]);
+  });
+
+  it('composure never goes below zero under overwhelm outside battle', () => {
+    const G = gameAt(17); G.auto = false;
+    for (let i = 0; i < 3000; i++) { G.overwhelm = 1; step(G, 0.1); G.overwhelm = 1; }
+    expect(G.composure).toBeGreaterThanOrEqual(0);
+  });
+
+  it('with nothing held and nothing affordable, an arrival becomes affordable', () => {
+    const G = gameAt(1); G.units = []; G.attention = 0; G.shop = ['equanimity', 'equanimity', null, null, null];
+    step(G, 0.1);
+    expect(actions.buy(G, 0)).toBe(true);
   });
 });
 

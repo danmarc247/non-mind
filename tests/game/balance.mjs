@@ -34,7 +34,7 @@ function extendedBot(G, t) {
     const u = G.units.find((x) => !x.seat && !x.busy);
     if (u && (G.units.length > 6 || v.id !== 'dream')) actions.startVerb(G, v.id, u.id);
   }
-  if (unlocked(G, 'exchange') && G.stats.exchanges < 3 + 2) actions.exchange(G, 'attention', 'insight');
+  if (unlocked(G, 'exchange') && G.stats.exchanges < 3 + 2) { if (G.insight < G.insightMax - 12 && G.attention >= 1) actions.exchange(G, 'attention', 'insight'); else if (G.insight >= 25) actions.exchange(G, 'insight', 'attention'); }
   if (unlocked(G, 'stance') && !G.stance) actions.chooseStance(G, 'toward');
   if (unlocked(G, 'mirror') && G.affect >= mirrorCost(G)) actions.mirror(G);
   // echo needs a seated hybrid: swap the weakest seated pure leaf for a benched hybrid between waves

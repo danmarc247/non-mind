@@ -105,7 +105,7 @@ function spawnBeat(G) {
     const [gx, gz] = gatePos(gate), j = () => (G.rng() - 0.5) * 1.6;
     // affixes: named distortions of a stressor, more common the deeper the run goes
     let ax = null;
-    if (!extra.boss && G.rng() < affixChance(gw)) { const ok = STRESSOR_AFFIXES.filter((a) => a.minWave <= gw); ax = ok[Math.floor(G.rng() * ok.length)] || null; }
+    if (!extra.boss && G.rng() < affixChance(gw)) { const ok = STRESSOR_AFFIXES.filter((a) => a.minWave <= gw); let tw = 0; for (const a of ok) tw += a.weight || 1; let r = G.rng() * tw; ax = null; for (const a of ok) { r -= a.weight || 1; if (r <= 0) { ax = a; break; } } }
     const am = ax?.mod || {};
     const tol = def.tol * scale * mulT * (mod.tolMul || 1) * shadow * (am.tol || 1);
     B.enemies.push({
@@ -141,7 +141,8 @@ function harm(G, src, tgt, raw, opts = {}) {
     if (tgt.ability === 'lid') tgt.store += d * ABILITIES.lid.power;
     tgt.charge += (d / tgt.max) * 45;
   }
-  if (src?.oneShot && tgt.side === 1 && G.rng() < src.oneShot) d = Math.max(d, tgt.hp);
+  const os = B.arc?.mod.oneShot; // 'Light Appears': a single strike may undo a great one
+  if (os && src?.side === 0 && tgt.side === 1 && !opts.shared && G.rng() < os) d = Math.max(d, tgt.hp);
   tgt.hp -= d;
   G.events.push({ type: 'hit', x: tgt.x, z: tgt.z, side: tgt.side, aspect: src?.aspects?.[0], amt: d / tgt.max, id: tgt.id, from: src?.id });
   if (tgt.hp <= 0) kill(G, tgt, src);
@@ -187,7 +188,7 @@ function cast(G, c, id, echo = false) {
     case 'transfer': { const lost = c.max - c.hp; harm(G, c, tgt, lost * P + c.sal, { sure: true }); c.hp = Math.min(c.max, c.hp + lost * 0.4); break; }
     case 'blink': { const strong = es.slice().sort((a, b) => b.hp - a.hp)[0]; c.x = strong.x + 0.8; c.z = strong.z + 0.8; c.hide = 0.8; harm(G, c, strong, c.sal * P, { sure: true }); break; }
     case 'burst_affect': { let sum = 0; for (const e of es) if (dist(e, c) < 4.2) sum += harm(G, c, e, c.sal * P, { sure: true }); G.gain(sum * 0.02 * Math.pow(1.1, B.gw), 'transmute'); break; }
-    case 'taunt': c.taunt = P; c.hard = 2.2; c.veil += c.max * 0.2; break;
+    case 'taunt': c.taunt = P; c.hard = 2.2; c.hardT = P; c.veil += c.max * 0.2; break;
     case 'equalize': { const low = Math.min(...es.map((e) => e.hp)); for (const e of es) if (!e.boss) e.hp = Math.max(low, e.hp * (1 - P)); else e.hp *= 1 - P * 0.3; break; }
   }
   return true;
@@ -204,7 +205,7 @@ export function stepBattle(G, dt) {
   // regulators
   for (const c of us) {
     if (!c.alive) continue;
-    c.hide = Math.max(0, c.hide - dt); c.taunt = Math.max(0, c.taunt - dt); if (c.taunt <= 0 && c.ability === 'hold') c.hard = 1;
+    c.hide = Math.max(0, c.hide - dt); c.taunt = Math.max(0, c.taunt - dt); if (c.hardT > 0) { c.hardT -= dt; if (c.hardT <= 0) c.hard = 1; }
     const regen = (c.aspects.includes('vagal') || c.tr.fade ? av(B.tiers, 'vagal') / 100 : 0) + 0.02 * (c.tr.ease || 0);
     if (regen) c.hp = Math.min(c.max, c.hp + c.max * regen * dt);
     if (c.stun > 0) { c.stun -= dt; continue; }

@@ -61,7 +61,7 @@ export function affectMul(G) {
   const tiers = G.battle?.tiers || aspectTiers(G);
   let m = (1 + 0.04 * G.mu) * (1 + G.complexity / 25) * (1 + 0.1 * G.endings) * Math.pow(2, G.mirrors);
   if (tiers.mythic) m *= 1 + ASPECTS.mythic.v[tiers.mythic - 1] / 100;
-  if (G.upgrades.old_wound) m *= 1 + 1.5 * (1 - G.composure / G.composureMax);
+  if (G.upgrades.old_wound) m *= 1 + 1.5 * Math.min(1, Math.max(0, 1 - G.composure / G.composureMax));
   if (G.upgrades.long_view) m *= 1 + Math.pow(G.t, 0.45) / 40;
   if (moodN(G, 'fascination')) m *= 1.5;
   if (G.stance === 'away') m *= 0.8;
@@ -156,7 +156,7 @@ export const actions = {
   sell(G, id) {
     const u = unitById(G, id); if (!u || u.busy) return false;
     G.units.splice(G.units.indexOf(u), 1); G.attention += Math.max(1, Math.round(tierOf(u.g) * u.link * 0.75 * Math.sqrt(leafCount(u.g))));
-    G.events.push({ type: 'unitGone', id, why: 'sell' }); return true;
+    G.events.push({ type: 'unitGone', id, why: 'sell' }); G.events.push({ type: 'sfx', name: 'sell' }); return true;
   },
   // seat = {ring, dir} or null for bench. Swaps if occupied. Allowed any time; applies next wave if fighting.
   place(G, id, seat) {
@@ -196,20 +196,24 @@ export const actions = {
     if (u.g.t === 'node') parts = [u.g.a, u.g.b];
     else if (u.g.pole === 0 && u.link > 1) parts = [leaf(u.g.f, 1), leaf(u.g.f, -1)];
     else return fail(G, 'It has no seam.');
+    if (bench(G).length >= BENCH) return fail(G, 'There is nowhere for the second part to wait.');
     G.insight -= COSTS.split;
     G.units.splice(G.units.indexOf(u), 1);
-    const link = u.g.t === 'node' ? u.link : u.link - 1;
+    // a hybrid gives back what its parents brought (no link is minted by joining then parting);
+    // older saves without the record fall back to one link less for the first part and link 1 for the second
+    const pl = u.g.t === 'node' ? (u.parentLinks || [Math.max(1, u.link - 1), 1]) : [u.link - 1, u.link - 1];
     const half = Math.ceil(u.traits.length / 2);
-    const a = addUnit(G, parts[0], link, u.traits.slice(0, half).concat('ache').slice(0, half || 1), u.seat, 0, (u.muts || []).filter((_, i) => i % 2 === 0));
-    const b = addUnit(G, parts[1], link, u.traits.slice(half).length ? u.traits.slice(half) : ['ache'], null, 0, (u.muts || []).filter((_, i) => i % 2 === 1));
+    const a = addUnit(G, parts[0], pl[0], u.traits.slice(0, half).concat('ache').slice(0, half || 1), u.seat, 0, (u.muts || []).filter((_, i) => i % 2 === 0));
+    const b = addUnit(G, parts[1], pl[1], u.traits.slice(half).length ? u.traits.slice(half) : ['ache'], null, 0, (u.muts || []).filter((_, i) => i % 2 === 1));
     mutate(G, a, 0.5); mutate(G, b, 0.5);
     G.stats.splits++; G.events.push({ type: 'split', id, a: a.id, b: b.id }); koan(G, 'split', 'op');
     return true;
   },
   repurpose(G, id) {
     const u = unitById(G, id); if (!u || u.busy || !unlocked(G, 'repurpose')) return fail(G);
-    const idx = Math.min(HABITS.length - 1, FAMILY[firstFamily(u)].dir), h = HABITS[idx];
-    const n = Math.round(tierOf(u.g) * u.link * (1 + leafCount(u.g)));
+    // worth decides the habit: tier picks it, links and parts decide how many (a cheap unit cannot become a late habit)
+    const idx = Math.min(HABITS.length - 1, tierOf(u.g) - 1 + Math.floor((u.link - 1) / 3)), h = HABITS[idx];
+    const n = Math.max(1, Math.round(u.link * (1 + leafCount(u.g)) / 2));
     G.habits[h.id] = (G.habits[h.id] || 0) + n;
     G.units.splice(G.units.indexOf(u), 1); G.stats.repurposes++;
     G.events.push({ type: 'repurpose', id, habit: h.id, n }); say(G, `${nameOf(u.g)} is now ${n} of ${h.name}.`, 'op'); koan(G, 'repurpose', 'op');
@@ -234,6 +238,7 @@ export const actions = {
     if (!unlocked(G, 'exchange')) return fail(G);
     const rate = { 'affect>attention': [Math.max(50, G.prod * 20), 1], 'attention>insight': [1, 12], 'insight>attention': [25, 1], 'attention>affect': [1, Math.max(20, G.prod * 8)] }[`${from}>${to}`];
     if (!rate || G[from] < rate[0]) return fail(G);
+    if (to === 'insight' && G.insight >= G.insightMax) return fail(G, 'Insight is already full.');
     G[from] -= rate[0]; G[to] += rate[1]; if (to === 'insight') G.insight = Math.min(G.insightMax, G.insight);
     G.stats.exchanges++; G.events.push({ type: 'sfx', name: 'buy' }); return true;
   },
@@ -276,6 +281,7 @@ function combine(G, aId, bId, op) {
   const seat = a.seat || b.seat;
   G.units.splice(G.units.indexOf(a), 1); G.units.splice(G.units.indexOf(b), 1);
   const u = addUnit(G, g, link, traits, seat, (a.ghosts || 0) + (b.ghosts || 0) + ghosts, [...new Set([...(a.muts || []), ...(b.muts || [])])]);
+  u.parentLinks = [a.link, b.link];
   mutate(G, u, 0.8);
   G.stats[op === 'blend' ? 'integrations' : 'subtractions']++;
   G.events.push({ type: what, a: aId, b: bId, id: u.id });
@@ -307,7 +313,7 @@ export function step(G, dt) {
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
   G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.12)));
-  if (G.overwhelm >= 1) G.composure -= G.composureMax * 0.02 * dt;
+  if (G.overwhelm >= 1) G.composure = Math.max(0, G.composure - G.composureMax * 0.02 * dt);
   // the log is never quite silent: an idle line now and then, an overwhelm line when it is too much
   G.koanT = (G.koanT || 45) - dt;
   if (G.koanT <= 0) { G.koanT = G.overwhelm > 0.5 ? 14 : 45; koan(G, G.overwhelm > 0.5 ? 'overwhelm' : 'idle', G.overwhelm > 0.5 ? 'warn' : 'koan'); }
@@ -319,6 +325,14 @@ export function step(G, dt) {
   // phases
   G.phaseT += dt;
   if (G.phase === 'prep') {
+    // never a dead end: with no one to seat and too little attention to buy or look, something simple arrives
+    if (unlocked(G, 'shop') && !G.units.some((u) => !u.busy)) {
+      const prices = G.shop.filter(Boolean).map((id) => TIER_COST[FAMILY[id].tier - 1]);
+      if (G.attention < Math.min(COSTS.reroll, ...(prices.length ? prices : [Infinity]))) {
+        const t1 = FAMILIES.filter((f) => f.tier === 1); G.shop[0] = t1[Math.floor(G.rng() * t1.length)].id; G.attention = Math.max(G.attention, TIER_COST[0]);
+        say(G, 'Nothing was held, so something came.', 'koan');
+      }
+    }
     if (seated(G).length && (G.phaseT > (G.auto ? 5 : 1e9) || G.phaseT >= 99)) { G.clicksThisWave = 0; startWave(G); }
   } else if (G.phase === 'fight') {
     const r = stepBattle(G, dt);

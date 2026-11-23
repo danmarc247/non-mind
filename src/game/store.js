@@ -21,7 +21,7 @@ export const useVersion = () => useSyncExternalStore(subscribe, () => version);
 // act('buy', 2) -> runs the action, swaps G if the action returns a new game (reset), notifies.
 export function act(name, ...args) {
   const r = actions[name](game.G, ...args);
-  if (name === 'nonMind') { const ev = r.events; game.G = r; game.selected = null; game.G.events = ev; }
+  if (name === 'nonMind') { const ev = r.events; game.G = r; game.selected = null; game.pending = null; game.G.events = ev; }
   notify();
   return r;
 }
@@ -39,7 +39,10 @@ export function tick(dt) {
   if (acc > 0.125) { acc = 0; notify(); }
   if (saveT > 10) { saveT = 0; try { localStorage.setItem(SAVE_KEY, serialize(G)); } catch { /* storage full or blocked */ } }
 }
-export function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ } game.G = createGame((Math.random() * 1e9) | 0); game.selected = null; notify(); }
+export function wipe() { try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ } game.G = createGame((Math.random() * 1e9) | 0); game.selected = null; game.pending = null;
+  // a wiped game is a first game: the guide and its hints start over too
+  try { for (const k of Object.keys(localStorage)) if (/^non-?mind.*(tut|nudge-mem)/i.test(k)) localStorage.removeItem(k); } catch { /* ignore */ }
+  notify(); }
 if (typeof window !== 'undefined') window.__game = game;
 
 // Two-step operations (integrate / subtract): setPending('integrate') with a unit selected, then choose(otherId).
