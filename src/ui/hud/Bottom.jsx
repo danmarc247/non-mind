@@ -13,7 +13,21 @@ import { attend, onHud } from './bus.js';
 import { Appear, Key, Label, Scr, Shake, UnitGlyph, aspectChips, unitTier, unitTone, POP } from './shared.jsx';
 
 const cardCls = (compact) =>
-  cn(compact ? 'w-[92px]' : 'w-[108px]', '[&_.aspect-square]:aspect-[5/3] [&_.text-lg]:text-[15px] [&_.mt-2]:mt-1.5');
+  cn(compact ? 'w-[96px] [&_.aspect-square]:aspect-[16/10]' : 'w-[108px] [&_.aspect-square]:aspect-[5/3]', '[&_.text-lg]:text-[15px] [&_.mt-2]:mt-1.5');
+
+/** Slim panel header: painted dot, label, then whatever sits to the right. Saves a full title row. */
+function Head({ label, tone, k, children }) {
+  return (
+    <div className="mb-2 flex h-[24px] items-center gap-2">
+      <span className="h-3 w-3 shrink-0 rounded-full border-2 border-ink" style={{ background: toneVar(tone) }} />
+      <span className="relative shrink-0 font-head text-[17px] leading-none tracking-wider text-ink uppercase">
+        <span className="absolute inset-x-[-3px] bottom-[-2px] h-[7px] rounded-full opacity-45" style={{ background: toneVar(tone) }} />
+        <span className="relative"><Scr k={k}>{label}</Scr></span>
+      </span>
+      {children}
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------ shop */
 
@@ -22,11 +36,9 @@ function Shop({ G, compact }) {
   const seatedN = G.units.filter((u) => u.seat).length;
   const cap = unitCap(G);
   return (
-    <Panel
-      title={<Scr k={20}>arrivals</Scr>}
-      tone="yolk"
-      bodyClassName="px-3 pb-3 pt-2"
-      actions={
+    <Panel bodyClassName="px-3 pb-3 pt-2.5">
+      <Head label="arrivals" tone="yolk" k={20}>
+        <span className="flex-1" />
         <div className="flex items-center gap-3">
           <Tooltip content={`Level ${G.level}. Higher levels hold more at once and draw rarer things. ${G.level < 10 ? `${G.xp} of ${need} toward the next.` : 'There is no higher.'}`}>
             <span className="flex items-center gap-1.5">
@@ -40,8 +52,7 @@ function Shop({ G, compact }) {
             <span className={cn('font-stat text-base leading-none nm-tab', seatedN >= cap ? 'text-magenta' : 'text-ink')}>{seatedN}/{cap}</span>
           </Tooltip>
         </div>
-      }
-    >
+      </Head>
       <div className="flex items-start gap-2.5">
         <div className="flex gap-2">
           {G.shop.map((id, i) => {
@@ -57,14 +68,14 @@ function Shop({ G, compact }) {
                         <UnitCard
                           name={f.name}
                           tier={f.tier}
-                          aspects={f.aspects.map((a) => ({ name: ASPECTS[a].name, tone: ASPECTS[a].tone }))}
+                          aspects={compact ? [] : f.aspects.map((a) => ({ name: ASPECTS[a].name, tone: ASPECTS[a].tone }))}
                           cost={cost}
                           dim={G.attention < cost}
                           onClick={() => act('buy', i)}
                           className={cardCls(compact)}
                           reveal={false}
                         >
-                          <UnitGlyph g={leaf(id)} link={1} />
+                          <UnitGlyph g={leaf(id)} link={1} dots={compact ? f.aspects.map((a) => ASPECTS[a].tone) : null} />
                         </UnitCard>
                       </Tooltip>
                     </Appear>
@@ -73,7 +84,7 @@ function Shop({ G, compact }) {
                       key={`empty-${i}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[150px] w-[92px]' : 'h-[164px] w-[108px]')}
+                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[122px] w-[96px]' : 'h-[164px] w-[108px]')}
                     />
                   )}
                 </AnimatePresence>
@@ -88,9 +99,11 @@ function Shop({ G, compact }) {
           <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} className="[&_button]:w-full">
             grow <span className="font-stat normal-case">{COSTS.xp}</span>
           </InkButton>
-          <p className="px-0.5 font-body text-[11px] italic leading-snug text-ink-2">
-            Two alike become one, further along.
-          </p>
+          {!compact && (
+            <p className="px-0.5 font-body text-[12px] italic leading-snug text-ink-2">
+              Two alike become one, further along.
+            </p>
+          )}
         </div>
       </div>
     </Panel>
@@ -160,9 +173,9 @@ function Seated({ G }) {
   const seated = G.units.filter((u) => u.seat).sort((a, b) => a.seat.ring - b.seat.ring || a.seat.dir - b.seat.dir);
   if (!seated.length) return null;
   return (
-    <div className="mb-2 flex items-center gap-2">
-      <Label className="shrink-0">held</Label>
-      <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto pb-1">
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <Label className="shrink-0 pl-2">held</Label>
+      <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1">
         <AnimatePresence initial={false}>
           {seated.map((u) => (
             <motion.button
@@ -194,15 +207,13 @@ function Seated({ G }) {
 function Bench({ G, compact }) {
   const bench = G.units.filter((u) => !u.seat && !u.busy);
   return (
-    <Panel
-      title={<Scr k={21}>waiting</Scr>}
-      tone="teal"
-      bodyClassName="px-3 pb-3 pt-2"
-      className="min-w-0 flex-1"
-      actions={<span className={cn('font-stat text-base leading-none nm-tab', bench.length >= BENCH ? 'text-magenta' : 'text-ink')}>{bench.length}/{BENCH}</span>}
-    >
-      <Seated G={G} />
-      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1 pt-1.5 pb-2', compact ? 'min-h-[156px]' : 'min-h-[172px]')}>
+    <Panel bodyClassName="px-3 pb-3 pt-2.5" className="min-w-0 flex-1">
+      <Head label="waiting" tone="teal" k={21}>
+        <span className={cn('shrink-0 font-stat text-base leading-none nm-tab', bench.length >= BENCH ? 'text-magenta' : 'text-ink')}>{bench.length}/{BENCH}</span>
+        <Seated G={G} />
+        {!G.units.some((u) => u.seat) && <span className="flex-1" />}
+      </Head>
+      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1 pt-1.5 pb-2', compact ? 'min-h-[128px]' : 'min-h-[172px]')}>
         <AnimatePresence initial={false} mode="popLayout">
           {bench.map((u) => (
             <Appear key={u.id} from="up" layout className="shrink-0">
@@ -210,13 +221,13 @@ function Bench({ G, compact }) {
                 <UnitCard
                   name={nameOf(u.g)}
                   tier={unitTier(u)}
-                  aspects={aspectChips(u.g)}
+                  aspects={compact ? [] : aspectChips(u.g)}
                   selected={game.selected === u.id}
                   onClick={() => choose(u.id)}
                   className={cardCls(compact)}
                   reveal={false}
                 >
-                  <UnitGlyph g={u.g} link={u.link} />
+                  <UnitGlyph g={u.g} link={u.link} dots={compact ? aspectChips(u.g).map((a) => a.tone) : null} />
                 </UnitCard>
               </div>
             </Appear>

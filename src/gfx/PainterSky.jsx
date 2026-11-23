@@ -106,10 +106,11 @@ export function PainterSky({ radius = 400 }) {
       const n = HUE_SLOTS.length;
       const slots = HUE_SLOTS.map((_, i) => srgb(p[HUE_SLOTS[(((i + depth) % n) + n) % n]]));
       for (let i = 0; i < n; i++) u.uPal.value[i].set(...slots[i]);
-      // on-token blends between neighbouring slots
-      u.uPal.value[5].set(...slots[0]).lerp(tmpV.set(...slots[1]), 0.5);
-      u.uPal.value[6].set(...slots[2]).lerp(tmpV.set(...slots[3]), 0.5);
-      u.uPal.value[7].set(...slots[0]).lerp(tmpV.set(...slots[2]), 0.5);
+      // paper tints of the leading slots (hue-to-hue blends turned to mud)
+      const paper = u.uPaper.value;
+      u.uPal.value[5].set(...slots[0]).lerp(paper, 0.45);
+      u.uPal.value[6].set(...slots[1]).lerp(paper, 0.45);
+      u.uPal.value[7].set(...slots[2]).lerp(paper, 0.45);
       u.uSat.value = p.saturation;
       u.uContrast.value = p.contrast;
       c.density = p.strokeDensity;

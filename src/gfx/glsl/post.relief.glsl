@@ -105,6 +105,12 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
     col = mix(col, sc, 0.7 * sim * dabK);
   }
 
+  // blank pale canvas: thin paint, no tone breakup and little shading (never grey)
+  float yl = dot(col, vec3(0.2126, 0.7152, 0.0722));
+  float chroma = max(max(col.r, col.g), col.b) - min(min(col.r, col.g), col.b);
+  float blank = smoothstep(0.55, 0.85, yl) * (1.0 - smoothstep(0.05, 0.22, chroma));
+  dabK *= 1.0 - 0.9 * blank;
+
   // tone breakup: each dab carries a slightly different mix of paint
   float lum = pp_plum(col);
   float lv = 6.0;
@@ -117,7 +123,9 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   vec3 n = normalize(vec3(-dFdx(h) * 4.0 * relK, -dFdy(h) * 4.0 * relK, 1.0));
   vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
   float diff = dot(n, L) / L.z;
-  col *= mix(1.0, clamp(diff, 0.6, 1.35), mix(0.3, 0.6, farK));
+  // blank pale canvas carries thin paint: barely shaded, so it never turns grey
+  float shadeK = mix(0.3, 0.6, farK) * mix(1.0, 0.25, blank);
+  col *= mix(1.0, clamp(diff, 0.6, 1.35), shadeK);
   // wet gloss on ridges (broad, not sparkly)
   vec3 hv = normalize(L + vec3(0.0, 0.0, 1.0));
   float spec = pow(max(dot(n, hv), 0.0), 18.0);
@@ -130,7 +138,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float wy = sin(cw.y * 3.14159 + pp_vnoise(cw.yx * 0.15) * 2.0);
   float weave = 0.5 + 0.25 * (wx * step(0.0, wy) + wy * step(wy, 0.0)) + 0.15 * (pp_hash12(floor(cw)) - 0.5);
   float thin = dabZ < 0.0 ? 1.0 : 0.45;
-  col *= 1.0 - uCanvas * thin * ((0.5 - weave) * 0.2 + 0.02);
+  col *= 1.0 - uCanvas * thin * ((0.5 - weave) * mix(0.2, 0.12, blank) + 0.012);
 
   // ink edge where depth / colour jump
   vec2 de = texelSize * 1.5 * scale;

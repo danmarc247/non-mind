@@ -370,7 +370,7 @@ export default function LeftPanel({ compact }) {
   return (
     <Appear from="left" className={cn('pointer-events-auto', compact ? 'w-[280px]' : 'w-[316px]')}>
       <Panel title={<Scr k={50}>{cur.label}</Scr>} tone={cur.tone === 'ink-2' ? 'violet' : cur.tone} bodyClassName="px-3 pt-2 pb-3">
-        <div className="mb-2 flex flex-wrap gap-1">
+        <div className={cn('mb-2 flex flex-wrap gap-1', tabs.length < 2 && 'hidden')}>
           <AnimatePresence initial={false}>
             {tabs.map((t) => {
               const b = t.badge?.(G) || 0;

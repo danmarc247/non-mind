@@ -153,7 +153,7 @@ function Body({ G, u }) {
     <>
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h2 className="font-head text-[24px] leading-[1.05] text-ink"><Scr k={40}>{displayName(u)}</Scr></h2>
+          <h2 className="font-head text-[22px] leading-[1.05] text-ink"><Scr k={40}>{displayName(u)}</Scr></h2>
           <div className="mt-0.5 font-body text-[12px] italic text-ink-2">{where} · tier {tierOf(u.g)} · {leafCount(u.g)} part{leafCount(u.g) > 1 ? 's' : ''}{u.ghosts ? ` · ${u.ghosts} ghost${u.ghosts > 1 ? 's' : ''}` : ''}</div>
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function Inspector({ compact }) {
               </button>
             }
           >
-            <div style={{ maxHeight: 'calc(var(--band-h) - 62px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2">
+            <div style={{ maxHeight: 'calc(var(--band-h) - 128px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2">
               <motion.div key={u.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
                 <Body G={G} u={u} />
               </motion.div>

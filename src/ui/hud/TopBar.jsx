@@ -4,7 +4,7 @@ import { Cryptic, Meter, StatChip, Tooltip } from '../bits';
 import { STAGES, WAVE_ARC, BEATS_PER_WAVE, unlocked } from '../../game/index.js';
 import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
-import { fmt, fmtLong, ROMAN } from './fmt.js';
+import { fmt, fmtLong } from './fmt.js';
 import { Appear, Scr, Shake, POP } from './shared.jsx';
 
 export const STAGE_NAME = (i) => STAGES[i].id;
@@ -26,7 +26,7 @@ function StageTracker({ G, compact }) {
         ))}
       </div>
       <div className="mt-1.5 flex items-baseline gap-2">
-        <span className="font-stat text-sm text-ink-2">{ROMAN[G.stage + 1]}</span>
+        <span className="font-stat text-[13px] text-ink-2 nm-tab">{G.stage + 1}/18</span>
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.span
             key={G.stage}
@@ -50,19 +50,24 @@ function StageTracker({ G, compact }) {
 function Resources({ G, compact }) {
   const w = compact ? 'w-[94px]' : 'w-[108px]';
   const chips = [
-    { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : null },
+    { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : '' },
     { k: 'attention', show: unlocked(G, 'shop'), tone: 'yolk', value: fmt(G.attention, { int: true }), hint: 'Attention. Spent to bring things in, to look again, to grow. Paid out when a wave is held; idle attention earns a little more.' },
     { k: 'insight', show: unlocked(G, 'insight'), tone: 'ultra', value: `${Math.floor(G.insight)}`, hint: `Insight ${Math.floor(G.insight)} of ${G.insightMax}. It seeps in on its own and is spent on joining, cutting and spells.` },
     { k: 'mu', show: G.mu > 0 || G.depth > 0, tone: 'violet', value: fmt(G.mu, { int: true }), hint: `Mu ${fmtLong(G.mu)}. What remains after letting go. It widens affect, and every beginning starts with a little more attention.` },
     { k: 'endings', show: G.endings > 0, tone: 'leaf', value: fmt(G.endings, { int: true }), hint: 'Endings. Things that reached the twelfth link and stopped. Each one raises affect and salience for good.' },
   ];
   return (
-    <div className={cn('grid gap-x-2 gap-y-2', compact ? 'grid-cols-3' : 'grid-cols-3')}>
+    <div className={cn('flex flex-wrap content-start gap-2', compact ? 'max-w-[350px]' : 'max-w-[400px]')}>
       <AnimatePresence initial={false}>
         {chips.filter((c) => c.show).map((c) => (
           <Appear key={c.k} from="down" className="relative">
-            <StatChip label={<Scr k={c.k.length}>{c.k}</Scr>} value={<span className="nm-tab">{c.value}</span>} tone={c.tone} hint={c.hint} className={w} />
-            {c.sub && <span className="pointer-events-none absolute right-1.5 top-1 font-stat text-[10px] leading-none text-ink-2">{c.sub}</span>}
+            <StatChip
+              label={<Scr k={c.k.length}>{c.k}</Scr>}
+              value={<span className="nm-tab">{c.value}{c.sub && <span className="ml-1.5 text-[12px] text-ink-2">{c.sub}</span>}</span>}
+              tone={c.tone}
+              hint={c.hint}
+              className={c.sub !== undefined ? (compact ? 'w-[150px]' : 'w-[170px]') : w}
+            />
           </Appear>
         ))}
       </AnimatePresence>

@@ -118,7 +118,7 @@ void strokeLayer(
     // colour: regional palette, knife-smeared with a second colour / white
     vec3 cA = palBiased(k.z, region + seed * 0.13);
     vec3 cB = (k.w > 0.55) ? uPaper : pal(k.z * 0.75 + region + 0.37);
-    if (h.w > 1.0 - 0.09 * uMotifC.y && scale > 0.9) cA = mix(uInk, uPal[1], 0.2);
+    if (h.w > 1.0 - uMotifC.y * (scale > 1.5 ? 0.12 : 0.02) && scale > 0.9) cA = mix(uInk, uPal[1], 0.2);
     float smear = smoothstep(0.35, 0.85, br2 * 0.7 + 0.3 * vnoise1(along * 6.0 + k.x * 5.0))
                 * mix(0.25, 0.8, k.y) * (0.15 + 0.85 * uMotifB.y);
     vec3 sc = mix(cA, cB, smear * (0.4 + 0.6 * smoothstep(-0.2, 1.0, u)));

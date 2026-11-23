@@ -13,8 +13,13 @@ const KIND_TONE = {
 
 export function Log({ compact }) {
   const G = useGame();
-  const items = G.log.slice(compact ? -4 : -5);
-  const base = G.log.length - items.length;
+  // fold repeats into one line with a count
+  const folded = [];
+  G.log.forEach((l, i) => {
+    const prev = folded[folded.length - 1];
+    if (prev && prev.text === l.text) { prev.n++; prev.i = i; } else folded.push({ ...l, n: 1, i });
+  });
+  const items = folded.slice(compact ? -4 : -5);
   return (
     <div className={cn('pointer-events-none flex flex-col justify-end gap-0.5', compact ? 'w-[280px]' : 'w-[316px]')} style={{ height: 'var(--log-h)' }}>
       <AnimatePresence initial={false}>
@@ -22,7 +27,7 @@ export function Log({ compact }) {
           const age = items.length - 1 - i;
           return (
             <motion.p
-              key={`${base + i}-${l.t}-${l.text}`}
+              key={`${l.t}-${l.text}`}
               layout="position"
               initial={{ opacity: 0, y: 10, filter: 'blur(3px)' }}
               animate={{ opacity: Math.max(0.28, 1 - age * 0.2), y: 0, filter: 'blur(0px)' }}
@@ -34,7 +39,7 @@ export function Log({ compact }) {
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
             >
-              {l.text}
+              {l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[11px] not-italic">x{l.n}</span>}
             </motion.p>
           );
         })}

@@ -153,7 +153,7 @@ function FormMark({ form, a, b, c }) {
 }
 
 /** Unit thumbnail: every leaf of the genome as a painted mark, arranged around the strongest. */
-export function UnitGlyph({ g, link, className }) {
+export function UnitGlyph({ g, link, className, dots }) {
   const ls = leaves(g);
   const n = ls.length;
   const bg = pal(ls[0].f);
@@ -175,6 +175,9 @@ export function UnitGlyph({ g, link, className }) {
           {l.pole > 0 && <circle cx="34" cy="6" r="4" fill={YOLK} stroke={INKH} strokeWidth="2" />}
           {l.pole < 0 && <path d="M30 6 H38" stroke={INKH} strokeWidth="3" />}
         </g>
+      ))}
+      {dots && dots.map((t, i) => (
+        <circle key={t + i} cx={54 - i * 9} cy={52} r={3.6} fill={toneHex(t)} stroke={INKH} strokeWidth="1.6" />
       ))}
       {link > 1 && (
         <g>

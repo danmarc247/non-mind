@@ -5,7 +5,6 @@ import { STAGES } from '../../game/index.js';
 import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { toneVar } from '../bits';
-import { ROMAN } from './fmt.js';
 import { CODEX, CODEX_INTRO } from './text.js';
 import { Key, POP, scramble } from './shared.jsx';
 
@@ -32,7 +31,6 @@ function Section({ i, open }) {
   return (
     <section className="relative mt-6" style={{ width: COL }}>
       <div className={cn('mb-1.5 flex items-baseline gap-2', side === 'right' && 'flex-row-reverse')}>
-        <span className="font-stat text-[14px] text-ink-2">{ROMAN[i + 1]}</span>
         <h3 className={cn('font-head text-[22px] leading-none uppercase', open ? 'text-ink' : 'text-ink-2/60')}>{open ? STAGES[i].id : scramble(STAGES[i].id, 0.9, i)}</h3>
         {open && <span className="font-body text-[13px] italic text-ink-2">{STAGES[i].hint}</span>}
       </div>
