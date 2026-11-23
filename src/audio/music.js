@@ -299,13 +299,13 @@ export function createMusic(E) {
     playPluck(v, tt, degHz(sc, deg, v.oct), lvl * acc, S, sc);
   }
 
-  function playPluck(v, t, f, vel, S, sc) {
+  function playPluck(v, t, f, vel, S, sc, wave) {
     const o = S.o;
     E.stats.notes++;
     pluck(kit, v.filt, t, f, {
       vel: vel * (v.extra ? 0.75 : 1.2),
       decay: (v.extra ? 0.06 : 0.1) + 0.05 * (1 - o),
-      wave: v.extra || S.against > 0.5 ? 'pulse' : sc.pluck,
+      wave: wave || (v.extra || S.against > 0.5 ? 'pulse' : sc.pluck),
       cents: (rng() - 0.5) * (o * 30 + sc.detuneExtra),
       detune: o > 0.2 ? (6 + 22 * o) * (rng() < 0.5 ? -1 : 1) : 0,
       bell: S.asp.cortical,
@@ -342,7 +342,7 @@ export function createMusic(E) {
     if (pl >= 0.03) {
       const dur = clamp(chordDur * 1.3, 5, 9);
       [[d + 6, 1], [d + 2, 2]].forEach(([deg, oct], i) => {
-        track(glass(kit, padPan.input, t + 0.3 + i * 0.5, degHz(sc, deg, oct), { vel: pl * (i ? 0.6 : 0.9), dur, limit: MUSIC_LIMIT - 2 }), t + 0.3 + i * 0.5, dur);
+        track(glass(kit, padPan.input, t + 0.3 + i * 0.5, degHz(sc, deg, oct), { vel: pl * (i ? 0.6 : 0.9), dur, partials: 2, limit: MUSIC_LIMIT - 2 }), t + 0.3 + i * 0.5, dur);
       });
       E.stats.notes++;
     }
@@ -390,7 +390,7 @@ export function createMusic(E) {
         if (v.switchAt !== null && t >= v.switchAt) { retune(v, sc); v.switchAt = null; v.fadeIn = t; }
         const e = F.echo[F.echo.length - 2];
         const lvl = voiceLevel(v, S, t);
-        if (e && lvl >= 0.02 && rng() >= 0.3 * S.away) playPluck(v, t + F.stepDur * 0.5, degHz(e.sc, e.deg + 4, e.oct), lvl * 0.62, S, e.sc);
+        if (e && lvl >= 0.02 && rng() >= 0.3 * S.away) playPluck(v, t + F.stepDur * 0.5, degHz(e.sc, e.deg + 4, e.oct), lvl * 0.9, S, e.sc, 'pulse');
       } else {
         voiceNote(v, t, voiceLevel(v, S, t), S);
       }
