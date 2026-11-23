@@ -93,7 +93,12 @@ export default function Nudge({ blocked }) {
     if (e.type === 'ask') {
       // asking skips the idle wait and the gap, and works even with idle hints off
       const t = now(), s = st.current;
-      const sug = nextSuggestion(game.G, s.mem, t) || suggestions(game.G)[0];
+      // the rotation first; if everything is cooling down, the one shown longest ago (never the same twice running)
+      let sug = nextSuggestion(game.G, s.mem, t);
+      if (!sug) {
+        const list = suggestions(game.G).filter((x, _, all) => all.length < 2 || x.id !== s.cur?.s.id);
+        sug = list.sort((a, b) => (s.mem[a.id] ?? -1e9) - (s.mem[b.id] ?? -1e9))[0] || null;
+      }
       if (sug) { if (s.mem) s.mem[sug.id] = t; setCur({ s: sug, shownAt: t, done: false, asked: true }); }
       else setCur({ s: { id: 'none', target: '', weight: 0, text: QUIET_LINE, plain: '' }, shownAt: t, done: false, asked: true, quietLine: true });
     }

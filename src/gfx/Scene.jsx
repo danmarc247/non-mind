@@ -14,48 +14,14 @@ import { ARENA, seatPos, gatePos, ringsOpen, FAMILIES, aspectsOf, leaves, ANY_ST
 import { GatePortals, SeatRings, GlassVessel, CoreAura, SeaCaustics } from './arena/index.js';
 import { PaintFx, ArcVeil } from './fx/index.js';
 import { Mobiles, Strata, Motes, Tethers } from './drift/index.js';
+import ContainedSea from './sea/index.js';
 import Director, { director } from './Director.jsx';
-import seaFrag from './glsl/sea.frag.glsl';
-import seaVert from './glsl/sea.vert.glsl';
 
 const PainterSky = SkyMod.PainterSky || PainterSkyDefault;
 const PainterPost = PostMod.PainterPost || PainterPostDefault;
 const col = (c) => new THREE.Color().setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace);
 const SEA_R = 12.5, SEA_Y = -0.35, UNIT_Y = 1.0;
 const ease = (cur, tgt, dt, rate = 10) => cur + (tgt - cur) * (1 - Math.exp(-rate * dt));
-
-// ---------- the contained sea ----------
-function Sea() {
-  const top = useRef(), side = useRef();
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 }, uA: { value: new THREE.Vector3() }, uB: { value: new THREE.Vector3() }, uC: { value: new THREE.Vector3() },
-    uPaper: { value: new THREE.Vector3(...PALETTE.paper) }, uInk: { value: new THREE.Vector3(...PALETTE.ink) },
-    uComplexity: { value: 0 }, uOverwhelm: { value: 0 }, uTension: { value: 0 }, uR: { value: SEA_R }, uSide: { value: 0 }, uPulse: { value: 0 },
-  }), []);
-  const sideU = useMemo(() => ({ ...uniforms, uSide: { value: 1 } }), [uniforms]);
-  useFrame(() => {
-    const p = mixStagePalette(Math.min(17, mood.stage + mood.overwhelm * 0.999 * (mood.stage >= 16 ? 1 : 0)));
-    const s = (c) => c.map(linearToSrgb);
-    // R3F copies a `uniforms` prop, so write to the live material uniforms, not the memoised objects
-    for (const u of [top.current.material.uniforms, side.current.material.uniforms]) {
-      u.uTime.value = mood.time; u.uA.value.set(...s(p.primary)); u.uB.value.set(...s(p.secondary)); u.uC.value.set(...s(p.accent));
-      u.uComplexity.value = mood.complexity; u.uOverwhelm.value = mood.overwhelm; u.uTension.value = mood.tension; u.uPulse.value = mood.flash;
-    }
-  });
-  return (
-    <group>
-      <mesh ref={top} rotation-x={-Math.PI / 2} position-y={SEA_Y}>
-        <circleGeometry args={[SEA_R, 128, 0, Math.PI * 2]} />
-        <shaderMaterial vertexShader={seaVert} fragmentShader={seaFrag} uniforms={uniforms} />
-      </mesh>
-      <mesh ref={side} position-y={SEA_Y - 2.5}>
-        <cylinderGeometry args={[SEA_R, SEA_R * 0.96, 5, 128, 1, true]} />
-        <shaderMaterial vertexShader={seaVert} fragmentShader={seaFrag} uniforms={sideU} />
-      </mesh>
-      <mesh position-y={SEA_Y - 5} rotation-x={Math.PI / 2}><circleGeometry args={[SEA_R * 0.96, 96]} /><meshBasicMaterial color={col(PALETTE.ink)} /></mesh>
-    </group>
-  );
-}
 
 // ---------- seats and gates ----------
 function Seats() {
@@ -263,8 +229,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Director />
       <PainterSky />
       <Strata />
-      <Sea />
-      <SeaCaustics />
+      <ContainedSea />
       <GatePortals />
       <SeatRings />
       <Core />
