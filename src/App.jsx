@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { lazyOnOpen } from './lib/lazyOnOpen.jsx';
+import { lazyOnOpen, reloadForNewVersion } from './lib/lazyOnOpen.jsx';
+// Vite announces any lazily loaded file that could not be fetched: same cause, same remedy.
+if (typeof window !== 'undefined') window.addEventListener('vite:preloadError', (e) => { if (reloadForNewVersion()) e.preventDefault(); });
 // The 3D scene (three, R3F, postprocessing, shader-park) loads behind the title: fetching starts at boot, not on Begin.
 const sceneModule = import('./gfx/Scene.jsx');
 const Scene = lazy(() => sceneModule);
