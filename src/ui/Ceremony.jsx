@@ -37,7 +37,7 @@ export default function Ceremony() {
     wave: useRef(null), swipe: useRef(null), arc: useRef(null), wnum: useRef(null),
     reset: useRef(null), wipe: useRef(null), rword: useRef(null), rline: useRef(null),
   };
-  const run = useRef({ tl: null, w: -1 });
+  const run = useRef({ tl: null, w: -1, end: 0 });
 
   useEffect(() => {
     const layers = () => [R.stage, R.ladder, R.ending, R.wave, R.reset].map((r) => r.current);
@@ -45,13 +45,14 @@ export default function Ceremony() {
 
     function play(kind, o = {}) {
       const cur = run.current;
-      if (cur.tl && cur.tl.isActive() && WEIGHT[kind] < cur.w) return null;
+      if (cur.tl && performance.now() < cur.end && WEIGHT[kind] < cur.w) return null;
       if (cur.tl) cur.tl.kill();
       gsap.set(layers(), { autoAlpha: 0, clearProps: 'transform' });
       const calm = o.reduced ?? reduced();
       const tl = gsap.timeline({ onComplete: () => { gsap.set(layers(), { autoAlpha: 0 }); run.current.tl = null; } });
       run.current = { tl, w: WEIGHT[kind] };
       BUILD[kind](tl, o, calm);
+      run.current.end = performance.now() + tl.duration() * 1000;
       if (o.seek != null) tl.pause(o.seek);
       return tl;
     }
@@ -65,7 +66,7 @@ export default function Ceremony() {
         tl.set(R.stage.current, { autoAlpha: 1 });
         if (calm) {
           gsap.set(path, { strokeDasharray: len, strokeDashoffset: 0 });
-          tl.from(R.stage.current, { autoAlpha: 0, duration: 0.2 }).to(R.stage.current, { autoAlpha: 0, duration: 0.25 }, 1.5);
+          tl.fromTo(R.stage.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0).to(R.stage.current, { autoAlpha: 0, duration: 0.25 }, 1.5);
           return;
         }
         gsap.set(path, { strokeDasharray: len, strokeDashoffset: len });
@@ -91,7 +92,7 @@ export default function Ceremony() {
         tl.set(R.ladder.current, { autoAlpha: 1 });
         if (calm) {
           gsap.set(last, { backgroundColor: last.style.getPropertyValue('--fill') });
-          tl.from(R.ladder.current, { autoAlpha: 0, duration: 0.2 }).to(R.ladder.current, { autoAlpha: 0, duration: 0.25 }, 1.3);
+          tl.fromTo(R.ladder.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0).to(R.ladder.current, { autoAlpha: 0, duration: 0.25 }, 1.3);
           return;
         }
         tl.fromTo(R.ladder.current, { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.24, ease: 'power2.out' }, 0)
@@ -107,7 +108,7 @@ export default function Ceremony() {
         tl.set(R.ending.current, { autoAlpha: 1 });
         if (calm) {
           gsap.set(ln, { strokeDasharray: len, strokeDashoffset: 0 });
-          tl.from(R.ending.current, { autoAlpha: 0, duration: 0.3 }).to(R.ending.current, { autoAlpha: 0, duration: 0.4 }, 2.2);
+          tl.fromTo(R.ending.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0).to(R.ending.current, { autoAlpha: 0, duration: 0.4 }, 2.2);
           return;
         }
         gsap.set(ln, { strokeDasharray: len, strokeDashoffset: len });
@@ -128,7 +129,7 @@ export default function Ceremony() {
         tl.set(R.wave.current, { autoAlpha: 1 });
         if (calm) {
           gsap.set(sw, { strokeDasharray: len, strokeDashoffset: 0 });
-          tl.from(R.wave.current, { autoAlpha: 0, duration: 0.2 }).to(R.wave.current, { autoAlpha: 0, duration: 0.25 }, 0.95);
+          tl.fromTo(R.wave.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0).to(R.wave.current, { autoAlpha: 0, duration: 0.25 }, 0.95);
           return;
         }
         gsap.set(sw, { strokeDasharray: len, strokeDashoffset: len });
@@ -144,7 +145,7 @@ export default function Ceremony() {
         tl.set(R.reset.current, { autoAlpha: 1 });
         if (calm) {
           gsap.set(R.wipe.current, { scaleX: 1 });
-          tl.from(R.reset.current, { autoAlpha: 0, duration: 0.3 }).to(R.reset.current, { autoAlpha: 0, duration: 0.4 }, 1.9);
+          tl.fromTo(R.reset.current, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 0).to(R.reset.current, { autoAlpha: 0, duration: 0.4 }, 1.9);
           return;
         }
         tl.fromTo(R.wipe.current, { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' }, 0)
