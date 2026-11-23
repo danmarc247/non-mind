@@ -11,6 +11,7 @@ import PainterSkyDefault, * as SkyMod from './PainterSky.jsx';
 import PainterPostDefault, * as PostMod from './PainterPost.jsx';
 import { game, tick, act, choose, onEvent, notify } from '../game/store.js';
 import { ARENA, seatPos, gatePos, ringsOpen, FAMILIES, aspectsOf, leaves, ANY_STRESSOR } from '../game/index.js';
+import Director, { director } from './Director.jsx';
 import seaFrag from './glsl/sea.frag.glsl';
 import seaVert from './glsl/sea.vert.glsl';
 
@@ -230,7 +231,7 @@ function Fx() {
 function Loop({ audioRef }) {
   useFrame((state, dtRaw) => {
     const dt = Math.min(dtRaw, 0.1), G = game.G;
-    tick(dt);
+    tick(dt * director.timeScale);
     mood.time += dt * (1 + mood.overwhelm * 0.8);
     mood.complexity = ease(mood.complexity, Math.min(1, G.complexity / Math.max(1, G.capacity)), dt, 1.5);
     mood.overwhelm = ease(mood.overwhelm, G.overwhelm, dt, 1.2);
@@ -254,6 +255,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
     <Canvas linear legacy flat camera={{ position: [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
       <Loop audioRef={audioRef} />
+      <Director />
       <PainterSky />
       <Sea />
       <Gates />
@@ -261,7 +263,7 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Core />
       <Bodies />
       <Fx />
-      <OrbitControls enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
+      <OrbitControls makeDefault enablePan={false} minDistance={12} maxDistance={46} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} />}
     </Canvas>
   );
