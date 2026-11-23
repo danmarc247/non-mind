@@ -38,6 +38,8 @@ function placeCard(t, ch, prefer, gap = 56) {
   const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = gap;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   if (!t) return { left: (vw - cardW()) / 2, top: vh * 0.24 };
+  // 'top': under the top bar in the clear middle (never over the rings on the right or the log on the left)
+  if (prefer === 'top') return { left: (vw - cardW()) / 2, top: Math.min(vh - ch - M, t.top + t.height + 44) };
   const cx = t.left + t.width / 2, cy = t.top + t.height / 2;
   const opts = prefer ? [prefer] : [];
   if (cy > vh * 0.55) opts.push('above'); else opts.push('below');
@@ -90,9 +92,9 @@ function Spot({ t, extra }) {
     : <rect key={k} x={r.left - PAD} y={r.top - PAD} width={r.width + 2 * PAD} height={r.height + 2 * PAD} rx="18" fill="black" />);
   const ring = (r, k) => (r.round
     ? <motion.circle key={k} cx={r.left + r.width / 2} cy={r.top + r.height / 2} r={r.width / 2 + PAD} fill="none" stroke="var(--color-magenta)" strokeWidth="4" strokeDasharray="10 8"
-        animate={{ strokeDashoffset: [0, -36] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} />
+        animate={{ opacity: [1, 0.45, 1] }} transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />
     : <motion.rect key={k} x={r.left - PAD} y={r.top - PAD} width={r.width + 2 * PAD} height={r.height + 2 * PAD} rx="18" fill="none" stroke="var(--color-magenta)" strokeWidth="4" strokeDasharray="10 8"
-        animate={{ strokeDashoffset: [0, -36] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} />);
+        animate={{ opacity: [1, 0.45, 1] }} transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />);
   const rs = [t, extra].filter(Boolean);
   return (
     <>
@@ -145,9 +147,11 @@ export default function Tutorial() {
   // track the anchor (it moves: panels appear, layout shifts)
   const [rect, setRect] = useState(null);
   const [extra, setExtra] = useState(null);
+  const [modal, setModal] = useState(false); // an open modal has the screen: no card, no spotlight beside it
   useEffect(() => {
     if (!step) { setRect(null); setExtra(null); return undefined; }
     const upd = () => {
+      setModal(!!document.querySelector('[aria-modal="true"]'));
       const r = anchorRect(step.anchor), x = step.also ? anchorRect(step.also) : null;
       setRect((o) => (same(o, r) ? o : r));
       setExtra((o) => (same(o, x) ? o : x));
@@ -161,7 +165,7 @@ export default function Tutorial() {
   const cardRef = useRef(null);
   const [ch, setCh] = useState(170);
   useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - ch) > 1) setCh(h); });
-  const pos = step ? placeCard(rect, ch, step.side, step.gap) : null;
+  const pos = step ? placeCard(rect, ch, step.at || step.side, step.gap) : null;
   const card = pos && { left: pos.left, top: pos.top, width: cardW(), height: ch };
   const coreIdx = step ? CORE.findIndex((s) => s.id === step.id) : -1;
   const line = step && ((touch && step.touch) || step.plain);
@@ -169,7 +173,7 @@ export default function Tutorial() {
 
   return (
     <AnimatePresence>
-      {step && !yielding && (
+      {step && !yielding && !modal && (
         <motion.div key={step.id} className="pointer-events-none fixed inset-0 z-30"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={{ duration: 0.2 }}>
           <svg className="absolute inset-0 h-full w-full" aria-hidden="true">

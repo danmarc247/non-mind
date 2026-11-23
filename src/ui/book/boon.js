@@ -7,10 +7,10 @@ const LINES = {
   affect: '+%v% affect, always',
   insight: '+%v% insight, always',
   capacity: '+%v% capacity, always',
-  residue: '+%v% residue at every reset',
-  tolerance: '+%v% tolerance for every unit',
-  salience: '+%v% salience for every unit',
-  attention: '+%v attention after every wave won',
+  residue: '+%v% residue per reset',
+  tolerance: '+%v% tolerance, every unit',
+  salience: '+%v% salience, every unit',
+  attention: '+%v attention per wave won',
 };
 export function boonText(boon) {
   if (!boon) return '';

@@ -51,16 +51,16 @@ function Place({ card, held, fresh, onOpen, stagger }) {
       className={`group relative flex h-[168px] flex-col overflow-hidden rounded-[16px] border-[3px] border-ink bg-paper p-2.5 text-left text-ink lg:col-span-2 lg:h-[158px] ${pos} ${fresh ? 'shadow-[0_0_0_5px_color-mix(in_srgb,var(--color-yolk)_55%,transparent),0_0_22px_6px_color-mix(in_srgb,var(--color-yolk)_45%,transparent),3px_4px_0_var(--color-ink)]' : 'shadow-[3px_4px_0_var(--color-ink)]'}`}
       whileHover={{ y: -3, rotate: -0.6 }} whileTap={{ scale: 0.97 }} transition={LAYOUT}>
       {fresh && <span className="absolute top-1.5 right-1.5 rounded-full border-2 border-ink bg-yolk px-1.5 font-stat text-[11px] leading-[16px]">{t('new')}</span>}
-      <span className="flex items-start gap-2">
+      <span className="flex shrink-0 items-start gap-2">
         <span className="-mt-0.5 -ml-0.5 shrink-0 transition-transform duration-200 group-hover:-rotate-6"><CardMark card={card} size={44} /></span>
         <span className="min-w-0 pt-0.5">
           <span className="block font-stat text-[11px] leading-none text-ink-2">{card.n}</span>
           <span className="mt-0.5 block font-head text-[15px] leading-[1.05]">{card.name}</span>
         </span>
       </span>
-      <span className="mt-1 line-clamp-2 font-body text-[12.5px] leading-[1.25] italic">{card.quote}</span>
-      <span className="mt-0.5 line-clamp-2 font-body text-[11px] leading-[1.25] text-ink-2">{card.principle}</span>
-      <Boon card={card} className="mt-auto pt-0.5" />
+      <span className="mt-1 line-clamp-2 shrink-0 font-body text-[12.5px] leading-[1.25] italic">{card.quote}</span>
+      <span className="mt-0.5 line-clamp-2 min-h-0 font-body text-[11px] leading-[1.25] text-ink-2">{card.principle}</span>
+      <Boon card={card} className="mt-auto shrink-0 pt-0.5 whitespace-nowrap" />
     </motion.button>
   );
 }

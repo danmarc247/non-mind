@@ -4,6 +4,9 @@ export const TIER_LONG = [
   '', 'thousand', 'million', 'billion', 'trillion', 'quadrillion', 'quintillion', 'sextillion', 'septillion', 'octillion', 'nonillion',
 ];
 
+// three significant figures, decided AFTER rounding (9.996 is '10.0', not '10.00')
+const sig3 = (v) => { const r = Number(v.toPrecision(3)); return r >= 100 ? String(Math.round(r)) : r >= 10 ? r.toFixed(1) : r.toFixed(2); };
+
 function split(n) {
   let e = Math.min(TIER_SHORT.length - 1, Math.floor(Math.log10(n) / 3));
   let v = n / Math.pow(1000, e);
@@ -17,15 +20,17 @@ function split(n) {
 export function fmt(n, { int = false } = {}) {
   if (n == null || Number.isNaN(n)) return '-';
   if (!Number.isFinite(n)) return n > 0 ? 'inf' : '-inf';
+  if (Math.abs(n) < 0.005) n = 0; // never '-0.00'
   const s = n < 0 ? '-' : '';
   n = Math.abs(n);
+  if (n >= 999.5 && n < 1000 && !int) n = 1000; // 999.6 rounds into the next tier, not to '1000'
   if (n < 1000) {
-    if (int || n >= 100 || n === 0) return s + Math.floor(n + 1e-9);
-    return s + n.toFixed(n >= 10 ? 1 : 2);
+    if (int || n >= 100 || n === 0) return s + Math.round(n >= 100 && !int ? n : Math.floor(n + 1e-9));
+    return s + sig3(n);
   }
-  if (n >= 1e33) return s + n.toExponential(2).replace('+', '');
+  if (n >= 9.995e32) return s + n.toExponential(2).replace('+', ''); // past the last named tier (no '1000no')
   const { v, e, d } = split(n);
-  return s + v.toFixed(d) + TIER_SHORT[e];
+  return s + sig3(v) + TIER_SHORT[e];
 }
 
 /** Long form for tooltips: "9.42 million". */
@@ -34,7 +39,7 @@ export function fmtLong(n) {
   if (Math.abs(n) < 1000) return fmt(n);
   if (Math.abs(n) >= 1e33) return n.toExponential(3);
   const { v, e, d } = split(Math.abs(n));
-  return `${n < 0 ? '-' : ''}${v.toFixed(d)} ${TIER_LONG[e]}`;
+  return `${n < 0 ? '-' : ''}${sig3(v)} ${TIER_LONG[e]}`;
 }
 
 export const fmtTime = (s) => {

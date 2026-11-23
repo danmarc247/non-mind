@@ -42,7 +42,8 @@ export const SYMBOLS = {
     { k: 'L', pts: arc(0, -0.28, 0.58, 0, Math.PI, 30), w: 0.08 },
     { k: 'L', pts: [[-0.74, -0.5], [0.74, -0.5]], w: 0.065 },
   ],
-  triangle: [{ k: 'L', pts: [[-0.42, 0.6], [0.64, 0.02], [-0.42, -0.58]], w: 0.08, closed: true }],
+  // leaning forward: a triangle tipped onto its front corner
+  triangle: [{ k: 'L', pts: rot([[-0.5, -0.5], [0.58, -0.5], [-0.05, 0.62]], -0.3, 0, -0.05), w: 0.08, closed: true }],
   square: [{ k: 'L', pts: rot([[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]], 0.06), w: 0.08, closed: true }],
   // a plain crossing inside a ring: two paths meet and part
   cross: [
@@ -67,10 +68,12 @@ export const SYMBOLS = {
     { k: 'L', pts: [[0.28, -0.12], [0.3, 0.46]], w: 0.095 },
     { k: 'L', pts: [[-0.3, -0.36], [-0.62, 0.02]], w: 0.1 },
   ],
+  // a seed in the ground with a two-leaf sprout
   seed: [
-    { k: 'F', pts: ellipse(-0.06, -0.24, 0.3, 0.42, 0.42) },
-    { k: 'L', pts: param((t) => [0.08 + 0.2 * t * t, 0.12 + 0.5 * t], 0, 1, 12), w: 0.058 },
-    { k: 'F', pts: ellipse(0.42, 0.56, 0.17, 0.075, 0.55, 24) },
+    { k: 'F', pts: ellipse(0, -0.42, 0.34, 0.24, 0.15) },
+    { k: 'L', pts: param((t) => [0.04 * Math.sin(t * 3), -0.24 + 0.66 * t], 0, 1, 10), w: 0.055 },
+    { k: 'F', pts: rot(ellipse(-0.22, 0.32, 0.22, 0.1, 0, 24), 0.55, -0.02, 0.24) },
+    { k: 'F', pts: rot(ellipse(0.22, 0.42, 0.22, 0.1, 0, 24), -0.5, 0.02, 0.34) },
   ],
   flame: [
     { k: 'L', pts: teardrop(0, -0.08, 0.5, 0.68, 0.16), w: 0.07, closed: true },

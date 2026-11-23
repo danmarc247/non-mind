@@ -25,13 +25,25 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 /** Live view of the card for galleries and HUD hints: world position, phase ('idle'|'live'|'collect'|'gone'), id. */
 export const cardView = { pos: new THREE.Vector3(), phase: 'idle', id: null, hover: false };
 
-function slabGeometry() {
+export function slabGeometry() {
   const s = new THREE.Shape(), x = HW, y = HH, r = RADIUS;
   s.moveTo(-x + r, -y); s.lineTo(x - r, -y); s.quadraticCurveTo(x, -y, x, -y + r); s.lineTo(x, y - r); s.quadraticCurveTo(x, y, x - r, y);
   s.lineTo(-x + r, y); s.quadraticCurveTo(-x, y, -x, y - r); s.lineTo(-x, -y + r); s.quadraticCurveTo(-x, -y, -x + r, -y);
   const g = new THREE.ExtrudeGeometry(s, { depth: DEPTH, bevelEnabled: false, curveSegments: 6 });
   g.translate(0, 0, -DEPTH / 2);
   return g;
+}
+/** The card's face material (front mark + back pattern); one per card on screen. */
+export function cardMaterial() {
+  return new THREE.ShaderMaterial({
+    vertexShader: cardVert, fragmentShader: cardFrag.replace('#pragma CARD_SYMBOLS', symbolGLSL()),
+    transparent: true, toneMapped: false, side: THREE.FrontSide,
+    uniforms: {
+      uHalfW: { value: HW }, uTime: { value: 0 }, uSymbol: { value: 0 }, uSeed: { value: 0.3 }, uGlint: { value: 1 }, uUrgency: { value: 0 },
+      uFade: { value: 0 }, uFlash: { value: 0 }, uHover: { value: 0 }, uCx: { value: 0 },
+      uTone: { value: tok('yolk') }, uPaper: { value: tok('paper') }, uInk: { value: tok('ink') }, uA: { value: tok('magenta') }, uB: { value: tok('teal') },
+    },
+  });
 }
 function fxMesh(count, kind) {
   const g = new THREE.InstancedBufferGeometry(), base = new THREE.PlaneGeometry(1, 1);
@@ -60,16 +72,7 @@ export function DriftingCard({ y = CARD_Y, scale = 1.35, fixedYaw = null }) {
   const { camera } = useThree();
   const mesh = useRef();
   const parts = useMemo(() => {
-    const geo = slabGeometry();
-    const mat = new THREE.ShaderMaterial({
-      vertexShader: cardVert, fragmentShader: cardFrag.replace('#pragma CARD_SYMBOLS', symbolGLSL()),
-      transparent: true, toneMapped: false, side: THREE.FrontSide,
-      uniforms: {
-        uHalfW: { value: HW }, uTime: { value: 0 }, uSymbol: { value: 0 }, uSeed: { value: 0.3 }, uGlint: { value: 1 }, uUrgency: { value: 0 },
-        uFade: { value: 0 }, uFlash: { value: 0 }, uHover: { value: 0 }, uCx: { value: 0 },
-        uTone: { value: tok('yolk') }, uPaper: { value: tok('paper') }, uInk: { value: tok('ink') }, uA: { value: tok('magenta') }, uB: { value: tok('teal') },
-      },
-    });
+    const geo = slabGeometry(), mat = cardMaterial();
     return { geo, mat, motes: fxMesh(MOTES, 0), ring: fxMesh(1, 1) };
   }, []);
   useEffect(() => () => { parts.geo.dispose(); parts.mat.dispose(); for (const m of [parts.motes, parts.ring]) { m.geometry.dispose(); m.material.dispose(); } }, [parts]);

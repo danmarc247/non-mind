@@ -2,7 +2,8 @@
 // DriftingCard, the Book and the CardToast. Buttons spawn each of the 22 cards, collect, run the clock
 // down, let it go, and fill the book. Query: ?spawn=<n> ?yaw=<rad> (hold the turn) ?t=<s> (offer time)
 // ?dist= ?pol= ?az= (camera) ?fill=<count> ?open=1 (book) ?sel=<n> (enlarge) ?toast=<n> ?ui=0 ?post=1 ?stage= ?cx=
-import { useEffect, useState } from 'react';
+// ?sheet=1 (all 22 shader fronts, ?back=1 for backs) ?marks=1 (all 22 SVG marks)
+import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
@@ -11,7 +12,7 @@ import '../../index.css';
 import { mood, PALETTE } from '../mood.js';
 import { PainterSky } from '../PainterSky.jsx';
 import { PainterPost } from '../PainterPost.jsx';
-import { DriftingCard, cardView } from '../cards/index.js';
+import { DriftingCard, cardView, cardMaterial, slabGeometry, symbolIndex } from '../cards/index.js';
 import { game, act, tick, notify } from '../../game/store.js';
 import { CARDS } from '../../game/content/cards.js';
 import Book, { CardToast } from '../../ui/Book.jsx';
@@ -49,9 +50,10 @@ window.__clock = (on) => { autoClock = on; };
 window.__book = () => window.dispatchEvent(new Event('nonmind:book'));
 window.__toast = (n) => window.dispatchEvent(new CustomEvent('nonmind:cardtoast', { detail: { id: ORDER[n].id } }));
 
-function Rig() {
+function Rig({ sheet = false }) {
   const { camera, size } = useThree();
   useEffect(() => {
+    if (sheet) return;
     const az = num('az', 0) * Math.PI / 180, pol = num('pol', 0.92), dist = num('dist', 37.8);
     const tgt = q.get('near') ? new THREE.Vector3(0, 2.6, 2) : TARGET;
     camera.position.set(tgt.x + Math.sin(az) * Math.sin(pol) * dist, tgt.y + Math.cos(pol) * dist, tgt.z + Math.cos(az) * Math.sin(pol) * dist);
@@ -80,6 +82,33 @@ function Sea() {
       </mesh>
       <mesh position-y={-0.2} rotation-x={Math.PI / 2}><torusGeometry args={[12.6, 0.15, 10, 160]} /><meshBasicMaterial color={new THREE.Color().setRGB(...PALETTE.paper)} /></mesh>
     </group>
+  );
+}
+
+// every front (or back) at once, facing the camera, for checking all 22 painted marks
+function Sheet() {
+  const items = useMemo(() => {
+    const geo = slabGeometry();
+    return ORDER.map((c, i) => {
+      const mat = cardMaterial(), u = mat.uniforms;
+      u.uSymbol.value = symbolIndex(c.symbol); u.uSeed.value = (c.n * 0.618 + 0.13) % 1; u.uTone.value.fromArray(PALETTE[c.tone]); u.uFade.value = 1; u.uGlint.value = 0;
+      return { c, geo, mat, x: (i % 11 - 5) * 1.15, y: i < 11 ? 0.85 : -0.85 };
+    });
+  }, []);
+  useFrame(() => { for (const it of items) it.mat.uniforms.uTime.value = mood.time; });
+  const back = q.get('back') === '1';
+  return <group>{items.map((it) => <mesh key={it.c.id} geometry={it.geo} material={it.mat} position={[it.x, it.y, 0]} rotation-y={back ? Math.PI : 0} />)}</group>;
+}
+function Marks() {
+  return (
+    <div className="fixed inset-0 overflow-auto bg-paper p-6">
+      <div className="grid grid-cols-6 gap-4 sm:grid-cols-8 lg:grid-cols-11">
+        {ORDER.map((c) => (
+          <div key={c.id} className="flex flex-col items-center gap-1"><CardMark card={c} size={104} /><span className="font-stat text-[11px] text-ink-2">{c.n} {c.symbol}</span></div>
+        ))}
+      </div>
+      <div className="mt-6 flex flex-wrap items-end gap-6">{ORDER.slice(0, 6).map((c) => <CardMark key={c.id} card={c} size={36} />)}</div>
+    </div>
   );
 }
 
@@ -122,6 +151,16 @@ function App() {
     if (q.get('toast') !== null) setTimeout(() => window.__toast(num('toast', 0)), 400);
   }, []);
   const yaw = q.get('yaw') !== null ? num('yaw', 0) : null;
+  if (q.get('marks') === '1') return <Marks />;
+  if (q.get('sheet') === '1') {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'var(--color-paper)' }}>
+        <Canvas linear legacy flat orthographic camera={{ position: [0, 0, 20], zoom: num('zoom', 110) }} dpr={1} gl={{ antialias: false }}>
+          <Rig sheet /><Sheet />
+        </Canvas>
+      </div>
+    );
+  }
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--color-paper)' }}>
       <Canvas linear legacy flat camera={{ position: [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={q.get('dpr') ? +q.get('dpr') : [1, 1.5]} gl={{ antialias: false }}>

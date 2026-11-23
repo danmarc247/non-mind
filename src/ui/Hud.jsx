@@ -1,6 +1,6 @@
 // NON-MIND HUD: DOM overlay over the full-screen WebGL arena. The centre stays clear.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { InkButton } from './bits';
 import { unlocked } from '../game/index.js';
 import { act, game, select, setPending, useGame } from '../game/store.js';
@@ -83,6 +83,7 @@ export default function Hud() {
   const [codex, setCodex] = useState(false);
   const [topRef, topH] = useHeight();
   const [botRef, botH] = useHeight();
+  const [ringsRef, ringsH] = useHeight();
   const started = game.started;
   const selU = G.units.some((u) => u.id === game.selected);
 
@@ -135,11 +136,12 @@ export default function Hud() {
   const bandTop = topH + 24;
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
-  const logH = compact ? 122 : 182;
+  const logH = compact ? 132 : 212;
   const sideL = 12 + (compact ? 300 : 340) + 24;
 
   return (
     <DegradeCtx.Provider value={{ d, tick }}>
+      <MotionConfig reducedMotion="user">
       <style>{HUD_CSS}</style>
       <div
         className="pointer-events-none fixed inset-0 z-10 overflow-hidden overscroll-none font-body text-ink select-none"
@@ -162,8 +164,8 @@ export default function Hud() {
               <Log compact={compact} />
             </div>
 
-            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': compact && selU ? '62px' : compact ? '120px' : '132px' }}>
-          <div className="pointer-events-auto flex items-start gap-2.5">
+            <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': `${ringsH + 12}px` }}>
+          <div ref={ringsRef} className="pointer-events-auto flex items-start gap-2.5">
           <Shake seed={45}><Ask size={compact ? 50 : 56} /></Shake>
           <AnimatePresence initial={false}>{!(compact && selU) && (
           <motion.div key="rings" className="pointer-events-auto flex items-start gap-2.5" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }} transition={POP}>
@@ -199,6 +201,7 @@ export default function Hud() {
         <AnimatePresence>{codex && started && <Codex key="codex" onClose={() => setCodex(false)} />}</AnimatePresence>
         <AnimatePresence>{!started && <Title key="title" />}</AnimatePresence>
       </div>
+      </MotionConfig>
     </DegradeCtx.Provider>
   );
 }

@@ -20,7 +20,7 @@ export default function Ask({ size = 56, bubble = 'left', className }) {
   return (
     <span data-tut="ask" className={cn('relative inline-flex', className)}>
       <RingButton tone="yolk" size={size} hotkey="?" hotkeyPos="corner" onClick={() => emitHud({ type: 'ask' })} label="ask for a hint">
-        <span className="font-title leading-none" style={{ fontSize: size * 0.46 }}>?</span>
+        <span className="font-head leading-none" style={{ fontSize: size * 0.6, fontWeight: 900 }}>?</span>
       </RingButton>
       <span className={cn('pointer-events-none absolute z-10', bubble === 'left' ? 'right-[calc(100%+10px)] top-1/2 -translate-y-1/2' : 'top-[calc(100%+8px)] right-0')}>
         <AnimatePresence mode="popLayout" initial={false}>

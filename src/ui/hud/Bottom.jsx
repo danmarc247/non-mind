@@ -199,7 +199,7 @@ export function Seated({ G }) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
       <Label className="shrink-0 pl-2">held</Label>
-      <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1">
+      <div className="nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto py-1 pr-7 pl-0.5 [mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)] [touch-action:pan-x]">
         <AnimatePresence initial={false}>
           {seated.map((u) => (
             <motion.button

@@ -93,6 +93,8 @@ export const HUD_CSS = `
 .nm-shake { animation: nm-shake 0.33s steps(3, jump-none) infinite; transform-origin: 50% 50%; }
 .nm-scroll { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-ink) 35%, transparent) transparent; }
 .nm-tab { font-variant-numeric: tabular-nums; }
+.nm-num { display: inline-block; min-width: 4.3ch; }
+@media (prefers-reduced-motion: reduce) { .nm-shake { animation: none; } }
 `;
 
 /* ------------------------------------------------------------ badges */

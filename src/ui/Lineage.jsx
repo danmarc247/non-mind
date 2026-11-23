@@ -82,8 +82,8 @@ function Legend() {
   );
 }
 
-export default function Lineage() {
-  const [open, setOpen] = useState(false);
+export default function Lineage({ initialOpen = false } = {}) {
+  const [open, setOpen] = useState(initialOpen);
   useEffect(() => {
     const toggle = () => setOpen((o) => !o);
     const key = (e) => {

@@ -22,8 +22,8 @@ function Row({ tone, title, line, children }) {
 
 const clock = (t) => (t ? new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : null);
 
-export default function SaveMenu() {
-  const [open, setOpen] = useState(false);
+export default function SaveMenu({ initialOpen = false } = {}) {
+  const [open, setOpen] = useState(initialOpen);
   const [text, setText] = useState('');
   const [note, setNote] = useState(null);       // { tone, text }
   const [confirm, setConfirm] = useState(false);

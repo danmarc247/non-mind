@@ -21,6 +21,7 @@ export function lazyOnOpen(load, event, keyOk) {
       return () => { window.removeEventListener(event, go); window.removeEventListener('keydown', key); };
     }, [on]);
     if (!on) return null;
-    return <Suspense fallback={null}><Mod {...props} /><Replay event={event} /></Suspense>;
+    // the module mounts already open: no replayed event, so a toggle can never cancel itself
+    return <Suspense fallback={null}><Mod {...props} initialOpen /></Suspense>;
   };
 }

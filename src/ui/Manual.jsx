@@ -24,8 +24,8 @@ function build(md) {
   return { title, intro: marked.parse(intro, { gfm: true }), sections };
 }
 
-export default function Manual() {
-  const [open, setOpen] = useState(false);
+export default function Manual({ initialOpen = false } = {}) {
+  const [open, setOpen] = useState(initialOpen);
   const [active, setActive] = useState(0);
   const doc = useMemo(() => build(readme), []);
   const body = useRef(null);

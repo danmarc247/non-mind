@@ -41,7 +41,7 @@ export function StageTracker({ G, compact }) {
         </AnimatePresence>
       </div>
       <div className="mt-0.5 h-[18px] truncate text-[13px] leading-[18px]">
-        {next ? <Cryptic key={G.stage} text={next.hint} tone="magenta" /> : <span className="font-body text-ink-2 italic">There is no next. There is this.</span>}
+        {next ? <Cryptic key={G.stage} text={next.hint} tone="ink-2" className="text-ink" /> : <span className="font-body text-ink-2 italic">There is no next. There is this.</span>}
       </div>
     </div>
   );
@@ -63,7 +63,7 @@ export function Resources({ G, compact, mobile }) {
           <Appear key={c.k} from="down" className="relative" data-tut={`chip-${c.k}`}>
             <StatChip
               label={<Scr k={c.k.length}>{c.k}</Scr>}
-              value={<span className="nm-tab">{c.value}{c.sub && <span className="ml-1.5 text-[12px] text-ink-2">{c.sub}</span>}</span>}
+              value={<span className="nm-tab"><span className="nm-num">{c.value}</span>{c.sub && <span className="ml-1.5 text-[12px] text-ink-2">{c.sub}</span>}</span>}
               tone={c.tone}
               hint={c.hint}
               className={c.sub !== undefined ? (compact ? 'w-[150px]' : 'w-[170px]') : w}

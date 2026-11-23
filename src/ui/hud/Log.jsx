@@ -6,10 +6,6 @@ import { useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { POP } from './shared.jsx';
 
-const KIND_TONE = {
-  stage: 'text-magenta', link: 'text-ultra', ending: 'text-leaf', warn: 'text-blood', op: 'text-ink', verb: 'text-violet', season: 'text-tangerine', reset: 'text-violet',
-};
-
 const KIND_COLOR = {
   stage: 'magenta', link: 'ultra', ending: 'leaf', warn: 'blood', op: 'violet', verb: 'violet', season: 'tangerine', reset: 'violet', koan: 'ink-2',
 };
@@ -52,7 +48,10 @@ export function ArcaneProvider({ children }) {
       return undefined;
     }
     if (!st.herald) return undefined;
-    const hold = (st.queue.length ? HOLD_BUSY : HOLD) * 1000 - (performance.now() - st.herald.at);
+    // tests may lengthen the hold and release it by hand: window.__arcaneDebug = { hold: seconds }; __arcaneDebug.release()
+    const dbg = typeof window !== 'undefined' ? window.__arcaneDebug : null;
+    if (dbg) dbg.release = () => setSt((s) => ({ ...s, herald: null }));
+    const hold = (dbg?.hold ?? (st.queue.length ? HOLD_BUSY : HOLD)) * 1000 - (performance.now() - st.herald.at);
     const t = setTimeout(() => setSt((s) => ({ ...s, herald: null })), Math.max(0, hold));
     return () => clearTimeout(t);
   }, [st]);
@@ -116,7 +115,7 @@ export function Log({ compact, mobile }) {
     folded.push({ ...l, key: k, n: 1 });
   });
   const items = folded.slice(compact || mobile ? -2 : -3);
-  const fs = mobile ? 15 : compact ? 16 : 18;
+  const fs = mobile ? 15 : compact ? 17 : 19;
   return (
     <div className={cn('pointer-events-none flex flex-col justify-end', mobile ? 'w-[min(300px,70vw)]' : compact ? 'w-[300px]' : 'w-[340px]')} style={{ height: mobile ? undefined : 'var(--log-h)' }}>
       <div className="mb-1 flex items-center gap-1.5">
@@ -132,15 +131,13 @@ export function Log({ compact, mobile }) {
               layoutId={`arcane-${l.key}`}
               layout
               initial={{ opacity: 0 }}
-              animate={{ opacity: Math.max(0.35, 1 - age * 0.25) }}
+              animate={{ opacity: Math.max(0.62, 1 - age * 0.19) }}
               transition={{ opacity: { duration: 0.3 }, layout: { type: 'spring', stiffness: 170, damping: 21, mass: 0.9 } }}
               className={cn(
-                'w-fit max-w-full rounded-[8px] bg-paper/80 px-2 py-[3px] font-body italic leading-snug [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden',
-                KIND_TONE[l.kind] || 'text-ink-2',
+                'w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
-              style={{ fontSize: fs }}
-              title={l.text}
+              style={{ fontSize: fs, borderLeftColor: `var(--color-${KIND_COLOR[l.kind] || 'ink-2'})` }}
             >
               {l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[12px] not-italic">x{l.n}</span>}
             </motion.p>

@@ -144,7 +144,7 @@ function Ring({ frac, tone = 'magenta', size = 44, stroke = 5, children, pulse }
         <motion.circle
           cx={size / 2} cy={size / 2} r={r} fill="none" stroke={`var(--color-${tone})`} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={c} initial={false} animate={{ strokeDashoffset: c * (1 - Math.max(0, Math.min(1, frac))) }}
-          transition={{ duration: 0.14, ease: 'linear' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
         />
       </svg>
       <motion.span className="relative" animate={pulse ? { scale: [1, 1.08, 1] } : { scale: 1 }} transition={pulse ? { duration: 1, repeat: Infinity } : POP}>{children}</motion.span>

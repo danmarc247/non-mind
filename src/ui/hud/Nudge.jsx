@@ -99,11 +99,11 @@ export default function Nudge({ blocked }) {
       const t = now(), s = st.current;
       // the rotation first; if everything is cooling down, the one shown longest ago (never the same twice running)
       let sug = nextSuggestion(game.G, s.mem, t);
-      if (!sug) {
-        const list = suggestions(game.G).filter((x, _, all) => all.length < 2 || x.id !== s.cur?.s.id);
-        sug = list.sort((a, b) => (s.mem[a.id] ?? -1e9) - (s.mem[b.id] ?? -1e9))[0] || null;
+      if (!sug || sug.id === s.lastShown) {
+        const others = suggestions(game.G).filter((x) => x.id !== s.lastShown);
+        sug = others.sort((a, b) => (s.mem[a.id] ?? -1e9) - (s.mem[b.id] ?? -1e9) || b.weight - a.weight)[0] || sug;
       }
-      if (sug) { if (s.mem) s.mem[sug.id] = t; setCur({ s: sug, shownAt: t, done: false, asked: true }); }
+      if (sug) { s.mem[sug.id] = t; s.lastShown = sug.id; setCur({ s: sug, shownAt: t, done: false, asked: true }); }
       else setCur({ s: { id: 'none', target: '', weight: 0, text: QUIET_LINE, plain: '' }, shownAt: t, done: false, asked: true, quietLine: true });
     }
   }), []);
@@ -145,6 +145,7 @@ export default function Nudge({ blocked }) {
   useEffect(() => {
     const iv = setInterval(() => {
       const s = st.current, t = now(), { idle, life, gap } = T();
+      if (s.G !== game.G) { s.G = game.G; s.mem = {}; s.lastShown = null; } // a new game is a first game
       const step = activeStep(game.G, loadTut());
       if (step?.id !== s.tutId) { s.tutId = step?.id; s.tutAt = t; }
       const tutorialBusy = step && t - s.tutAt < 40;
@@ -158,7 +159,7 @@ export default function Nudge({ blocked }) {
       }
       if (t - s.idleSince < idle || t < s.nextAt) return;
       const sug = nextSuggestion(game.G, s.mem, t);
-      if (sug) setCur({ s: sug, shownAt: t, done: false });
+      if (sug) { s.lastShown = sug.id; setCur({ s: sug, shownAt: t, done: false }); }
       else s.nextAt = t + gap;
     }, 250);
     return () => clearInterval(iv);
@@ -200,9 +201,9 @@ export default function Nudge({ blocked }) {
               </div>
             </motion.div>}
             {!cur.done && (
-              <motion.div className="absolute w-max max-w-[260px] rounded-[12px] border-[3px] border-ink bg-paper px-3 py-2 shadow-[3px_4px_0_0_color-mix(in_srgb,var(--color-ink)_100%,transparent)]" style={capStyle}
+              <motion.div className={(urgent ? 'border-magenta ' : 'border-ink ') + "absolute w-max max-w-[260px] rounded-[12px] border-[3px] bg-paper px-3 py-2 shadow-[3px_4px_0_0_color-mix(in_srgb,var(--color-ink)_100%,transparent)]"} style={capStyle}
                 initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.25 }}>
-                <p className={urgent ? 'font-body text-[15px] italic leading-snug text-magenta' : 'font-body text-[15px] italic leading-snug text-ink-2'}>{cur.s.text}</p>
+                <p className="font-body text-[15px] italic leading-snug text-ink-2">{cur.s.text}</p>
                 {cur.s.plain && <p className="mt-0.5 font-body text-[13px] leading-snug text-ink">{cur.s.plain}</p>}
               </motion.div>
             )}
