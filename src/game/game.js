@@ -309,7 +309,7 @@ export function step(G, dt) {
   if (unlocked(G, 'seasons')) { G.seasonT -= dt; if (G.seasonT <= 0) { G.seasonT = 60; G.stats.seasons++; if (G.attention >= 3) { G.attention -= 3; say(G, 'The season takes its three.', 'season'); } else addMood(G, 'dread'); } }
   // complexity and overwhelm
   let C = 0; for (const u of G.units) C += complexityOf(u);
-  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 70 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
+  C += Math.sqrt(G.habitsOwned) * 1.2 + Object.keys(G.upgrades).length * 1.5 + G.moods.length + G.mirrors * 45 + G.attendants * 0.6 + (G.stance ? 3 : 0) + Math.log10(1 + G.stats.earned) * 2.5 + (G.cycle * 10 + G.wave) * 1.5;
   G.complexity = C; G.stats.peak = Math.max(G.stats.peak, C);
   G.capacity = capacityOf(G);
   G.overwhelm = Math.max(0, Math.min(1, (C - G.capacity) / (G.capacity * 0.12)));

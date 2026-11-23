@@ -85,7 +85,7 @@ The first minutes are small on purpose. One thing is on the screen, and it can b
 
 A loss is not a wall. It pays 3 attention, refills composure, and each loss on a wave softens its stressors by 12 percent (`x0.88`, up to 12 stacks) until the wave is won.
 
-Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. The director leans on the camera and lets go. It never takes it away. The camera also turns slowly by itself, faster at every stage, and a fuse, integrate, subtract, split, new stage or reset gives the turning a push that settles.
+Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. A stage unlock, a link of 5 or more, an ending, a wave's arc and a reset also get a short painted banner from the Ceremony overlay. The director leans on the camera and lets go. It never takes it away. The camera also turns slowly by itself, faster at every stage, and a fuse, integrate, subtract, split, new stage or reset gives the turning a push that settles.
 
 ### Controls
 
@@ -367,7 +367,7 @@ Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs
 
 | System | Rule |
 |---|---|
-| **Mirror** | Cost `1.5e12 x 25^n` affect. Doubles affect, +2 unit cap, opens the third ring, +70 complexity, stressors +20% tolerance each |
+| **Mirror** | Cost `6e10 x 25^n` affect. Doubles affect, +2 unit cap, opens the third ring, +70 complexity, stressors +20% tolerance each |
 | **Stance** | Toward: mending x2, reach x0.8. Away: opacity +20, reach x1.3, affect x0.8. Against: salience x1.6, tolerance x0.8 |
 | **Seasons** | Every 60 s the season takes 3 attention, or, if you cannot pay, adds a Dread |
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
@@ -416,7 +416,7 @@ The stack was chosen so one painted look could run in the browser without a serv
 | lucide-react, clsx, tailwind-merge, class-variance-authority, @radix-ui/react-slot, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
 | @fontsource packages | https://fontsource.org | Self-hosted fonts |
 | Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl` (`vite-plugin-singlefile` is installed but not enabled) |
-| Vitest 5 | https://vitest.dev | TESTCOUNT engine tests in node, run in CI before every deploy |
+| Vitest 5 | https://vitest.dev | 192 engine tests in node, run in CI before every deploy |
 | Web Audio API | https://developer.mozilla.org/docs/Web/API/Web_Audio_API | All music and SFX, no samples and no libraries |
 
 ---
@@ -583,7 +583,7 @@ Everything runs locally with Node.
 npm i --legacy-peer-deps      # install
 npm run dev                   # vite dev server, port 5173
 npm run build                 # production build to dist/ (base './', hosted under /non-mind/)
-npm test                      # TESTCOUNT tests (vitest, node environment); CI runs this before the build
+npm test                      # 192 tests (vitest, node environment); CI runs this before the build
 ```
 
 Parallel dev servers need separate caches: `NM_CACHE_DIR=/tmp/cache-x npx vite --port 5181 --strictPort`.
@@ -645,11 +645,33 @@ See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports an
 
 ## Roadmap
 
-What is still ahead, written plainly.
+What has changed since the first version, and what has not.
 
-- [ ] Mobile and touch layout pass
-- [ ] Balance pass on late stages (mirrors, wildcard) using `tests/game/balance.mjs`
-- [ ] Save export and import
-- [ ] More sculpture forms, and mutation-driven deformation of bodies (each mutation already carries a form value that the sculptures do not use yet)
-- [ ] Use the installed but idle libraries (PixiJS, GSAP, OGL), or remove them
-- [ ] Wire the per-event cryptic line pools more fully into the log
+### Done since the first version
+
+- Save export and import: a copied line of text or a `.txt` file, with a checksum, and a menu to save now or wipe.
+- More sculpture forms: three growth-stage forms per family, seeded siblings, six axes of mutation-driven deformation, a reflective painted finish.
+- The per-event cryptic line pools are wired into the log, with idle and overwhelm lines in between.
+- The idle libraries are used or gone: PixiJS draws the Lineage map, GSAP runs the Ceremony overlays (mounted, lazily loaded), and OGL and zustand were removed.
+- Idle hints and the question button, from a pure advisor module in the engine.
+- The contained sea, paint fx and wave veils, the arena parts and the floating bodies, each as its own folder.
+- Bundle splitting has begun: `vite.config.js` groups vendor code (React, three, the R3F family, Shader Park, Motion, GSAP) into chunks, and `src/App.jsx` loads the scene, the Ceremony, the Manual, the save menu and the Lineage map lazily. The largest chunk is still about 740 kB (190 kB gzip), the warning limit stays raised, and the Lineage map's PixiJS chunk loads only when opened.
+
+### Still ahead
+
+- Mobile and touch layout: in progress. A phone HUD exists (`src/ui/hud/Mobile.jsx`: a top strip, the arena, a bottom dock of tabs opening a bottom sheet, attend under the right thumb), but the codex and manual are not yet comfortable at narrow widths.
+- Contrast and reduced-motion passes across the HUD (the Ceremony already respects reduced motion).
+- Further bundle trimming: the entry and scene code could be split more finely.
+- The gallery pages are development-only, with no public address. That is by design, but it means the deployed site shows none of them.
+
+### Balance
+
+The late-stage balance was tuned (stressor scaling, pay, mirror cost, a neighbour fuse from link 4, shop leaning, the xp table, a narrower overwhelm band), and it is still being refined. The latest run of `node tests/game/balance.mjs` reports, honestly:
+
+- G1 fail: stage 17 reached in 10 of 10 seeds, median 23.4 minutes (target 25 to 45), and the largest gap between stages after minute 5 is longer than wanted.
+- G2 pass: each seed buys 1 to 3 mirrors before stage 17.
+- G3 pass: the wildcard aspect adds a median of 4 aspect tiers.
+- G4 fail: win rate by window is 96, 52, 83, 89 and 78 percent (target 55 to 90 in every window).
+- G5 pass: affect never outruns the top price by more than 1000 times.
+- G6 fail: the highest link in the first run is 5 to 7 (target 6 to 9), and no seed reaches an ending by run 3.
+- G7 fail: later runs reach stage 17 faster (about 42 percent, inside the target), but the residue gained does not rise from run to run (75, 73, 84).
