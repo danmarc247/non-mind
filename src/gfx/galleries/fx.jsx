@@ -113,7 +113,7 @@ function Placeholders() {
   );
 }
 
-const btn = 'font-head text-[13px] px-2 py-0.5 border-2 border-ink rounded-md bg-paper text-ink shadow-[1px_2px_0_0_var(--color-ink)] active:translate-y-px';
+const btn = 'font-head text-[13px] px-2 py-0.5 border-2 border-ink rounded-md shadow-[1px_2px_0_0_var(--color-ink)] active:translate-y-px';
 function Panel() {
   const [a, setA] = useState(q.get('arc') || '');
   const [au, setAu] = useState(!!q.get('auto'));
@@ -128,12 +128,12 @@ function Panel() {
     <div id="ui" className="fixed left-2 top-2 max-w-[560px] p-2 bg-paper border-[3px] border-ink rounded-lg text-ink" style={{ display: q.get('ui') === '0' ? 'none' : undefined }}>
       {groups.map(([g, list]) => (
         <div key={g} className="flex flex-wrap gap-1 items-center mb-1"><span className="font-stat text-[11px] w-12">{g}</span>
-          {list.map((t) => <button key={t} className={btn} onClick={() => fire(t)}>{t.replace(/^(cast|echo):/, '')}</button>)}
+          {list.map((t) => <button key={t} className={btn + ' bg-paper text-ink'} onClick={() => fire(t)}>{t.replace(/^(cast|echo):/, '')}</button>)}
         </div>
       ))}
       <div className="flex flex-wrap gap-1 items-center"><span className="font-stat text-[11px] w-12">arc</span>
-        {['', ...ARC_IDS].map((id) => <button key={id || 'off'} className={btn + (a === id ? ' bg-yolk' : '')} onClick={() => { arc(id || null); setA(id); }}>{id || 'off'}</button>)}
-        <button className={btn + (au ? ' bg-magenta text-paper' : '')} onClick={() => { setAuto(!au); setAu(!au); }}>auto</button>
+        {['', ...ARC_IDS].map((id) => <button key={id || 'off'} className={btn + (a === id ? ' bg-yolk text-ink' : ' bg-paper text-ink')} onClick={() => { arc(id || null); setA(id); }}>{id || 'off'}</button>)}
+        <button className={btn + (au ? ' bg-magenta text-paper' : ' bg-paper text-ink')} onClick={() => { setAuto(!au); setAu(!au); }}>auto</button>
       </div>
     </div>
   );

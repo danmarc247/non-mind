@@ -118,7 +118,7 @@ export function chipPath(seed, { jag = 1 } = {}) {
 
 const LIGHT = new Set(['paper', 'paper-2', 'yolk', 'tangerine', 'teal', 'leaf', 'rose', 'sky']);
 const INK_BUTTON_SIZES = {
-  sm: 'min-h-[34px] px-3.5 py-1 text-[15px]',
+  sm: 'min-h-[34px] px-3.5 py-1 text-[15px] pointer-coarse:min-h-[44px] pointer-coarse:min-w-[44px]',
   md: 'min-h-[44px] px-5 py-1.5 text-[19px]',
   lg: 'min-h-[58px] px-8 py-2 text-[28px]',
 };
@@ -131,7 +131,7 @@ export function HotKey({ k, className, dim }) {
     <kbd
       aria-hidden="true"
       className={cn(
-        'pointer-events-none inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[7px] border-2 border-ink bg-paper px-1.5 font-head text-[14px] leading-none tracking-wide text-ink shadow-[1px_2px_0_0_var(--color-ink)]',
+        'pointer-events-none inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[7px] border-2 border-ink bg-paper px-1.5 font-head text-[14px] leading-none tracking-wide text-ink shadow-[1px_2px_0_0_var(--color-ink)] pointer-coarse:hidden',
         dim && 'border-ink/40 text-ink/50 shadow-none',
         className,
       )}
@@ -537,7 +537,16 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
   const tipRef = useRef(null);
   const [hover, setHover] = useState(false);
   const [pos, setPos] = useState(null);
+  const touchRef = useRef(false);
   const open = (forcedOpen ?? hover) && content != null && content !== false;
+  // touch: a tap toggles the tip, a tap anywhere else closes it (no hover on touch screens)
+  useEffect(() => {
+    if (!hover || !touchRef.current) return undefined;
+    const away = (e) => { if (!ref.current?.contains(e.target)) setHover(false); };
+    document.addEventListener('pointerdown', away, true);
+    const t = setTimeout(() => setHover(false), 4000);
+    return () => { document.removeEventListener('pointerdown', away, true); clearTimeout(t); };
+  }, [hover]);
   const want = ENTER[side] ? side : 'top';
 
   const measure = useCallback(() => {
@@ -567,9 +576,11 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
     <span
       ref={ref}
       className="relative inline-flex"
-      onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
-      onFocus={() => setHover(true)}
+      onPointerDown={(e) => { touchRef.current = e.pointerType !== 'mouse'; }}
+      onClick={() => { if (touchRef.current) setHover((h) => !h); }}
+      onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHover(true); }}
+      onPointerLeave={(e) => { if (e.pointerType === 'mouse') setHover(false); }}
+      onFocus={() => { if (!touchRef.current) setHover(true); }}
       onBlur={() => setHover(false)}
     >
       {children}

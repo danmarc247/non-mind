@@ -9,7 +9,7 @@ import { Appear, Scr, Shake, POP } from './shared.jsx';
 
 export const STAGE_NAME = (i) => STAGES[i].id;
 
-function StageTracker({ G, compact }) {
+export function StageTracker({ G, compact }) {
   const next = STAGES[G.stage + 1];
   return (
     <div className={cn('rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[210px]' : 'w-[290px]')}>
@@ -47,7 +47,7 @@ function StageTracker({ G, compact }) {
   );
 }
 
-function Resources({ G, compact }) {
+export function Resources({ G, compact }) {
   const w = compact ? 'w-[94px]' : 'w-[108px]';
   const chips = [
     { k: 'affect', show: true, tone: 'magenta', value: fmt(G.affect), hint: <span><b className="font-head">Affect</b> {fmtLong(G.affect)}. Gathered by attending, by habits, by what falls. {G.prod > 0 && <>Now {fmtLong(G.prod)} each second.</>}</span>, sub: G.prod > 0 ? `+${fmt(G.prod)}/s` : '' },
@@ -75,7 +75,7 @@ function Resources({ G, compact }) {
   );
 }
 
-function Gauges({ G, compact }) {
+export function Gauges({ G, compact }) {
   const ratio = G.complexity / Math.max(1, G.capacity);
   return (
     <div className={cn('flex flex-col gap-2 rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[170px]' : 'w-[214px]')}>
@@ -98,7 +98,7 @@ function Gauges({ G, compact }) {
 
 const PHASE = { prep: 'gathering', fight: 'holding', won: 'held', lost: 'broken' };
 
-function WaveBanner({ G, compact }) {
+export function WaveBanner({ G, compact }) {
   const arc = G.battle?.arc || WAVE_ARC[(G.wave - 1) % 10];
   const beat = G.phase === 'fight' ? G.battle?.beat ?? 0 : G.phase === 'prep' ? 0 : BEATS_PER_WAVE;
   return (

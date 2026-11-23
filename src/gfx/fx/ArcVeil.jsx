@@ -18,7 +18,6 @@ const ease = (cur, tgt, dt, rate) => cur + (tgt - cur) * (1 - Math.exp(-rate * d
 
 export function ArcVeil() {
   const st = useMemo(() => ({ cur: -1, prev: -1, mix: 1, str: 0, pulse: 0, stage: -1 }), []);
-  if (typeof window !== 'undefined') window.__veil = st;
   const uniforms = useMemo(() => {
     const v = (k) => ({ value: new THREE.Vector3(...PALETTE[k]) });
     return {

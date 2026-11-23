@@ -340,7 +340,7 @@ export function Bonds({ G }) {
 
 const TAB_STROKES = ['M4 12 C 30 6, 62 15, 96 9', 'M3 10 C 28 15, 70 5, 97 12', 'M5 13 C 40 8, 60 13, 95 8'];
 
-const TABS = [
+export const TABS = [
   { id: 'bonds', label: 'bonds', tone: 'rose', show: (G) => unlocked(G, 'shop'), C: Bonds },
   { id: 'habits', label: 'habits', tone: 'yolk', show: (G) => unlocked(G, 'habits'), C: Habits },
   { id: 'upgrades', label: 'ways', tone: 'violet', show: (G) => unlocked(G, 'habits'), C: Upgrades, badge: (G) => UPGRADES.filter((u) => u.stage <= G.stage && !G.upgrades[u.id] && G.affect >= u.cost).length },

@@ -141,7 +141,7 @@ function Verbs({ G, u }) {
   );
 }
 
-function Body({ G, u }) {
+export function Body({ G, u }) {
   const L = LINKS[u.link - 1];
   const tiers = G.battle?.tiers || aspectTiers(G);
   const s = unitStats(G, u, tiers);

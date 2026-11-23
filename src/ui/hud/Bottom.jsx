@@ -32,7 +32,7 @@ function Head({ label, tone, k, children }) {
 
 /* ------------------------------------------------------------ shop */
 
-function Shop({ G, compact }) {
+export function Shop({ G, compact, mobile }) {
   const need = XP_TO_LEVEL[G.level - 1];
   const seatedN = G.units.filter((u) => u.seat).length;
   const cap = unitCap(G);
@@ -54,8 +54,8 @@ function Shop({ G, compact }) {
           </Tooltip>
         </div>
       </Head>
-      <div className="flex items-start gap-2.5">
-        <div className="flex gap-2">
+      <div className={mobile ? 'flex flex-col gap-2' : 'flex items-start gap-2.5'}>
+        <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-1.5 pt-2.5 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
           {G.shop.map((id, i) => {
             const f = id && FAMILY[id];
             const cost = f ? TIER_COST[f.tier - 1] : 0;
@@ -93,14 +93,14 @@ function Shop({ G, compact }) {
             );
           })}
         </div>
-        <div className="flex w-[104px] flex-col gap-3 pt-1" data-tut="lookgrow">
+        <div className={mobile ? 'flex flex-row items-center gap-3' : 'flex w-[104px] flex-col gap-3 pt-1'} data-tut="lookgrow">
           <InkButton size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} full>
             look <span className="font-stat normal-case">{COSTS.reroll}</span>
           </InkButton>
           <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} full>
             grow <span className="font-stat normal-case">{COSTS.xp}</span>
           </InkButton>
-          {!compact && (
+          {!compact && !mobile && (
             <p className="px-0.5 font-body text-[12px] italic leading-snug text-ink-2">
               Two alike become one, further along.
             </p>
@@ -113,7 +113,7 @@ function Shop({ G, compact }) {
 
 /* ------------------------------------------------------------ attend */
 
-function AttendButton({ G, compact }) {
+export function AttendButton({ G, compact, size: sizeIn, touch }) {
   const controls = useAnimationControls();
   const [floats, setFloats] = useState([]);
   const n = useRef(0);
@@ -129,7 +129,7 @@ function AttendButton({ G, compact }) {
       }),
     [controls],
   );
-  const size = compact ? 112 : 132;
+  const size = sizeIn ?? (compact ? 112 : 132);
   const invite = G.stats.clicks === 0;
   return (
     <div className="relative flex flex-col items-center" style={{ width: size + 24 }} data-tut="attend">
@@ -166,15 +166,17 @@ function AttendButton({ G, compact }) {
           <span className="mt-1 font-stat text-[13px] text-paper/90 nm-tab">+{fmt(clickValue(G))}</span>
         </RingButton>
       </motion.div>
-      <span className="mt-2 flex items-center gap-1.5">
-        <Key k="space" />
-      </span>
+      {!touch && (
+        <span className="mt-2 flex items-center gap-1.5">
+          <Key k="space" />
+        </span>
+      )}
       <AnimatePresence>
         {invite && (
           <motion.div key="hint" className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 flex w-[230px] -translate-x-1/2 flex-col items-center"
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={POP}>
             <span className="rounded-[10px] border-[3px] border-ink bg-yolk px-3 py-1.5 text-center font-head text-[18px] leading-tight tracking-wide text-ink uppercase shadow-[2px_3px_0_0_var(--color-ink)]">
-              click, or press <span className="rounded-[6px] border-2 border-ink bg-paper px-1.5">space</span>
+              {touch ? 'tap here' : <>click, or press <span className="rounded-[6px] border-2 border-ink bg-paper px-1.5">space</span></>}
             </span>
             <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}>
               <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
@@ -191,7 +193,7 @@ function AttendButton({ G, compact }) {
 
 /* ------------------------------------------------------------ bench + seated */
 
-function Seated({ G }) {
+export function Seated({ G }) {
   const seated = G.units.filter((u) => u.seat).sort((a, b) => a.seat.ring - b.seat.ring || a.seat.dir - b.seat.dir);
   if (!seated.length) return null;
   return (
@@ -226,7 +228,7 @@ function Seated({ G }) {
   );
 }
 
-function Bench({ G, compact }) {
+export function Bench({ G, compact }) {
   const bench = G.units.filter((u) => !u.seat && !u.busy);
   return (
     <Panel bodyClassName="px-3 pb-3 pt-2.5" className="min-w-0 flex-1">
