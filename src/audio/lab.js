@@ -20,7 +20,18 @@ slider($('sliders'), 'complexity', 'complexity', 0, 1, 0.01, (v) => { mood.compl
 slider($('sliders'), 'overwhelm', 'overwhelm', 0, 1, 0.01, (v) => { mood.overwhelm = v; push(); });
 slider($('sliders'), 'tension', 'tension', 0, 1, 0.01, (v) => { mood.tension = v; push(); });
 slider($('sliders'), 'depth', 'depth', 0, 15, 1, (v) => { mood.depth = v; push(); });
+slider($('sliders'), 'wave', 'wave', 1, 10, 1, (v) => { mood.wave = v; push(); }, 1);
+slider($('sliders'), 'cycle', 'cycle', 0, 5, 1, (v) => { mood.cycle = v; push(); });
+slider($('sliders'), 'stage', 'stage', 0, 17, 0.1, (v) => { mood.stage = v; push(); }, 17);
+slider($('sliders'), 'beat', 'beat', 0, 9, 1, (v) => { mood.beat = v; push(); });
 slider($('sliders'), 'master', 'master', 0, 1.2, 0.01, (v) => audio.setMaster(v), 0.8);
+for (const ph of ['(no phase)', 'prep', 'fight', 'won', 'lost']) {
+  const l = document.createElement('label');
+  l.className = 'radio';
+  l.innerHTML = `<input type="radio" name="phase" value="${ph}" ${ph === '(no phase)' ? 'checked' : ''}> ${ph}`;
+  l.querySelector('input').addEventListener('change', () => { mood.phase = ph === '(no phase)' ? null : ph; push(); });
+  $('sliders').appendChild(l);
+}
 
 for (const st of ['none', 'toward', 'away', 'against']) {
   const l = document.createElement('label');
@@ -68,7 +79,7 @@ function draw() {
     g.fillRect(x, H - v * H, 1, v * H);
   }
   const L = audio.getLevels(), d = audio.debug();
-  $('levels').textContent = `low ${L.low.toFixed(2)}  mid ${L.mid.toFixed(2)}  high ${L.high.toFixed(2)}  rms ${L.rms.toFixed(2)}  |  ${d.scale}  osc ${d.osc}  c ${d.c.toFixed(2)} o ${d.o.toFixed(2)}`;
+  $('levels').textContent = `low ${L.low.toFixed(2)}  mid ${L.mid.toFixed(2)}  high ${L.high.toFixed(2)}  rms ${L.rms.toFixed(2)}  |  ${d.scale} (wave ${d.wave}, cycle ${d.cycle})  osc ${d.osc}  c ${d.c.toFixed(2)} o ${d.o.toFixed(2)}  beat ${d.beat} den ${d.den.toFixed(2)} calm ${d.calm.toFixed(2)}`;
   $('status').textContent = `${audio.ctx.state}${audio.started ? ' · music on' : ''}`;
 }
 draw();
