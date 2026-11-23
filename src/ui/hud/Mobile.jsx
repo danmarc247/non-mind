@@ -135,7 +135,7 @@ export default function Mobile({ w, h }) {
           <motion.div
             key="sheet"
             className={cn('pointer-events-auto absolute inset-x-1.5 overflow-hidden', NO_PINCH)}
-            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 60px)', maxHeight: sheetMax }}
+            style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 68px)', maxHeight: sheetMax }}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 30, opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } }}
@@ -152,7 +152,7 @@ export default function Mobile({ w, h }) {
       </AnimatePresence>
 
       {/* dock: pills + ATTEND */}
-      <div className={cn('pointer-events-none absolute inset-x-1.5 flex items-end gap-2', NO_PINCH)} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)' }}>
+      <div className={cn('pointer-events-none absolute inset-x-1.5 flex items-end gap-2', NO_PINCH)} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
         <div className="pointer-events-auto nm-scroll flex min-w-0 flex-1 gap-1.5 overflow-x-auto rounded-[14px] border-[3px] border-ink bg-paper/95 p-1 shadow-[2px_3px_0_0_var(--color-ink)] [touch-action:pan-x]">
           {!list.length && <span className="flex h-11 items-center px-2 font-body text-[13px] italic text-ink-2">Nothing else yet.</span>}
           {list.map((p) => (
@@ -172,7 +172,7 @@ export default function Mobile({ w, h }) {
             </motion.button>
           ))}
         </div>
-        <div className="pointer-events-auto shrink-0" style={{ marginBottom: -2 }}>
+        <div className="pointer-events-auto shrink-0">
           <AttendButton G={G} compact size={attendSize} touch />
         </div>
       </div>

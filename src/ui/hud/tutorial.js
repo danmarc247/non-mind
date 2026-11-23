@@ -9,7 +9,7 @@ const isSfx = (name) => (e) => e.type === 'sfx' && e.name === name;
 
 export const CORE = [
   {
-    id: 'attend', anchor: 'attend', also: 'core', side: 'left',
+    id: 'attend', anchor: 'attend', also: 'core', side: 'left', gap: 110,
     voice: 'Something is here. It wants to be looked at.',
     plain: (G) => `Click ATTEND, click the glowing core, or press SPACE.${G.stats.clicks > 0 ? ` ${Math.max(0, 5 - G.stats.clicks)} more.` : ''}`,
     touch: (G) => `Tap ATTEND or the glowing core.${G.stats.clicks > 0 ? ` ${Math.max(0, 5 - G.stats.clicks)} more.` : ''}`,

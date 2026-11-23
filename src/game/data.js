@@ -22,7 +22,7 @@ export const STAGES = [
   { id: 'evoke', unlock: 'echo', hint: 'The called now call.', need: (g) => g.stats.exchanges >= 3 },
   { id: 'inhabit', unlock: 'stance', hint: 'A stance is a house you wear.', need: (g) => g.stats.echoes >= 5 },
   { id: 'sustain', unlock: 'seasons', hint: 'Everything kept is kept against something.', need: (g) => !!g.stance },
-  { id: 'penetrate', unlock: 'mirror', hint: 'Small enters great. Great enters small.', need: (g) => g.stats.seasons >= 5 },
+  { id: 'penetrate', unlock: 'mirror', hint: 'Small enters great. Great enters small.', need: (g) => g.stats.seasons >= 6 },
   { id: 'embrace', unlock: 'wildcard', hint: 'No aspect is absent from any aspect.', need: (g) => g.mirrors >= 1 },
   { id: 'overwhelm', unlock: 'nonmind', hint: 'It is too much. It was always this much.', need: (g) => g.overwhelm >= 1 },
 ];
@@ -208,6 +208,6 @@ export const SHOP_ODDS = [
   [100, 0, 0, 0, 0], [80, 20, 0, 0, 0], [65, 30, 5, 0, 0], [50, 35, 15, 0, 0], [38, 35, 24, 3, 0],
   [28, 33, 30, 8, 1], [20, 28, 34, 15, 3], [15, 22, 33, 24, 6], [12, 18, 28, 30, 12], [8, 14, 24, 34, 20],
 ];
-export const XP_TO_LEVEL = [2, 4, 8, 14, 22, 34, 50, 72, 100, Infinity];
+export const XP_TO_LEVEL = [2, 3, 6, 10, 16, 26, 40, 60, 90, Infinity];
 export const TIER_COST = [1, 2, 3, 4, 5];
 export const COSTS = { reroll: 2, xp: 5, xpGain: 4, integrate: 20, subtract: 35, split: 10 };

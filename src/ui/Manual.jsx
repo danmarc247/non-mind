@@ -43,10 +43,6 @@ export default function Manual() {
   const sec = doc.sections[active];
   return (
     <>
-      <button onClick={() => setOpen(true)} title="Manual (M)"
-        className="pointer-events-auto fixed left-1/2 top-3 z-30 -translate-x-1/2 rounded-full border-[3px] border-ink bg-paper px-4 py-1 font-head text-sm tracking-wide text-ink shadow-[3px_4px_0_var(--color-ink)] transition-transform duration-150 hover:-translate-y-0.5 hover:rotate-[-1.5deg] active:translate-y-0.5">
-        MANUAL <span className="ml-1 rounded border border-ink px-1 font-body text-[10px]">M</span>
-      </button>
       <AnimatePresence>
         {open && (
           <motion.div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center bg-ink/35 p-4 backdrop-blur-[3px]"

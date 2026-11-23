@@ -32,8 +32,8 @@ function anchorRect(anchor) {
 }
 const same = (a, b) => (!a && !b) || (a && b && Math.abs(a.left - b.left) < 1 && Math.abs(a.top - b.top) < 1 && Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1);
 
-function placeCard(t, ch, prefer) {
-  const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = 56;
+function placeCard(t, ch, prefer, gap = 56) {
+  const vw = window.innerWidth, vh = window.innerHeight, M = 14, GAP = gap;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
   if (!t) return { left: (vw - cardW()) / 2, top: vh * 0.24 };
   const cx = t.left + t.width / 2, cy = t.top + t.height / 2;
@@ -154,7 +154,7 @@ export default function Tutorial() {
   const cardRef = useRef(null);
   const [ch, setCh] = useState(170);
   useLayoutEffect(() => { const h = cardRef.current?.offsetHeight; if (h && Math.abs(h - ch) > 1) setCh(h); });
-  const pos = step ? placeCard(rect, ch, step.side) : null;
+  const pos = step ? placeCard(rect, ch, step.side, step.gap) : null;
   const card = pos && { left: pos.left, top: pos.top, width: cardW(), height: ch };
   const coreIdx = step ? CORE.findIndex((s) => s.id === step.id) : -1;
   const line = step && ((touch && step.touch) || step.plain);

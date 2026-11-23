@@ -84,7 +84,8 @@ const FORMS = {
       rotateX(${k.a(1.1, 4)}); color(${k.A}); box(${k.L(0.08)},${k.L(0.34, 5)},${k.L(0.1)}); reset(); blend(${k.L(0.06)}); color(${k.B}); sphere(${k.L(0.14, 6)});`,
     (k) => `rotateY(0.5*sin(time*${k.W(0.4)}+${k.P})); rotateZ(${k.a(0.45, 0)}); color(${k.A}); box(${k.L(0.07)},${k.L(0.48, 1)},${k.L(0.07)}); rotateY(0.9); rotateZ(${k.a(-0.9, 2)}); color(${k.B}); box(${k.L(0.05)},${k.L(0.36, 3)},${k.L(0.16)});`,
     (k) => `rotateY(time*${k.W(0.3)}+${k.P}); rotateZ(${k.a(0.1, 0)}); rotateY(0.785); color(${k.A}); box(${k.L(0.05, 1)},${k.L(0.46)},${k.L(0.05, 1)}); reset();
-      rotateY(time*${k.W(0.3)}+${k.P}); displace(${k.L(0.22)}+${k.L(0.07)}*sin(time*${k.W(0.7)}),${k.L(0.12, 2)},0); rotateZ(${k.a(-0.45, 3)}); color(${k.C}); box(${k.L(0.025)},${k.L(0.16, 4)},${k.L(0.025)});`,
+      rotateY(time*${k.W(0.3)}+${k.P}); displace(${k.L(0.22)}+${k.L(0.07)}*sin(time*${k.W(0.7)}),${k.L(0.12, 2)},0); rotateZ(${k.a(-0.45, 3)}); color(${k.B}); box(${k.L(0.03)},${k.L(0.17, 4)},${k.L(0.03)}); reset();
+      rotateY(time*${k.W(0.3)}+${k.P}+2.6); displace(${k.L(0.3)}+${k.L(0.06)}*sin(time*${k.W(0.5)}+1.0),${k.L(-0.18, 5)},0); rotateZ(${k.a(0.5, 6)}); color(${k.C}); box(${k.L(0.022)},${k.L(0.1)},${k.L(0.022)});`,
   ],
   rings: [
     (k) => `color(${k.A}); sphere(${k.L(0.25, 0)}); color(${k.B}); rotateX(${k.a(0.5, 1)}+0.2*sin(time*${k.W(1.0)}+${k.P})); torus(${k.L(0.28)},${k.L(0.07, 2)}); rotateX(1.2); color(${k.A}); torus(${k.L(0.31)},${k.L(0.06, 3)}); rotateZ(${k.a(0.9, 4)}); color(${k.B}); torus(${k.L(0.33)},${k.L(0.05, 5)});`,
@@ -100,7 +101,7 @@ const FORMS = {
   shell: [
     (k) => `color(${k.A}); sphere(${k.L(0.41, 0)}); difference(); sphere(${k.L(0.29)}); displace(${k.L(0.18, 1)},${k.L(0.3)},${k.L(0.16)}); sphere(${k.L(0.13, 2)}); union(); reset();
       mirrorXYZ(); displace(${k.L(0.25, 3)},${k.L(0.25)},${k.L(0.2)}); color(${k.B}); sphere(${k.L(0.07, 4)}); reset(); color(${k.B}); sphere(${k.L(0.17, 5)}+${k.L(0.02)}*sin(time*${k.W(1.5)}+${k.P}));`,
-    (k) => `color(${k.A}); sphere(${k.L(0.42, 0)}); difference(); sphere(${k.L(0.37)}); displace(${k.L(0.1, 1)},${k.L(0.28)},${k.L(0.22, 2)}); sphere(${k.L(0.3)}); union(); reset(); displace(${k.L(-0.1)},${k.L(-0.28)},${k.L(-0.22)}); reset();
+    (k) => `rotateY(time*${k.W(0.35)}+${k.P}); color(${k.A}); sphere(${k.L(0.42, 0)}); difference(); sphere(${k.L(0.37)}); displace(${k.L(0.1, 1)},${k.L(0.24)},${k.L(0.3, 2)}); sphere(${k.L(0.24)}); displace(${k.L(-0.3)},${k.L(-0.4)},${k.L(-0.5)}); sphere(${k.L(0.2, 3)}); union(); reset();
       color(${k.B}); sphere(${k.L(0.1, 3)}+${k.L(0.03)}*sin(time*${k.W(2.0)}+${k.P}));`,
     (k) => `rotateY(time*${k.W(0.2)}+${k.P}); color(${k.A}); sphere(${k.L(0.44, 0)}); shell(${k.L(0.014)}); difference(); mirrorXYZ(); displace(${k.L(0.3)},${k.L(0.3)},${k.L(0.3)}); sphere(${k.L(0.27, 1)}); union(); reset();
       displace(${k.L(0.1)}*sin(time*${k.W(0.5)}+${k.P}),${k.L(0.12)}*cos(time*${k.W(0.4)}),${k.L(0.07)}); color(${k.C}); sphere(${k.L(0.09, 2)});`,
@@ -168,10 +169,10 @@ function domColor(g, link) {
   return domColor(g.op === 'carve' || leaves(g.a).length >= leaves(g.b).length ? g.a : g.b, link);
 }
 function unitDir(rng, front = false) {
-  const th = rng() * 6.283, y = (rng() * 2 - 1) * 0.7;
+  const th = rng() * 6.283; let y = (rng() * 2 - 1) * 0.7;
   const r = Math.sqrt(1 - y * y);
   let x = Math.cos(th) * r, z = Math.sin(th) * r;
-  if (front && z < 0.2) z = Math.abs(z) + 0.3;
+  if (front) { z = Math.abs(z) + 0.6; y = Math.abs(y) * 0.6 + 0.2; }
   const n = Math.hypot(x, y, z);
   return [x / n, y / n, z / n];
 }
@@ -186,10 +187,10 @@ function treeSrc(g, link, R, rng, depth) {
   const cA = domColor(g.a, link), cB = domColor(g.b, link);
   if (g.op === 'carve') {
     // a clean bite: B removed from A, and the cut face is painted in B's colour
-    const rA = R * 0.96, rB = R * (0.5 + 0.12 * wB), d = unitDir(rng, true);
+    const rA = R * 0.96, rB = R * (0.52 + 0.12 * wB), d = unitDir(rng, true);
     const A = treeSrc(g.a, link, rA, rng, depth + 1), B = treeSrc(g.b, link, rB, rng, depth + 1);
     return `shape(()=>{ ${A}
-      difference(); let cut_${id} = shape(()=>{ ${place(d, rA * 0.82)} rotateY(${f3(rng() * 6.28)}+time*${f3(0.15 + rng() * 0.2)}); ${B} return getSDF()+0.0; })();
+      difference(); let cut_${id} = shape(()=>{ ${place(d, rA * 0.62)} rotateY(${f3(rng() * 6.28)}+time*${f3(0.15 + rng() * 0.2)}); ${B} expand(${f3(0.05 * R / 0.5)}); return getSDF()+0.0; })();
       union(); mixMat(smoothstep(0.0,${f3(0.03 * R / 0.5)},abs(cut_${id}))); color(${v3(cB)}); ${PAINT} })();`;
   }
   if (g.op === 'mix') {
@@ -197,7 +198,8 @@ function treeSrc(g, link, R, rng, depth) {
     const A = treeSrc(g.a, link, R * 0.96, rng, depth + 1), B = treeSrc(g.b, link, R * 0.96, rng, depth + 1);
     const w = f3(0.35 + rng() * 0.25), ph = f3(rng() * 6.283);
     return `shape(()=>{ ${A}
-      let m_${id} = 0.5+0.42*sin(time*${w}+${ph}); mixMat(m_${id}); mixGeo(m_${id});
+      let m_${id} = 0.5+0.45*sin(time*${w}+${ph}); let n_${id} = 0.5+0.6*noise(getSpace()*${f3(5 / R)});
+      mixMat(smoothstep(n_${id}-0.07,n_${id}+0.07,m_${id})); mixGeo(m_${id});
       shape(()=>{ rotateY(${f3(1 + rng() * 2)}); rotateX(${f3((rng() - 0.5) * 0.8)}); ${B} })(); })();`;
   }
   // blend: smooth fusion with a painted seam. Small subtrees sit side by side or stacked;
@@ -206,21 +208,21 @@ function treeSrc(g, link, R, rng, depth) {
   const orbit = depth >= 1 ? rng() < 0.6 : (nA + nB >= 3 && Math.abs(nA - nB) >= 1 && rng() < 0.5);
   let a, b;
   if (orbit) {
-    const big = nA >= nB, rBig = R * 0.72, rSm = R * 0.42;
+    const big = nA >= nB, rBig = R * 0.76, rSm = R * 0.46;
     const tilt = f3((rng() - 0.5) * 1.2), w = f3((0.25 + rng() * 0.3) * (rng() < 0.5 ? -1 : 1)), ph = f3(rng() * 6.283);
     const sm = `rotateX(${tilt}); rotateY(time*${w}+${ph}); displace(${f3(R - rSm * 0.9)},0,0);`;
     a = big ? `shape(()=>{ ${treeSrc(g.a, link, rBig, rng, depth + 1)} return getSDF()+0.0; })()` : `shape(()=>{ ${sm} ${treeSrc(g.a, link, rSm, rng, depth + 1)} return getSDF()+0.0; })()`;
     b = big ? `shape(()=>{ ${sm} ${treeSrc(g.b, link, rSm, rng, depth + 1)} return getSDF()+0.0; })()` : `shape(()=>{ ${treeSrc(g.b, link, rBig, rng, depth + 1)} return getSDF()+0.0; })()`;
   } else {
-    const rA = R * (0.5 + 0.22 * wA), rB = R * (0.5 + 0.22 * wB);
+    const rA = R * Math.min(0.9, Math.max(0.42, Math.sqrt(wA) * 0.95)), rB = R * Math.min(0.9, Math.max(0.42, Math.sqrt(wB) * 0.95));
     const d = rng() < 0.45 ? [0.25 * (rng() - 0.5), 1, 0.2 * (rng() - 0.5)] : unitDir(rng);
     const n = Math.hypot(...d), dd = d.map((x) => x / n);
     a = `shape(()=>{ ${place(dd, -(R - rA))} rotateY(${f3(rng() * 6.28)}); ${treeSrc(g.a, link, rA, rng, depth + 1)} return getSDF()+0.0; })()`;
     b = `shape(()=>{ ${place(dd, R - rB)} rotateY(${f3(rng() * 6.28)}); ${treeSrc(g.b, link, rB, rng, depth + 1)} return getSDF()+0.0; })()`;
   }
-  const sw = f3(0.035 * R / 0.5);
+  const sw = 0.05 * R / 0.5;
   return `shape(()=>{ let da_${id} = ${a}; blend(${kk}); let db_${id} = ${b};
-    union(); mixMat(smoothstep(${f3(0.35 * 0.035 * R / 0.5)},${sw},abs(da_${id}-db_${id}))); color(${seam}); ${PAINT} })();`;
+    union(); mixMat(smoothstep(${f3(sw * 0.55)},${f3(sw)},abs(da_${id}-db_${id}))); color(${seam}); ${PAINT} })();`;
 }
 
 // ---- the whole unit: mutations deform the body, link adds knots (low) or halos (high) ----
@@ -232,7 +234,7 @@ function unitSource(g, link, muts = [], salt = '', formOverride = null) {
   const stH = 1 + 0.75 * F.stretch, stW = 1 / Math.sqrt(stH);
   const twist = 3.6 * F.twist;
   const step = Math.max(0.5, 0.8 / (1 + 0.45 * F.twist + 0.25 * F.noise));
-  const W = Math.max(0, 1 - (link - 1) / 5) * 0.06 + 0.01 * Math.min(4, ls.length);
+  const W = Math.max(0, 1 - (link - 1) / 5) * 0.045 + 0.008 * Math.min(4, ls.length);
   const shrink = 1 - 0.1 * F.spikes - 0.06 * F.rings - (link >= 8 ? 0.04 : 0);
   const R = 0.5 * shrink;
   let s = `setMaxIterations(48); setStepSize(${f3(step)});\n`;

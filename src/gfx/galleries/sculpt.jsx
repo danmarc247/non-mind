@@ -37,14 +37,14 @@ function rows() {
   }
   if (SEC === 'hyb' || SEC === 'all') {
     const pairs = [['rumination', 'reappraisal'], ['suppression', 'sublimation'], ['attunement', 'projection'], ['containment', 'equanimity'], ['dissociation', 'avoidance'], ['projection', 'rumination']];
-    for (const op of ['blend', 'carve', 'mix']) R.push([op, pairs.map(([a, b], i) => ({ label: `${short(a)}${op[0]}${short(b)}`, mat: um(N(op, L(a), L(b), 0.35), 3 + i * 1.5 | 0) }))]);
+    for (const op of ['blend', 'carve', 'mix']) R.push([op, pairs.map(([a, b], i) => ({ label: `${short(a)}${op[0]}${short(b)}`, mat: um(N(op, L(a), L(b), 0.35), [3, 4, 5, 6, 7, 9][i]) }))]);
     R.push(['deep', [
       { label: '3 blend', mat: um(N('blend', N('blend', L('rumination'), L('attunement')), L('equanimity'), 0.3), 6) },
       { label: '3 carve', mat: um(N('carve', N('blend', L('containment'), L('sublimation')), L('knot' in FAMILY ? 'knot' : 'rumination'), 0.3), 6) },
       { label: '3 mix', mat: um(N('mix', N('carve', L('suppression'), L('reappraisal')), L('dissociation'), 0.3), 7) },
       { label: '4 mixed', mat: um(N('blend', N('carve', L('containment'), L('projection')), N('mix', L('attunement'), L('equanimity')), 0.3), 8) },
-      { label: '5 orbit', mat: um(N('blend', N('blend', N('blend', L('sublimation'), L('rumination')), L('avoidance')), N('blend', L('reappraisal'), L('attunement')), 0.3), 9) },
-      { label: '6 leaves', mat: um(N('mix', N('blend', N('carve', L('suppression'), L('projection')), L('equanimity')), N('blend', N('blend', L('attunement'), L('dissociation')), L('rumination')), 0.3), 11) },
+      { label: '5 orbit', mat: um(N('blend', N('blend', N('blend', L('sublimation'), L('rumination')), L('avoidance')), N('blend', L('reappraisal'), L('attunement')), 0.3), 7) },
+      { label: '6 leaves', mat: um(N('mix', N('blend', N('carve', L('suppression'), L('projection')), L('equanimity')), N('blend', N('blend', L('attunement'), L('dissociation')), L('rumination')), 0.3), 6) },
     ]]);
     R.push(['siblings', ['', 'a', 'b', 'c', 'd', 'e'].map((s, i) => ({ label: s ? `salt ${s}` : 'no salt', mat: um(N('blend', L('rumination'), L('attunement'), 0.3), 6, [], s) }))]);
   }
@@ -89,7 +89,7 @@ function Grid() {
       const px = PAD + LABW + i * CELL + CELL / 2, py = PAD + r * (CELL + LABH) + LABH + CELL / 2;
       const m = new THREE.Mesh(geo, c.mat()); m.frustumCulled = false;
       m.position.copy(right).multiplyScalar(px - W / 2).addScaledVector(up, H / 2 - py);
-      const s = CELL * 0.47; m.scale.setScalar(s); m.material.uniforms._scale.value = s; m.userData.ph = (r * 7 + i) * 1.7;
+      const s = CELL * 0.8; m.scale.setScalar(s); m.material.uniforms._scale.value = s; m.userData.ph = (r * 7 + i) * 1.7;
       out.push(m);
     }));
     return out;
