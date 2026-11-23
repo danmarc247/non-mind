@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { RingButton } from '../bits/kit.jsx';
 import { cn } from '../../lib/cn';
-import { getLocale } from '../../i18n/index.js';
+import { getLocale, LOCALE_SWITCH } from '../../i18n/index.js';
 import { Scr } from './shared.jsx';
 
 const fire = (name) => () => window.dispatchEvent(new Event(name));
@@ -16,7 +16,8 @@ export const TOOLS = [
   { id: 'lineage', label: 'lineage', tone: 'rose', key: 'l', event: 'nonmind:lineage' },
   { id: 'again', label: 'again', tone: 'tangerine', key: null, event: 'nonmind:restart' },
   { id: 'sound', label: 'sound', tone: 'teal', key: null, event: 'nonmind:mute' },
-  { id: 'locale', label: 'en / de', tone: 'violet', key: null, event: 'nonmind:locale' },
+  // hidden until the German interface translation is complete (see LOCALE_SWITCH in src/i18n/index.js)
+  ...(LOCALE_SWITCH ? [{ id: 'locale', label: 'en / de', tone: 'violet', key: null, event: 'nonmind:locale' }] : []),
 ];
 
 export default function Tools({ size = 56, layout = 'grid', hotkeys = true, className }) {

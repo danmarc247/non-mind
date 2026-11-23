@@ -94,11 +94,11 @@ function spawnBeat(G) {
   const pool = ALL_STRESSORS.filter((s) => !s.boss).slice(0, Math.min(16, 1 + Math.floor((gw + 1) / 2)));
   const bosses = ALL_STRESSORS.filter((s) => s.boss);
   // habituation: every loss on a wave makes its stressors a little more bearable, so no wall is permanent
-  const scale = 4 * Math.pow(1.03, Math.min(gw - 1, 6)) * Math.pow(1.115, Math.max(0, Math.min(gw - 1, 18) - 6)) * Math.pow(1.04, Math.max(0, Math.min(gw - 19, 10))) * Math.pow(1.015, Math.max(0, gw - 29)) * (1 + 1.2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
-  let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
+  const scale = 4 * Math.pow(1.03, Math.min(gw - 1, 6)) * Math.pow(1.13, Math.max(0, Math.min(gw - 1, 18) - 6)) * Math.pow(1.04, Math.max(0, Math.min(gw - 19, 10))) * Math.pow(1.015, Math.max(0, gw - 29)) * (1 + 1.2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
+  let n = 1 + Math.floor(gw / 5) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));
-  if (mod.byClicks) n = Math.max(1, Math.min(n * 2, Math.round(n * 0.5 + G.clicksThisWave / 12)));
+  if (mod.byClicks) n = Math.max(1, Math.min(Math.ceil(n * 1.2), Math.round(n * 0.5 + G.clicksThisWave / 12)));
   if (G.moods.filter((m) => m.kind === 'dread').length >= 3) n = Math.ceil(n * 1.5);
   if (mod.fuse) n = beat === 0 ? 1 : 0;
   n = Math.min(n, 14);

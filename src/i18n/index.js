@@ -11,6 +11,8 @@ import { CARDS } from '../game/content/cards.js';
 import { NAMING, NAMING_EN } from '../game/genome.js';
 
 export const LOCALES = ['en', 'de'];
+// The German translation is not complete yet: while this is false the switch is hidden and the game stays English.
+export const LOCALE_SWITCH = false;
 const KEY = 'non-mind-locale';
 let locale = 'en', ui = {}, snap = null;
 const listeners = new Set();
@@ -75,6 +77,7 @@ export async function setLocale(next) {
 
 /** The saved choice, else the browser's language. */
 export function initialLocale() {
+  if (!LOCALE_SWITCH) return 'en';
   try { const s = localStorage.getItem(KEY); if (LOCALES.includes(s)) return s; } catch { /* ignore */ }
   return typeof navigator !== 'undefined' && /^de\b/i.test(navigator.language || '') ? 'de' : 'en';
 }

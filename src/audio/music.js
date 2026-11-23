@@ -62,7 +62,7 @@ export function createMusic(E) {
   // Arc / stage / long-form state, smoothed in control() and read by schedule().
   const X = (E.X = {
     u3: 1, u5: 1, u7: 1, u9: 1, u11: 1, u13: 1, u15: 1, u17: 1, thScale: 1,
-    den: 1, calm: 0, lost: 0, beat: 9, beatClock: 0, phase: null, init: false,
+    den: 1, calm: 0, lost: 0, fight: 0, breath: 0, beat: 9, beatClock: 0, phase: null, init: false,
     restPiano: 1, restVoice: 1, restArp: 1, cutWalk: 1,
   });
 
@@ -155,7 +155,7 @@ export function createMusic(E) {
     }
     // the wave's lead family sings out, the other steps back (both bloom when calm)
     const lead = sc.lead === 'both' || sc.lead === L.inst;
-    const lv = (lead ? 1.1 : 0.5 + 0.4 * X.calm) * rest * (1 + 0.15 * X.calm);
+    const lv = (lead ? 1.1 : 0.5 + 0.3 * X.calm) * rest;
     const low = X.lost > 0.4 ? 1 : 0; // 'lost': the loops turn an octave down
     const oct = L.inst === 'piano'
       ? clamp(L.oct + sc.octShift + L.octJ, 1, 3) - low
@@ -398,7 +398,7 @@ export function createMusic(E) {
     // soft low pulse on the chord root, every half bar
     if (F.stepN % 4 === 0) {
       const k = X.thScale;
-      const lp = X.u11 * smoothstep(0.25 * k, 0.55 * k, S.c) * (0.4 + 0.6 * X.den) * (1 - 0.7 * X.calm) * (1 - X.lost) * X.restArp;
+      const lp = X.u11 * smoothstep(0.25 * k, 0.55 * k, S.c) * Math.min(1, X.den * 2) * (1 - 0.7 * X.calm) * (1 - X.lost) * X.restArp;
       if (lp > 0.03) {
         const f = degHz(sc, sc.prog[F.chordIdx], -1);
         thump(kit, bus.floeDry, t, { f0: f * 1.5, f1: f, dur: 0.42, vel: 0.2 * lp, limit: MUSIC_LIMIT });
@@ -595,6 +595,8 @@ export function createMusic(E) {
     X.den += (denT - X.den) * approach(dt, 0.45);
     X.calm += (calmT - X.calm) * approach(dt, calmT > X.calm ? 1.2 : 0.8);
     X.lost += (lostT - X.lost) * approach(dt, lostT > X.lost ? 0.3 : 4);
+    X.fight += ((ph === 'fight' ? 1 : 0) - X.fight) * approach(dt, 1.5);
+    X.breath += ((ph === 'fight' && X.beat === 8 ? 1 : 0) - X.breath) * approach(dt, 0.4); // held breath before the last beat
 
     // ---- long form: layer rests and the filter walk
     if (!R.layer && T > R.next) {
@@ -611,11 +613,13 @@ export function createMusic(E) {
     const dryMul = 1 - 0.35 * S.away - 0.3 * A.void;
     const revMul = 1 + 0.8 * S.away - 0.4 * S.against + 0.7 * A.void;
     // layer balances
-    const air = clamp(1 - 0.5 * smoothstep(0.3, 1, c) - 0.25 * o, 0, 1) * (1 + 0.3 * X.calm); // loops bloom when calm
+    // loops bloom when calm, step back behind the pulse in a fight, and hush with the held breath
+    const hush = 1 - 0.3 * X.breath;
+    const air = clamp(1 - 0.5 * smoothstep(0.3, 1, c) - 0.25 * o, 0, 1) * (1 + 0.12 * X.calm) * (1 - 0.3 * X.fight * X.u3) * hush;
     bus.airDry.gain.linearRampToValueAtTime(air * dryMul, T);
     bus.airRev.gain.linearRampToValueAtTime(air * 0.6 * revMul, T);
     const k = X.thScale;
-    const floe = smoothstep(0.05 * k, 0.3 * k, c) * X.u3 * (0.65 + 0.35 * X.den) * (1 - 0.25 * X.calm);
+    const floe = smoothstep(0.05 * k, 0.3 * k, c) * X.u3 * (0.65 + 0.35 * X.den) * (1 - 0.25 * X.calm) * hush;
     bus.floeDry.gain.linearRampToValueAtTime(floe * (0.8 + 0.1 * o) * dryMul, T);
     bus.floeRev.gain.linearRampToValueAtTime(floe * 0.3 * revMul, T);
     bus.delaySend.gain.linearRampToValueAtTime(0.35 * A.relational, T);
