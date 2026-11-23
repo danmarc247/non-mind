@@ -115,12 +115,13 @@ function Check({ n }) {
     const mats = [];
     for (let i = 0; i < n; i++) mats.push(unitMaterial(rt(1 + Math.floor(R() * 6)), 1 + Math.floor(R() * 12), Array.from({ length: Math.floor(R() * 4) }, () => pick(MIDS)), 'c' + i));
     for (const d of ALL_STRESSORS) { mats.push(stressorMaterial(d.id)); mats.push(stressorMaterial(d.id, pick(STRESSOR_AFFIXES))); }
+    if (q.get('broken')) mats.push(sculptDebug.material('broken', 'sphere(0.3);').clone()), (mats[mats.length - 1].fragmentShader += '\nvoid oops() { nope; }');
     const geo = new THREE.SphereGeometry(1, 8, 6);
     let i = 0;
     const tick = () => {
       const sc = new THREE.Scene();
       for (let j = 0; j < 6 && i < mats.length; j++, i++) sc.add(new THREE.Mesh(geo, mats[i]));
-      gl.compile(sc, camera); window.__check.n = i;
+      gl.compile(sc, camera); gl.render(sc, camera); window.__check.n = i; // render forces the (parallel) link status check
       if (i < mats.length) setTimeout(tick, 0); else window.__check.done = true;
     };
     tick();

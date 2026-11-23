@@ -56,13 +56,13 @@ vec2 pp_cutout(vec2 uv, float z0, float scale) {
     back = max(back, rel);
     front = max(front, -rel);
   }
-  return vec2(smoothstep(0.06, 0.3, front), smoothstep(0.03, 0.12, back));
+  return vec2(smoothstep(0.14, 0.5, front), smoothstep(0.04, 0.14, back));
 }
 
 vec3 pp_aerial(vec3 c, float z0, float near) {
-  // layered recession: ~0.2 at 60 units, ~0.33 for the sky dome
-  float k = (1.0 - exp(-max(z0 - near, 0.0) / 70.0)) * 0.36 * uAerial;
+  // layered recession: ~0.1 at 60 units, ~0.2 for the sky dome (sky stays a painting)
+  float k = (1.0 - exp(-max(z0 - near, 0.0) / 60.0)) * 0.2 * uAerial;
   float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  c = mix(c, vec3(l), k * 0.55);            // lose saturation
+  c = mix(c, vec3(l), k * 0.8);            // lose saturation
   return mix(c, uHaze, k);                   // lose contrast toward the ground
 }
