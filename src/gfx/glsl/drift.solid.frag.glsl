@@ -1,11 +1,11 @@
 // Drift solids: raymarched SDF bodies inside a unit bounding sphere (object space).
 // One program, six kinds picked by uKind (uniform branch):
-//   0 kaleidoscopic fold (octahedral sort-fold + rotation IFS of blades, 2..4 levels)
+//   0 kaleidoscopic fold (2..3 counter-turning tiers, each a polar mirror fold of 5..9 windowed blades)
 //   1 twisted band (Moebius-like ribbon loop, 1/3/5 half twists)
 //   2 gyroid slab (gyroid labyrinth cut by a disc; uAlt 1 = by a ball)
 //   3 torus knot (trefoil, + a second linked strand with detail)
 //   4 nested shells with windows (1..3 counter-rotating perforated shells and a seed)
-// Cost per covered pixel: <= 40 march steps + 4 normal taps (each one map(); the fold is 4 levels max),
+// Cost per covered pixel: <= 40 march steps + 4 normal taps (each one map(); the fold is 3 tiers max),
 // 3 value-noise taps for paint texture, 1 hash for the dissolve. Misses near the silhouette draw a
 // cut-paper outline from the closest approach, so the body reads as a paper cut-out pinned in the air.
 #include "./drift.common.glsl"
@@ -22,26 +22,33 @@ float gId = 0.0;
 float dr_box(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); }
 
 float sdFold(vec3 p) {
-  float it = 2.0 + floor(uDetail * 2.99);
-  float sc = 1.0, d = 1e5;
-  float ang = 0.55 + 0.18 * sin(uTime * 0.11 + uSeed * 3.0) + uAlt * 0.4;
-  vec3 off = vec3(0.5, 0.26, 0.12) + uAlt * vec3(-0.08, 0.06, 0.1);
-  // seed: an octahedral core
-  vec3 a = abs(p);
-  d = (a.x + a.y + a.z - 0.34) * 0.577; gId = 3.0;
-  for (int i = 0; i < 4; i++) {
-    if (float(i) >= it) break;
-    p = abs(p);
-    if (p.x < p.y) p.xy = p.yx;
-    if (p.x < p.z) p.xz = p.zx;
-    if (p.y < p.z) p.yz = p.zy;
-    p.xz = dr_rot(ang) * p.xz; p.xy = dr_rot(ang * 0.63) * p.xy;
-    float bl = dr_box(p - vec3(0.42, 0.0, 0.0), vec3(0.2, 0.05 + 0.03 * uAlt, 0.16)) / sc;
-    if (bl < d) { d = bl; gId = float(i); }
-    p = p * 1.75 - off;
-    sc *= 1.75;
+  // kaleidoscope: each tier folds space into N mirrored sectors and hangs a tilted blade in it;
+  // tiers turn against each other, so the symmetry itself rotates
+  float N = 5.0 + 2.0 * floor(uDetail * 2.99) + uAlt;
+  float sec = 6.2831 / N;
+  float d = length(vec2(length(p.xz) - 0.0, p.y * 0.35)) - 0.07;   // spindle
+  gId = 3.0;
+  float tiers = 2.0 + floor(uDetail * 1.99);
+  for (int i = 0; i < 3; i++) {
+    float fi = float(i);
+    if (fi >= tiers) break;
+    float a = atan(p.z, p.x) + uTime * (0.07 + 0.04 * fi) * (mod(fi, 2.0) > 0.5 ? -1.0 : 1.0) + fi * 0.6;
+    a = abs(mod(a + sec * 0.5, sec) - sec * 0.5);
+    vec3 q = vec3(cos(a) * length(p.xz), p.y, sin(a) * length(p.xz));
+    float yi = (fi - (tiers - 1.0) * 0.5) * (0.42 - 0.1 * uAlt);
+    vec3 bq = q - vec3(0.5 - 0.06 * fi, yi, 0.0);
+    bq.xy = dr_rot(0.55 - 0.45 * fi + 0.15 * sin(uTime * 0.2 + fi)) * bq.xy;
+    bq.xz = dr_rot(0.35) * bq.xz;
+    float len = 0.36 - 0.05 * fi;
+    float bl = dr_box(bq, vec3(len, 0.018, 0.12 - 0.02 * fi)) - 0.006;
+    // a round window punched through each blade
+    bl = max(bl, -(length(bq.xz - vec2(len * 0.45, 0.0)) - 0.055));
+    if (bl < d) { d = bl; gId = fi; }
   }
-  return d;
+  // a crown ring that sits on the folds
+  float ring = length(vec2(length(p.xz) - 0.86, p.y - 0.02 * sin(atan(p.z, p.x) * N + uTime * 0.3))) - 0.014;
+  if (ring < d) { d = ring; gId = 2.0; }
+  return d * 0.85;
 }
 
 float sdBand(vec3 p) {
@@ -118,7 +125,7 @@ float sdShells(vec3 p) {
     float el = asin(clamp(q.y / max(lq, 1e-3), -1.0, 1.0));
     float row = clamp(floor(el / 0.62 + 0.5), -1.0, 1.0);
     vec2 w = vec2(az * R * cos(el), (el - row * 0.62) * R);
-    float win = length(w) - R * (0.14 + 0.06 * fi);
+    float win = length(w) - R * (0.27 + 0.05 * fi);
     sh = max(sh, -win);
     if (sh < d) { d = sh; gId = fi; }
   }
@@ -192,8 +199,8 @@ void main() {
     float along = dot(P, ax), across = dot(P, normalize(cross(ax, vec3(1.0, 0.0, 0.0))));
     float n1 = dr_noise(vec2(across * 34.0, along * 3.0 + uSeed));
     float n2 = dr_noise(vec2(across * 11.0 + 4.0, along * 1.6));
-    base = mix(base, pal(id + uSeed + 1.0), smoothstep(0.68, 0.86, n2) * 0.65);
-    base *= 0.9 + 0.18 * n1;
+    base = mix(base, pal(id + uSeed + 1.0), smoothstep(0.6, 0.8, n2) * 0.8);
+    base *= 0.8 + 0.32 * n1;
     float diff = dot(N, L) * 0.5 + 0.5;
     float cel = dr_cel(diff);
     vec3 shade = mix(base, pal(id + uSeed + 2.0), 0.3) * 0.5 + uInk * 0.12;

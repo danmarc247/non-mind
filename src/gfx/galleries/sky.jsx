@@ -64,6 +64,8 @@ function App() {
         }}
       >
         <Slider name="stage" min={0} max={17} step={0.05} />
+        <Slider name="wave" min={1} max={10} step={1} />
+        <Slider name="cycle" min={0} max={3} step={1} />
         <Slider name="complexity" min={0} max={1} step={0.01} />
         <Slider name="overwhelm" min={0} max={1} step={0.01} />
         <Slider name="depth" min={0} max={8} step={1} />
