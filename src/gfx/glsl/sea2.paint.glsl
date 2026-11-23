@@ -92,7 +92,7 @@ vec4 mv_kaleido(SeaCtx c) {
 
 // (d) white-outlined ring colonies that drift, merge (smooth union) and split (drift apart)
 vec4 mv_colonies(SeaCtx c) {
-  vec2 q = c.p * 0.36 + c.g * 0.5 + vec2(c.t * 0.025, -c.t * 0.018);
+  vec2 q = c.p * 0.27 + c.g * 0.12 + vec2(c.t * 0.025, -c.t * 0.018);
   vec2 base = floor(q - 0.5);
   float d = 10.0, dn = 10.0, id = 0.0;
   for (int j = 0; j < 2; j++) for (int i = 0; i < 2; i++) {

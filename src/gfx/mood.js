@@ -7,6 +7,9 @@ export const mood = {
   tension: 0,       // 0..1  battle intensity right now
   depth: 0,         // prestige depth (integer), shifts palettes
   stage: 0,         // 0..17 index into the 18-stage loop
+  wave: 1,          // 1..10 within the cycle (a 'level'); backgrounds recompose on every change
+  cycle: 0,         // completed cycles of ten waves this run
+  arc: 0,           // 0..9 index of the wave's arc modifier
   flash: 0,         // 0..1  decays; set to 1 on big events (reset, wave clear)
   audio: { low: 0, mid: 0, high: 0, rms: 0 },
 };

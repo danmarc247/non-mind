@@ -7,7 +7,7 @@ import { game, onEvent } from '../game/store.js';
 import { seatPos, gatePos } from '../game/index.js';
 import { mood } from './mood.js';
 
-export const director = { timeScale: 1 };
+export const director = { timeScale: 1, spin: 0 };
 const HOME = new THREE.Vector3(0, -3.2, 0);
 // kind -> [zoom (fraction of distance kept), hold seconds, time scale, priority]
 const MOMENTS = {
@@ -23,6 +23,9 @@ export default function Director() {
   useEffect(() => onEvent((e, G) => {
     const at = (kind, p) => { const d = MOMENTS[kind]; if (m.current && m.current.pri > d[3] && m.current.t < m.current.hold) return; m.current = { kind, focus: p, zoom: d[0], hold: d[1], scale: d[2], pri: d[3], t: 0 }; };
     const unitPos = (id) => { const u = G.units.find((x) => x.id === id); if (!u || !u.seat) return new THREE.Vector3(0, 1.2, 0); const [x, z] = seatPos(u.seat.ring, u.seat.dir); return new THREE.Vector3(x, 0.8, z); };
+    // joining and parting give the whole stage a push: it turns faster for a moment, then settles
+    if (['link', 'integrate', 'subtract', 'split'].includes(e.type)) director.spin = Math.min(9, director.spin + (e.type === 'link' ? 3.2 : 4.5));
+    if (e.type === 'stage' || e.type === 'reset') director.spin = Math.min(9, director.spin + 2.5);
     if (['link', 'integrate', 'subtract', 'mutation'].includes(e.type)) at(e.type, unitPos(e.id));
     else if (e.type === 'split') at('split', unitPos(e.a));
     else if (e.type === 'repurpose') at('repurpose', new THREE.Vector3(0, 0, 0));
@@ -55,6 +58,10 @@ export default function Director() {
     const off = camera.position.clone().sub(controls.target).multiplyScalar(c.zoom / prevZoom);
     camera.position.copy(controls.target).add(off);
     director.timeScale += (wantScale - director.timeScale) * (1 - Math.exp(-8 * dt));
+    // the stage always turns: a little faster with every stage of the loop, faster still when overwhelmed
+    director.spin *= Math.exp(-1.1 * dt);
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = (0.35 + 0.11 * mood.stage) * (1 + 0.8 * mood.overwhelm) + director.spin;
     if (!game.started) { const ang = dt * 0.05; camera.position.applyAxisAngle(THREE.Object3D.DEFAULT_UP, ang); }
   });
   return null;

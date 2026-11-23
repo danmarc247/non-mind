@@ -239,7 +239,7 @@ function Loop({ audioRef }) {
     mood.complexity = ease(mood.complexity, Math.min(1, G.complexity / Math.max(1, G.capacity)), dt, 1.5);
     mood.overwhelm = ease(mood.overwhelm, G.overwhelm, dt, 1.2);
     mood.tension = ease(mood.tension, G.phase === 'fight' ? Math.min(1, 0.3 + (G.battle?.enemies.length || 0) / 20) : 0, dt, 2);
-    mood.stage = ease(mood.stage, G.stage, dt, 0.8); mood.depth = G.depth; mood.flash = ease(mood.flash, 0, dt, 4);
+    mood.stage = ease(mood.stage, G.stage, dt, 0.8); mood.depth = G.depth; mood.wave = G.wave; mood.cycle = G.cycle; mood.arc = (G.wave - 1) % 10; mood.flash = ease(mood.flash, 0, dt, 4);
     const a = audioRef?.current;
     if (a) {
       try {

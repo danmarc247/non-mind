@@ -27,7 +27,6 @@ float shapeSD(vec2 p) {
 
 void main() {
   vec2 p = vUv * 2.0 - 1.0;
-  p.y /= (uShape > 0.5 && uShape < 1.5) ? 1.0 : 1.0;
   float sd = shapeSD(p);
   float px = fwidth(sd) * 1.2;
   // offset ink shadow: the same silhouette shifted, visible only outside the card
