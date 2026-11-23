@@ -83,7 +83,7 @@ void main() {
   }
 
   // ---- 3. filaments to the gates ----
-  float fw = 0.055 + 0.04 * uComplexity + 0.03 * uTension;
+  float fw = 0.09 + 0.05 * uComplexity + 0.04 * uTension;
   for (int k = 0; k < 10; k++) {
     float a = float(k) / 10.0 * TAU;
     vec3 dirk = vec3(cos(a), -0.28, sin(a));
@@ -97,12 +97,12 @@ void main() {
     float tq = max(dot(q - ro, rd), 0.0);
     if (blocked && tq > hi.x) continue;
     float dd = length(ro + rd * tq - q);
-    float fil = smoothstep(0.6, 0.0, dd);
+    float fil = smoothstep(fw, fw * 0.3, dd);
     float flow = 0.4 + 0.6 * smoothstep(0.3, 1.0, sin(s * 14.0 - uTime * 3.0 + float(k) * 1.7));
-    float fade = smoothstep(0.0, 0.08, s) * smoothstep(1.0, 0.6, s);
+    float fade = smoothstep(0.0, 0.06, s) * smoothstep(1.0, 0.82, s);
     float tear = 1.0 - ow * step(0.55, ar_noise(vec2(s * 9.0, float(k) + uTime)));
     vec3 fc = mix(uFam[k], uPaper, 0.25 + 0.3 * (1.0 - flow));
-    over(acc, A, fc, fil * flow * fade * tear * (0.55 + 0.4 * uComplexity));
+    over(acc, A, fc, fil * flow * fade * tear * (0.75 + 0.25 * uComplexity));
   }
 
   // ---- 1. raymarched haze behind it all ----

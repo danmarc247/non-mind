@@ -257,26 +257,35 @@ async function realtime(ms = 6000) {
 }
 
 /**
- * Vibrato flutter of the wordless voice: one sustained note rendered dry;
- * returns the peak-to-peak swing (dB) of its 20 ms RMS envelope in the
- * sustain (3.5-5.5 s), i.e. how much the level wobbles.
+ * Vibrato/chorus flutter of the wordless voice: one sustained note rendered
+ * dry (dur 9 s, so 3.5-6 s is pure sustain). Returns, per vowel, the
+ * peak-to-peak (dB) of the 20 ms RMS envelope after removing its 300 ms
+ * moving average, i.e. the fast level wobble.
  */
 async function voiceFlutter(legacy = false) {
   const { createKit, voice } = await import('/src/audio/instruments.js');
   const { VoiceBudget, VOWELS, degHz, makeScale } = await import('/src/audio/util.js');
   const out = [];
   for (const [vk, deg, oct] of [['a', 0, 0], ['o', 4, 0], ['u', 2, 1]]) {
-    const ctx = new OfflineAudioContext(1, SR * 7, SR);
+    const ctx = new OfflineAudioContext(1, SR * 10, SR);
     const kit = createKit(ctx, new VoiceBudget(48), 3);
-    voice(kit, ctx.destination, 0.05, degHz(makeScale(0), deg, oct), { dur: 6.5, vowel: VOWELS[vk], spread: 3.5, ...(legacy ? { vibrato: 9, formantQ: [4.5, 6, 7] } : {}) });
+    const o = { dur: 9, vowel: VOWELS[vk], spread: 2.5 };
+    if (legacy) Object.assign(o, { vibrato: 9, formantQ: [4.5, 6, 7], spread: 3.5, side: 1 }); // pre-fix settings
+    voice(kit, ctx.destination, 0.05, degHz(makeScale(0), deg, oct), o);
     const d = (await ctx.startRendering()).getChannelData(0);
     const w = SR / 50, env = [];
-    for (let s = Math.floor(3.5 * SR); s + w <= 5.5 * SR; s += w / 2) {
+    for (let s = Math.floor(3.5 * SR); s + w <= 6 * SR; s += w / 2) {
       let e = 0;
       for (let i = 0; i < w; i++) e += d[s + i] * d[s + i];
       env.push(10 * Math.log10(e / w + 1e-12));
     }
-    out.push(Math.round((Math.max(...env) - Math.min(...env)) * 10) / 10);
+    const K = 15, res = [];
+    for (let i = K; i < env.length - K; i++) {
+      let m = 0;
+      for (let j = -K; j <= K; j++) m += env[i + j];
+      res.push(env[i] - m / (2 * K + 1));
+    }
+    out.push(Math.round((Math.max(...res) - Math.min(...res)) * 10) / 10);
   }
   return out;
 }

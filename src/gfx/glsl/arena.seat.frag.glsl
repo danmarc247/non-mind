@@ -41,9 +41,9 @@ void main() {
   float fieldN = ar_noise(p * 3.0 + seed * 5.0);
   vec3 fill = mix(uField, vTone, occ);
   fill *= 0.92 + 0.12 * fieldN;
-  fill = mix(fill, uMagenta, invite * (0.25 + 0.2 * sin(uTime * 6.0 + seed * 9.0)) * (1.0 - occ));
+  fill = mix(fill, uMagenta, invite * (0.7 + 0.2 * sin(uTime * 6.0 + seed * 9.0)) * (1.0 - occ));
   fill = mix(fill, uPaper, hover * 0.25);
-  float fillA = mix(0.1 + 0.25 * invite + 0.25 * hover, 0.78, occ);
+  float fillA = mix(0.1 + 0.5 * invite + 0.25 * hover, 0.78, occ);
 
   vec3 col = fill; float alpha = inside * fillA;
 

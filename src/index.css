@@ -57,3 +57,28 @@ html, body, #root {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-ink) 35%, transparent); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- Manual: README rendered as a paper folio ---- */
+.nm-manual { font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--color-ink); user-select: text; -webkit-user-select: text; }
+.nm-manual p { margin: 0 0 0.9em; max-width: 72ch; }
+.nm-intro p { font-size: 19px; font-style: italic; color: var(--color-ink-2); }
+.nm-manual h3 { font-family: var(--font-head); font-size: 26px; margin: 1.4em 0 0.4em; }
+.nm-manual h3::before { content: ''; display: inline-block; width: 14px; height: 14px; margin-right: 10px; border: 3px solid var(--color-ink); border-radius: 50%; background: var(--color-yolk); }
+.nm-manual h4 { font-family: var(--font-head); font-size: 19px; margin: 1.1em 0 0.3em; color: var(--color-ink-2); }
+.nm-manual ul, .nm-manual ol { margin: 0 0 1em 1.3em; max-width: 72ch; }
+.nm-manual ul { list-style: none; }
+.nm-manual ul > li { position: relative; margin: 0.25em 0; }
+.nm-manual ul > li::before { content: ''; position: absolute; left: -1.1em; top: 0.62em; width: 7px; height: 7px; border-radius: 50%; background: var(--color-magenta); }
+.nm-manual ol { list-style: decimal; }
+.nm-manual a { color: var(--color-ultra); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.nm-manual strong { font-weight: 600; background: linear-gradient(transparent 62%, color-mix(in srgb, var(--color-yolk) 70%, transparent) 62%); }
+.nm-manual code { font-family: ui-monospace, monospace; font-size: 0.86em; background: var(--color-paper-2); border: 1.5px solid color-mix(in srgb, var(--color-ink) 35%, transparent); border-radius: 6px; padding: 0 5px; }
+.nm-manual pre { background: var(--color-ink); color: var(--color-paper); border-radius: 16px; padding: 14px 18px; overflow-x: auto; margin: 0 0 1.2em; box-shadow: 4px 5px 0 var(--color-violet); }
+.nm-manual pre code { background: none; border: 0; color: inherit; padding: 0; font-size: 13px; line-height: 1.5; }
+.nm-table { overflow-x: auto; margin: 0 0 1.4em; border: 3px solid var(--color-ink); border-radius: 16px; box-shadow: 4px 5px 0 var(--color-ink); }
+.nm-manual table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.nm-manual th { font-family: var(--font-head); font-size: 15px; text-align: left; background: var(--color-ink); color: var(--color-paper); padding: 7px 12px; white-space: nowrap; }
+.nm-manual td { padding: 6px 12px; vertical-align: top; border-top: 1.5px solid color-mix(in srgb, var(--color-ink) 22%, transparent); }
+.nm-manual tr:nth-child(even) td { background: var(--color-paper-2); }
+.nm-manual blockquote { border-left: 6px solid var(--color-teal); margin: 0 0 1em; padding: 2px 0 2px 16px; font-style: italic; }
+.nm-manual hr { border: 0; height: 4px; border-radius: 4px; background: var(--color-ink); opacity: 0.15; margin: 1.6em 0; }

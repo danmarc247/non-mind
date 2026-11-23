@@ -51,7 +51,7 @@ function createSystem() {
   };
   const mk = (blend) => {
     const m = new THREE.ShaderMaterial({ vertexShader: fxVert, fragmentShader: fxFrag, uniforms, transparent: true, depthWrite: false, depthTest: true, side: THREE.DoubleSide });
-    if (blend === 'invert') { m.blending = THREE.CustomBlending; m.blendEquation = THREE.AddEquation; m.blendSrc = THREE.OneMinusDstColorFactor; m.blendDst = THREE.OneMinusSrcColorFactor; }
+    if (blend === 'invert') { m.blending = THREE.CustomBlending; m.blendEquation = THREE.AddEquation; m.blendSrc = THREE.OneMinusDstColorFactor; m.blendDst = THREE.OneMinusSrcColorFactor; m.blendEquationAlpha = THREE.AddEquation; m.blendSrcAlpha = THREE.ZeroFactor; m.blendDstAlpha = THREE.OneFactor; }
     m.toneMapped = false;
     return m;
   };
@@ -203,6 +203,7 @@ function createSystem() {
 
   function handle(e) {
     const t = now(), G = game.G;
+    if (e.type === 'fxClear') { for (const k in L) L[k].clear(); return; }   // galleries/tests only
     if (e.type === 'reset') {
       for (const k in L) L[k].clear();
       silence = t + 0.6;
@@ -217,30 +218,30 @@ function createSystem() {
       case 'strike': {
         const len = Math.hypot(e.tx - e.x, e.tz - e.z); if (len < 0.05) return;
         const c = tone(e.aspect);
-        ribbon(K.STROKE, e.x, UNIT_Y + 0.35, e.z, e.tx, UNIT_Y + 0.25, e.tz, 0.42, 0.22 + 0.06 * len, 0.26, 0, c, 1, mixC(c, 'ink', 0.35));
+        ribbon(K.STROKE, e.x, UNIT_Y + 0.35, e.z, e.tx, UNIT_Y + 0.25, e.tz, 0.62, 0.22 + 0.06 * len, 0.26, 0, c, 1, mixC(c, 'ink', 0.35));
         break;
       }
       case 'hit': {
         const amt = Math.max(0, e.amt || 0); if (amt < 0.004) return;
-        const size = 0.7 + Math.min(1.7, amt * 4.5);
+        const size = 1.2 + Math.min(2.2, amt * 5.5);
         const c1 = e.side ? tone(e.aspect) : rgb('ink'), c2 = e.side ? mixC(c1, 'paper', 0.35) : rgb('blood');
         const i = bill(K.SPLAT, e.x, UNIT_Y + 0.3, e.z, size, 0.42 + Math.min(0.25, amt), 0, c1, 1, c2, 1.15);
         L.air.set(i, 'aX', 0.25 + Math.min(0.6, amt * 2), 1, 0, 0);
-        burst(K.DROP, ...toward(e.x, UNIT_Y + 0.4, e.z, 1.1), 2 + Math.min(5, Math.round(amt * 14)), 2.6, 3.2, 0.16, 14, 0.42, [c1, c2]);
+        burst(K.DROP, ...toward(e.x, UNIT_Y + 0.4, e.z, 1.1), 3 + Math.min(6, Math.round(amt * 16)), 3.2, 3.6, 0.22, 14, 0.45, [c1, c2]);
         break;
       }
       case 'miss': {
-        const i = bill(K.SCUFF, e.x, UNIT_Y + 0.55, e.z, 1.3, 0.32, 0, 'paper', 0.8, mixC('paper', 'ink', 0.12), 1.2);
+        const i = bill(K.SCUFF, e.x, UNIT_Y + 0.55, e.z, 1.9, 0.32, 0, 'paper', 0.8, mixC('paper', 'ink', 0.12), 1.2);
         void i; break;
       }
       case 'cast': cast(e); break;
       case 'death': {
         const B = G && G.battle, c = B && B.units.find((u) => u.id === e.id);
         const c1 = c ? tone(c.aspects[0]) : rgb('rose');
-        for (let j = 0; j < 16; j++) {
-          const a = R() * 6.283, rr = R() * 0.7;
+        for (let j = 0; j < 22; j++) {
+          const a = R() * 6.283, rr = R() * 0.9;
           part(K.MOTE, e.x + Math.cos(a) * rr, UNIT_Y - 0.3 + R() * 0.9, e.z + Math.sin(a) * rr, Math.cos(a) * 0.5, 0.8 + R() * 1.0, Math.sin(a) * 0.5,
-            0.26 + R() * 0.18, -0.4, 1.1 + R() * 0.35, j * 0.02, j % 3 ? c1 : 'paper', 0.95, 'paper', 0.42, 0, 0);
+            0.42 + R() * 0.24, -0.4, 1.1 + R() * 0.35, j * 0.02, j % 3 ? c1 : 'paper', 0.95, 'paper', 0.42, 0, 0);
         }
         ring(e.x, GY, e.z, 0.4, 1.8, 0.05, 'paper', 0.6, 0, 0.8);
         break;

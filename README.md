@@ -1,77 +1,111 @@
 # NON-MIND
 
-**An abstract 3D auto-battler and incremental about affect regulation and complexity, rendered as living acrylic paint.**
+*An abstract 3D auto-battler and incremental about affect regulation and complexity, drawn as wet acrylic paint.*
 
-You tend a small mind inside a glass vessel of painted sea. Ten gates ring the rim. Stressors walk in through them, ten beats to a wave, ten waves to a cycle. You seat regulators (defences, in the language of affect science) around a glowing core and let them fight. Every regulator is a **genome tree** whose body is a **raymarched SDF sculpture compiled at runtime**, so every merge, carve and split grows a form nobody has seen. Complexity pays you, arms you, and then drowns you. When it is too much, you let go. That reset is called **non-mind**, and it makes the next run wider.
+This began as a quiet question: what would it look like to play a mind that keeps adding to itself? We wondered whether the thing a player collects could also be the thing that ends the run. We tried it, and kept the parts that held. What came out is a small glass vessel of painted sea with ten gates around the rim. Stressors arrive through them, ten beats to a wave, ten waves to a cycle. Regulators, which are defences in the language of affect science, sit around a glowing core and answer them. Each regulator is a genome tree, and its body is a sculpture compiled from that tree while the game runs. Complexity pays, then presses, then overwhelms, and the way out is a reset called non-mind.
 
-**Play it: https://danmarc247.github.io/non-mind/**
+Play it here: https://danmarc247.github.io/non-mind/
 
-Repo: https://github.com/danmarc247/non-mind
+Source: https://github.com/danmarc247/non-mind
+
+## Screenshots
+
+Three moments from the live build.
+
+| Title | Early battle | Mid game |
+|---|---|---|
+| ![Title](docs/screenshots/title.png) | ![Early battle](docs/screenshots/early-battle.png) | ![Arena mid game](docs/screenshots/arena-mid.png) |
 
 ---
 
 ## Contents
 
-1. [Why this has not been done](#why-this-has-not-been-done)
-2. [How to play](#how-to-play)
-3. [Mechanics reference](#mechanics-reference)
-4. [Genres it folds together](#genres-it-folds-together)
-5. [Tech stack](#tech-stack)
-6. [Architecture](#architecture)
-7. [Design system](#design-system)
-8. [How it was built](#how-it-was-built)
-9. [Development](#development)
-10. [Fonts and third-party licences](#fonts-and-third-party-licences)
-11. [Roadmap](#roadmap)
-12. [Screenshots](#screenshots)
+1. What if?
+2. How it feels to play
+3. Mechanics reference
+4. Genres it folds together
+5. Tech stack
+6. Architecture
+7. Design system
+8. How it was built
+9. Development
+10. Fonts and third-party licences
+11. Roadmap
 
 ---
 
-## Why this has not been done
+## What if?
 
-| | The idea | What it means concretely |
-|---|---|---|
-| a | **Complexity is currency, reward and threat** | Complexity multiplies your affect income (`x (1 + C/25)`), but once it passes capacity you are overwhelmed: stressors toughen, beats speed up, composure drains. The only exit is a reset called **non-mind**, which converts your peak complexity into permanent `mu`. |
-| b | **Units are genome trees with generated bodies** | A regulator is a binary tree of family genes joined by `blend` (integrate) or `carve` (subtract). The same tree drives its stats, its name, its aspects and its 3D body. `sculpt.js` writes a Shader Park program from the tree, compiles it to GLSL at runtime and raymarches it. A hybrid is the literal CSG of its parents. |
-| c | **A 12-link ladder as the upgrade path** | Two identical genomes at the same link fuse into the next link. Stat multiplier runs from x1 to x150, each link adds a heritable trait, and **link 12 dissolves the unit** into a permanent ending. |
-| d | **An 18-stage loop where each stage unlocks one system** | Shop, habits, integrate, repurpose, insight, split, outer ring, subtract, attendants, verbs, exchange, echo, stance, seasons, mirror, wildcard, non-mind. The game starts as one button. |
-| e | **A formal skeleton** | One centre, ten gates, ten families, ten waves of ten beats, and a ten-step rhetorical arc that modifies each wave in turn. |
-| f | **Music that follows complexity** | Asynchronous ambient loops at low complexity give way to interlocking minimalist arpeggios as it rises, then to a faster, saturated, detuned pulse under overwhelm. All of it is synthesized in the Web Audio API, spatialised with HRTF, and tuned to a different mode on every prestige depth. |
-| g | **The scene is wet paint** | Sky, sea and post chain all render acrylic: anisotropic Kuwahara strokes, impasto relief, canvas weave, ink edges. Eighteen stage palettes morph with progress, and overwhelm makes the paint run. |
+The game is the trace of a few questions, asked one after another. Each answer below is what the code does now.
+
+**What if complexity itself were the thing you collect, and also the thing that ends you?**
+Complexity multiplies affect income (`x (1 + C/25)`) and feeds the strength of every regulator. Past capacity (`40 x (1 + 0.3 x stage)`) it turns into overwhelm: stressors grow tougher, beats come faster, composure drains. The same number is both the reward and the pressure.
+
+**What if a unit's body were grown from its ancestry, so that every joining and every parting made a shape no one had seen?**
+A regulator is a binary tree of family genes joined by `blend` (integrate) or `carve` (subtract). The one tree sets its stats, its name, its aspects and its look. `sculpt.js` writes a Shader Park program from the tree, compiles it to GLSL at runtime and raymarches it, so a hybrid is the literal constructive solid geometry of its parents. Splitting writes the tree back into two bodies.
+
+**What if getting better meant becoming simpler, until the best thing a unit can do is leave?**
+Two identical genomes at the same link fuse into the next of twelve. The stat multiplier climbs from x1 to x150, and each link adds a heritable trait. Low links are knotted and muddy, high links are pale, luminous and plain, and link 12 dissolves the unit into a permanent ending.
+
+**What if each thing learned were a door, and the game began as one button?**
+Eighteen stages, each unlocking one system: the shop, habits, integrate, repurpose, insight, split, a second ring, subtract, attendants, verbs, exchange, echo, stance, seasons, mirror, a wildcard, and finally non-mind. The conditions are things the player does, such as fusing, splitting and subtracting.
+
+**What if the structure were small and strict, so the strangeness had somewhere to stand?**
+One centre, ten gates, ten families, ten waves of ten beats, and a ten-step arc of modifiers that bends each wave in turn. These numbers never change. Everything else does.
+
+**What if the music started as a few slow loops that never line up, and only later learned to run?**
+At low complexity there are eight ambient loops with incommensurate periods of about 17 to 34 seconds, played by felt piano and wordless voice, each circling the listener in HRTF space. As complexity rises, interlocking arpeggio ostinati of different lengths enter and phase against each other. Under overwhelm the pulse speeds from 132 to 168 bpm, detunes and saturates. Everything is synthesized in the Web Audio API, and the mode changes with each prestige depth.
+
+**What if the whole picture were wet paint that never dries?**
+Sky, sea and a five-pass post chain render as acrylic: anisotropic Kuwahara strokes, impasto relief, canvas weave, ink edges. Eighteen stage palettes morph into one another, the sky switches on one more painted motif at every stage, and overwhelm lets the paint run.
+
+**What if starting over were the reward?**
+Non-mind turns peak complexity into permanent `mu`: more affect, stronger regulators, more starting attention. It is the exit that overwhelm was always pointing at.
 
 ---
 
-## How to play
+## How it feels to play
+
+The first minutes are small on purpose. One thing is on the screen, and it can be attended to.
 
 ### The first five minutes
 
 | Step | Do this | What happens |
 |---|---|---|
 | 1 | Press the title button | Audio unlocks, the sea appears, the core pulses. |
-| 2 | Click the **core** | You attend. Affect rises. Five clicks unlock the shop (stage 1). |
-| 3 | Buy a regulator from the shop (costs attention equal to its tier) | A unit appears on the bench. |
-| 4 | Click it, then click a glowing **seat** ring | It is seated. With auto on, a wave starts about 5 seconds into prep. |
+| 2 | Click the **core** (or press `Space`) | Affect rises. Five clicks unlock the shop (stage 1). |
+| 3 | Buy a regulator from the shop (cost equals its tier in attention) | It arrives and takes the first free seat, as long as there is room. |
+| 4 | Move it if you prefer: click it, then click a **seat** ring | Swaps if occupied. With auto on, a wave starts about 5 seconds into prep. |
 | 5 | Watch the wave | Stressors enter through gates and walk toward the core. Kills pay affect. A win pays attention and refreshes the shop. |
-| 6 | Buy a second copy of the same family | The two **fuse** into link 2. That is the ladder, and it unlocks integrate. |
-| 7 | Keep going | Each stage hint (shown in the log) tells you what to do next. |
+| 6 | Buy a second copy of the same family | The two **fuse** into link 2. This is the ladder, and the next stage opens integrate. |
+| 7 | Keep going | Each stage hint in the log points at what to try next. |
+
+A loss is not a wall. Each loss on a wave softens its stressors by 12 percent (`x0.88`, up to 12 stacks) until the wave is won.
+
+Moments of realization (a fuse, an integrate, a new stage, an ending, a reset) are marked by a camera director: a soft zoom toward the thing, and time slowed for a breath. The director leans on the camera and lets go. It never takes it away.
 
 ### Controls
 
 | Input | Action |
 |---|---|
-| Click the core | Attend (main income early on) |
-| Click a unit | Select it; the inspector shows genome, traits and operations |
+| Click the core, or `Space` | Attend |
+| Click a unit | Select it; the inspector shows genome, mutations, traits and operations |
 | Click a seat | Place the selected unit (swaps if occupied) |
 | Integrate / Subtract | Select a unit, press the operation, then click the second unit |
-| Drag, scroll | Orbit and zoom the camera (distance 12 to 34, panning off) |
+| `1` to `5` | Buy the shop slot with that number |
 | `R` | Reroll the shop (2 attention) |
 | `X` | Buy experience (5 attention for 4 xp) |
+| `C` | Open or close the codex |
+| `Esc` | Close the codex, cancel a pending operation, or deselect |
+| Drag, scroll | Orbit and zoom (distance 12 to 34, panning off) |
 
-The HUD is in active development, so more hotkeys will be listed here when they land. The game saves to `localStorage` every 10 seconds.
+The shop keys work once the shop is unlocked. The game saves to `localStorage` every 10 seconds.
 
 ---
 
 ## Mechanics reference
+
+The rules, as the code currently states them. Constants live in `src/game/data.js`, `game.js` and `battle.js`.
 
 ### Resources
 
@@ -236,7 +270,11 @@ A wave is 10 beats of 2.4 s (0.7x under heavy overwhelm). Each beat spawns stres
 | 9 | Who Is Able | Aspect bonds are silent |
 | 10 | Light Appears | A boss, and a single strike may undo a great one |
 
-Stressors: Intrusion, Deadline, Criticism, Ambiguity, Shame, and the boss Abandonment. The pool widens with global wave number up to five.
+Stressors: five base kinds (Intrusion, Deadline, Criticism, Ambiguity, Shame) and the boss Abandonment, plus an extended roster of eleven more (Clutter, Silence, Comparison, Obligation, Boredom, Hurry, Noise, Doubt, Loss, Lateness, Envy) and three later bosses (Expectation, Transition, Inadequacy). The ordinary pool widens with the global wave number, up to 16 kinds.
+
+**Affixes.** From global wave 4 a stressor may carry one of 40 named distortions (Unread, Inherited, 3 A.M., Anticipated, Recurring, and so on), each a stat change with a minimum wave. The chance rises linearly from 0 at wave 3 to 70 percent at wave 40. Bosses carry none.
+
+**Habituation.** Every loss on a wave multiplies the next attempt's stressor tolerance by `0.88`, up to 12 losses. A win resets it to zero.
 
 ### Habits, upgrades, spells, verbs, moods
 
@@ -280,6 +318,19 @@ non-mind: mu += floor( (peak C / 8)^0.8 * (1 + stage/17) * (2 if overwhelm >= 1)
 
 At overwhelm 1 composure drains 2% of max per second, and stressors are up to 3x tougher.
 
+### Mutations
+
+Every regulator can carry up to 6 heritable mutations, drawn from 72 (24, 22, 16 and 10 at rarities 1 to 4). Each is an affective-science idea turned oblique, with a stat modifier that pays a cost for its gift, and an **epithet** that joins the unit's name (the rarest one wins).
+
+| Event | Mutation chance |
+|---|---|
+| Fuse into a new link | 60% |
+| Integrate | 80% |
+| Split | 50% for each half |
+| Dream (verb) | 100% |
+
+Rolls are weighted by `1 / rarity^2`, skip duplicates and skip conflicting pairs. Mutations pass to offspring: integrate unions the parents' sets, split deals them out alternately.
+
 ### Mirrors, stance, seasons
 
 | System | Rule |
@@ -288,13 +339,13 @@ At overwhelm 1 composure drains 2% of max per second, and stressors are up to 3x
 | **Stance** | Toward: mending x2, reach x0.8. Away: opacity +20, reach x1.3, affect x0.8. Against: salience x1.6, tolerance x0.8 |
 | **Seasons** | Every 60 s the season takes 3 attention, or, if you cannot pay, adds a Dread |
 | **Exchange** | affect to attention, attention to insight (1 : 12), insight to attention (25 : 1), attention to affect |
-| **Seats** | 3 rings of 10. Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8 |
+| **Seats** | 3 rings of 10. Unit cap `min(30, level + 1 + 2 x mirrors)`. Bench holds 8. New arrivals take the first free seat while there is room |
 
 ---
 
 ## Genres it folds together
 
-Systems only, remixed, never copied.
+Several familiar genres share a table here. Only their systems were borrowed, and each was changed on the way in.
 
 | Genre system | NON-MIND system | What changed |
 |---|---|---|
@@ -306,6 +357,8 @@ Systems only, remixed, never copied.
 ---
 
 ## Tech stack
+
+The stack was chosen so one painted look could run in the browser without a server. Versions are those in `package.json`.
 
 | Library | Link | Role here |
 |---|---|---|
@@ -330,12 +383,14 @@ Systems only, remixed, never copied.
 | Cult UI | https://www.cult-ui.com | Texture cards and buttons, lens blur (ported) |
 | Zustand (installed), lucide-react, clsx, tailwind-merge, cva, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
 | Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl`, `vite-plugin-singlefile` |
-| Vitest 5 | https://vitest.dev | Engine tests in node |
+| Vitest 5 | https://vitest.dev | 171 engine tests in node, run in CI before every deploy |
 | Web Audio API | https://developer.mozilla.org/docs/Web/API/Web_Audio_API | All music and SFX, no samples and no libraries |
 
 ---
 
 ## Architecture
+
+The engine knows nothing of pixels or sound. Everything else reads its state and its events.
 
 ```mermaid
 flowchart LR
@@ -350,6 +405,8 @@ flowchart LR
   store --> scene[Scene.jsx + sculpt.js]
   store --> hud[HUD in src/ui/hud]
   store -- events --> audio[audio/engine.js]
+  store --> director[Director.jsx\nzoom and time dilation]
+  director --> scene
   scene --> mood((mood.js))
   mood --> sky[PainterSky]
   mood --> post[PainterPost]
@@ -373,13 +430,17 @@ flowchart LR
 
 | Layer | What | Where |
 |---|---|---|
-| Sky | Painted dome: flow-warped strokes, drifting rings (more as complexity rises), palette rotated by depth | `PainterSky.jsx`, `glsl/sky.*` |
+| Sky | Painted dome: flow-warped strokes, drifting rings (more as complexity rises), one more motif switched on at each stage, palette shifting by stage and rotated by depth | `PainterSky.jsx`, `glsl/sky.*` |
 | Sea | Contained vessel: flow-warped bands of the stage palette, foam rings and ten spokes, cut-face strata | `Scene.jsx`, `glsl/sea.*` |
 | Sculptures | Core, regulators, stressors, raymarched, with `gl_FragDepth` | `sculpt.js` |
 | Fx | Instanced strokes, splats and rings per game event (220 max) | `Scene.jsx` |
 | Post chain | 1 Kuwahara, 2 Relief, 3 Bloom, 4 Grade, 5 Overwhelm; one pass each, `mergeMode="none"` | `PainterPost.jsx`, `glsl/post.*` |
 
 The post stages: anisotropic generalized Kuwahara (4 sectors, structure tensor); impasto height with bristle line-integral lighting, canvas weave and ink edges (reads depth); low bloom pumped by flashes; a filmic grade with a torn paper vignette; and the overwhelm pass (wobble, chroma smear, posterise, splashes, drips, whiteout). Quality presets are `low`, `med`, `high`.
+
+### Director
+
+`Director.jsx` listens to game events (link, integrate, subtract, split, mutation, repurpose, ending, stage, wave result, boss arrival, reset, first attend). Each maps to a zoom fraction, a hold time and a time scale (as low as 0.2 for an ending). The camera eases toward the focus, then lets go, with a slow breathing dolly in between. Player orbiting is preserved because the changes are applied as relative offsets.
 
 ### The mood contract
 
@@ -415,9 +476,10 @@ src/
   gfx/         Scene.jsx sculpt.js mood.js PainterSky.jsx PainterPost.jsx
     glsl/      sea.* sky.* post.*
     palettes/  stages.js (18 stage palettes) families.js (family + link grade + aspect tones)
+    arena/ fx/ Director.jsx                                            (aura, portals, paint fx, camera)
     galleries/ scene.jsx sky.jsx post.jsx
   audio/       engine.js music.js instruments.js sfx.js util.js lab.js
-  ui/          bits/ (HUD kit + backgrounds/)  hud/ (panels)  type/ (typography)
+  ui/          Hud.jsx  bits/ (HUD kit + backgrounds/)  hud/ (panels, codex, tutorial)  type/ (typography)
   index.css    palette and font tokens
 tests/         game/ (vitest + balance probe)  audio/ (offline render harness)
 docs/          TEAM.md team-log.md
@@ -427,7 +489,9 @@ docs/          TEAM.md team-log.md
 
 ## Design system
 
-The look is a vivid abstract acrylic painting you can play. Paper ground, ink line, saturated accents, never a dark sci-fi UI. The only colours are the tokens below; a new colour is a mix of tokens.
+The reference was three acrylic paintings and nothing else. The rule that followed was to keep one small set of colours and let motion carry the rest.
+
+Paper ground, ink line, saturated accents, never a dark sci-fi UI. The only colours are the tokens below; a new colour is a mix of tokens.
 
 | Token | Hex | Role |
 |---|---|---|
@@ -459,6 +523,8 @@ Stage palettes (`stages.js`) hold 18 entries with five hue slots each. Neighbour
 
 ## How it was built
 
+The game was made by a team of models with one mediator, each in its own lane.
+
 A small agent team with one mediator.
 
 | Role | Model | Lanes |
@@ -474,16 +540,18 @@ Protocol: brief, work and self-verify, hand back a short report, cross-lane need
 
 ## Development
 
+Everything runs locally with Node.
+
 ```bash
 npm i --legacy-peer-deps      # install
 npm run dev                   # vite dev server, port 5173
 npm run build                 # production build to dist/ (base './', hosted under /non-mind/)
-npx vitest run                # engine tests (node environment, tests/**/*.test.js)
+npm test                      # 171 tests (vitest, node environment); CI runs this before the build
 ```
 
 Parallel dev servers need separate caches: `NM_CACHE_DIR=/tmp/cache-x npx vite --port 5181 --strictPort`.
 
-Pushes to `main` build and deploy to GitHub Pages through `.github/workflows`.
+Pushes to `main` run the tests, then build and deploy to GitHub Pages through `.github/workflows`.
 
 ### Galleries (dev server pages)
 
@@ -514,6 +582,8 @@ import('./src/game/game.js').then(({ simulate }) => {
 
 ## Fonts and third-party licences
 
+Credit where it is due.
+
 | Asset | Source | Licence |
 |---|---|---|
 | Hypermonosaturation | fontspace, by heaven castro | Freeware |
@@ -528,19 +598,11 @@ See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports an
 
 ## Roadmap
 
-Built and in the repo, not yet wired into the live game:
+What is still ahead, written plainly.
 
-- [ ] Content pools in `src/game/content/`: 72 heritable mutations, 40 stressor affixes plus 14 extra stressors, and short cryptic line pools per event
-- [ ] Full HUD assembly (`src/ui/Hud.jsx`) and the complete hotkey set
 - [ ] Mobile and touch layout pass
 - [ ] Balance pass on late stages (mirrors, wildcard) using `tests/game/balance.mjs`
-- [ ] Cloud-free save export and import
-- [ ] More sculpture forms and mutation-driven deformation of bodies
-
----
-
-## Screenshots
-
-| Title | Early battle | Mid game |
-|---|---|---|
-| ![Title](docs/screenshots/title.png) | ![Early battle](docs/screenshots/early-battle.png) | ![Arena mid game](docs/screenshots/arena-mid.png) |
+- [ ] Save export and import
+- [ ] More sculpture forms, and mutation-driven deformation of bodies (each mutation already carries a form value that the sculptures do not use yet)
+- [ ] Use the installed but idle libraries (PixiJS, GSAP, OGL), or remove them
+- [ ] Wire the per-event cryptic line pools more fully into the log

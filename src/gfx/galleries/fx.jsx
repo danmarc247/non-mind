@@ -141,7 +141,7 @@ function Panel() {
 function App() {
   return (
     <div className="fixed inset-0 bg-paper">
-      <Canvas linear legacy flat camera={{ position: [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false }}
+      <Canvas linear legacy flat camera={{ position: q.get('near') ? [0, 13, 18] : [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false }}
         onCreated={({ scene }) => { scene.background = new THREE.Color().setRGB(...PALETTE.paper); }}>
         <Ticker />
         <Sea />

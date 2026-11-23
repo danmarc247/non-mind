@@ -417,7 +417,7 @@ export default function LeftPanel({ compact }) {
             })}
           </AnimatePresence>
         </div>
-        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pb-1" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 58px - var(--tabs-h, 0px))' }}>
+        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pb-1" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 128px)' }}>
           <motion.div key={cur.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
             <Body G={G} />
           </motion.div>

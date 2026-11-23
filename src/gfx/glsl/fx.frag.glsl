@@ -295,9 +295,9 @@ void main() {
     // equalize: a level line sweeps the arena, leaving a flattened wash behind it
     float yl = mix(-1.0, 1.0, fx_eo(k / 0.8));
     float inA = fx_aa(r - 0.97, 0.01);
-    float line = fx_aa(abs(p.y - yl + 0.004 * sin(p.x * 40.0 + s)) - 0.006, 0.003);
-    float halo = fx_aa(abs(p.y - yl) - 0.02, 0.012);
-    float wash = step(p.y, yl) * smoothstep(yl - 0.5, yl, p.y) * (0.25 + 0.2 * fx_n(vec2(p.x * 3.0, p.y * 60.0)));
+    float line = fx_aa(abs(p.y - yl + 0.004 * sin(p.x * 40.0 + s)) - 0.011, 0.004);
+    float halo = fx_aa(abs(p.y - yl) - 0.035, 0.015);
+    float wash = step(p.y, yl) * smoothstep(yl - 0.6, yl, p.y) * (0.35 + 0.3 * fx_n(vec2(p.x * 3.0, p.y * 60.0)));
     a = inA * max(max(line, halo * 0.9), wash);
     wht = halo * (1.0 - line);
     m = wash * (1.0 - halo);
@@ -340,7 +340,7 @@ void main() {
     fade = 1.0 - smoothstep(0.75, 1.0, k);
   } else if (kind == 41) {
     // invert: a disc that flips the colours under it (inverting blend), soft edge
-    float R = fx_pop(k / 0.35) * 0.95;
+    float R = fx_pop(k / 0.35) * 0.86;
     float e = R * (1.0 + 0.04 * sin(an * 4.0 + s * 9.0 + age * 3.0));
     a = fx_aa(r - e, 0.04) * (1.0 - smoothstep(0.55, 1.0, k)) * 0.92;
     gl_FragColor = vec4(vec3(a * vC1.a), 1.0);

@@ -34,12 +34,12 @@ export function Log({ compact }) {
               exit={{ opacity: 0 }}
               transition={{ ...POP, opacity: { duration: 0.25 } }}
               className={cn(
-                'w-fit max-w-full rounded-[8px] bg-paper/80 px-2 py-[2px] font-body text-[12.5px] leading-snug italic',
+                'w-fit max-w-full truncate rounded-[8px] bg-paper/80 px-2 py-[2px] font-body text-[12.5px] leading-snug italic',
                 KIND_TONE[l.kind] || 'text-ink-2',
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
             >
-              {l.text}{l.n > 1 && <span className="ml-1.5 font-stat text-[11px] not-italic">x{l.n}</span>}
+              <span title={l.text}>{l.text}</span>{l.n > 1 && <span className="ml-1.5 font-stat text-[11px] not-italic">x{l.n}</span>}
             </motion.p>
           );
         })}

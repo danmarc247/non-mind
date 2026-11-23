@@ -5,6 +5,7 @@ import { start, useVersion, game } from './game/store.js';
 function Fallback() { useVersion(); return game.started ? null : <button className="fixed inset-0 m-auto h-24 w-72 rounded-full border-4 border-ink bg-yolk font-title text-4xl text-ink" onClick={() => { try { getAudio().unlock(); } catch { /* optional */ } start(); }}>NON-MIND</button>; }
 const Hud = hudMod?.default || Fallback;
 import { onEvent } from './game/store.js';
+import Manual from './ui/Manual.jsx';
 import { getAudio } from './audio/engine.js';
 
 // game event -> spatial sound. y is fixed at unit height; x/z come from the sim.
@@ -30,6 +31,7 @@ export default function App() {
     <div className="fixed inset-0 bg-paper">
       <Scene audioRef={audioRef} />
       <Hud />
+      <Manual />
     </div>
   );
 }

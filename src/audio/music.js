@@ -112,7 +112,7 @@ export function createMusic(E) {
       const vowel = VOWELS[S.toward > 0.5 ? 'o' : sc.vowel];
       track(voice(kit, L.pan.input, t, f, {
         vel: ev.vel * 0.9, dur: ev.dur, attack: 1.5 + 0.8 * S.away, vowel,
-        spread: 3.5 + sc.detuneExtra + 6 * S.o, limit: lim,
+        spread: 2.5 + sc.detuneExtra + 6 * S.o, limit: lim,
       }), t, ev.dur);
       // mythic: a choir companion a fifth above
       if (A.mythic > 0.05 && rng() < A.mythic * 0.8) {
@@ -140,8 +140,8 @@ export function createMusic(E) {
   }
   const RING = 5.5;
   const VOICE_DEF = [
-    { L: 6, style: 'rise', oct: 1, th: 0.22, M: 2 },
-    { L: 8, style: 'wave', oct: 2, th: 0.36, M: 3 },
+    { L: 6, style: 'rise', oct: 2, th: 0.16, M: 2 },
+    { L: 8, style: 'wave', oct: 1, th: 0.36, M: 3 },
     { L: 5, style: 'broken', oct: 1, th: 0.5, M: 2 },
     { L: 7, style: 'pedal', oct: 2, th: 0.64, M: 4 },
     { L: 9, style: 'rise', oct: 3, th: 0.78, M: 3 },
@@ -195,7 +195,8 @@ export function createMusic(E) {
   }
 
   function chordStart(t, S, sc) {
-    const hl = smoothstep(0.06, 0.28, S.c) * (1 - 0.3 * S.away);
+    // horns enter soft and grow with complexity (so they never darken the mix early)
+    const hl = smoothstep(0.06, 0.28, S.c) * (0.5 + 0.5 * smoothstep(0.45, 1, S.c)) * (1 - 0.3 * S.away);
     if (hl < 0.02) return;
     const chordDur = F.chordLen * F.stepDur;
     const dur = clamp(chordDur * 1.15, 4, 8);
@@ -353,8 +354,10 @@ export function createMusic(E) {
     bus.floeRev.gain.linearRampToValueAtTime(floe * 0.3 * revMul, T);
     bus.delaySend.gain.linearRampToValueAtTime(0.35 * A.relational, T);
     // tone shaping (stance + overwhelm)
-    E.nodes.tiltHi.gain.linearRampToValueAtTime(-3 * S.toward - 2 * S.away + 4 * S.against + 2 * o - 2 * A.shadow, T);
-    E.nodes.tiltLo.gain.linearRampToValueAtTime(2 * S.toward + 1.5 * A.limbic + 1.5 * A.shadow, T);
+    // brightness rises monotonically with complexity (gentle: +3 dB air, -2 dB body)
+    const lift = 0.6 * smoothstep(0.02, 0.4, c) + 0.4 * smoothstep(0.35, 0.9, c);
+    E.nodes.tiltHi.gain.linearRampToValueAtTime(3 * lift - 3 * S.toward - 2 * S.away + 4 * S.against + 2 * o - 2 * A.shadow, T);
+    E.nodes.tiltLo.gain.linearRampToValueAtTime(-2 * lift + 2 * S.toward + 1.5 * A.limbic + 1.5 * A.shadow, T);
     const sat = 0.6 * o * o;
     E.nodes.satClean.gain.linearRampToValueAtTime(1 - sat, T);
     E.nodes.satDrive.gain.linearRampToValueAtTime(sat, T);

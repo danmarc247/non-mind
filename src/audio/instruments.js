@@ -157,11 +157,11 @@ export function piano(kit, dest, t, freq, o = {}) {
 export function voice(kit, dest, t, freq, o = {}) {
   const vel = o.vel ?? 0.6, dur = o.dur ?? 6, attack = o.attack ?? 1.5;
   const formants = o.vowel || [800, 1150, 2900];
-  const spread = o.spread ?? 4;
+  const spread = o.spread ?? 2.5;
   const end = t + dur + 0.4;
   if (!kit.budget.request(t, end, 4, o.limit)) return false;
 
-  const mix = kit.gain(0.33);
+  const mix = kit.gain(0.33 * 3 / (1 + 2 * (o.side ?? 0.45)));
   const pre = kit.filter('lowpass', 3800, 0.5);
   mix.connect(pre);
   const out = kit.gain(0);
@@ -182,15 +182,23 @@ export function voice(kit, dest, t, freq, o = {}) {
 
   const nodes = [mix, pre, out, lfo, lg];
   const srcs = [lfo];
+  // chorus: centre saw at full level, the two detuned copies quieter (o.side)
+  // so their beating can never cancel the centre -> little amplitude flutter
   const det = [-spread, 0.3, spread * 0.85];
-  for (const d of det) {
+  const side = o.side ?? 0.45;
+  det.forEach((d, k) => {
     const s = kit.osc('sawtooth', freq, t);
     s.detune.setValueAtTime(d, t);
     lg.connect(s.detune);
-    s.connect(mix);
+    if (k === 1) s.connect(mix);
+    else {
+      const sg = kit.gain(side);
+      s.connect(sg).connect(mix);
+      nodes.push(sg);
+    }
     nodes.push(s);
     srcs.push(s);
-  }
+  });
   const fg = [1.0, 0.55, 0.22], fq = o.formantQ || [3, 4, 5]; // low Q: vibrato barely modulates level
   formants.forEach((f, i) => {
     const bp = kit.filter('bandpass', f, fq[i]);

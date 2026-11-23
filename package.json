@@ -33,6 +33,7 @@
     "harfbuzzjs": "^1.6.4",
     "lucide-react": "^1.78.0",
     "lygia": "^1.4.1",
+    "marked": "^18.2.1",
     "motion": "^14.14.0",
     "ogl": "^1.0.11",
     "pixi.js": "^8.23.0",
