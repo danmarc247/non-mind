@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import {
   processText,
   smartChunkWithNLP,
@@ -187,10 +188,13 @@ export function KoanFlash({
     let start = performance.now();
     let current = -1;
 
+    // Commit the swap synchronously so the new chunk is in the DOM (and measured by the
+    // layout effect above) before this frame's styles are written: no one-frame ghost of
+    // the previous chunk wearing the next chunk's transform.
     const show = (next) => {
       if (next === current) return;
       current = next;
-      setIndex(next);
+      flushSync(() => setIndex(next));
     };
 
     const paint = (active, elapsed) => {
@@ -202,7 +206,7 @@ export function KoanFlash({
       const enter = calm ? 1 : clamp01(local / ENTER_MS);
       const pop = calm ? 1 : 0.84 + 0.16 * easeOutBack(enter);
       stage.style.transform = `scale(${(active.zoom * fitRef.current * pop).toFixed(4)})`;
-      main.style.opacity = String(Math.min(1, enter * 1.6));
+      main.style.opacity = String(0.55 + 0.45 * enter); // never fully hidden, even at low frame rates
 
       const { expressionStart, expressionFull } = active.phases;
       for (let i = 0; i < config.count; i += 1) {

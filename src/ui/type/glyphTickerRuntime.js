@@ -5,8 +5,12 @@
 // glyph renders TSL NodeMaterials only, so it cannot draw into the game's classic
 // WebGLRenderer; each ticker owns a tiny WebGPURenderer running on its WebGL2 backend.
 import * as THREE from 'three/webgpu';
-import { glyph } from '@pmndrs/glyph';
+import { glyph, msdf } from '@pmndrs/glyph';
 import { ThreeConfig } from '@pmndrs/glyph/three';
+
+// Must match the `--msdf em-size=…` used in scripts/bake-fonts.mjs: a different size is a
+// different raster, and glyph would then try (and fail) to generate it at runtime.
+const MSDF_EM_SIZE = 32;
 
 let initPromise;
 let facePromise;
@@ -23,7 +27,7 @@ function ensureGlyph() {
 function ensureFace(fontUrl) {
   // A `.font.glb` URL is a baked-only source: no runtime bake, no worker, no font-baker wasm.
   facePromise ??= Promise.resolve()
-    .then(() => glyph.fontFace(fontUrl, { family: 'Hypermonosaturation', format: 'msdf' }).load())
+    .then(() => glyph.fontFace(fontUrl, { family: 'Hypermonosaturation', format: msdf({ emSize: MSDF_EM_SIZE }) }).load())
     .catch((error) => {
       facePromise = undefined;
       throw error;

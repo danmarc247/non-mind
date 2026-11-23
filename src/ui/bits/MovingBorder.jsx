@@ -20,7 +20,7 @@ export function Button({
   return (
     <Component
       className={cn(
-        'relative h-14 w-44 overflow-hidden bg-ink p-[3px] text-xl shadow-[3px_4px_0_0_var(--color-ink)]',
+        'relative h-14 w-44 overflow-hidden bg-ink p-[4px] text-xl shadow-[3px_4px_0_0_var(--color-ink)]',
         containerClassName,
       )}
       style={{ borderRadius, ...style }}

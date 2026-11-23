@@ -237,8 +237,8 @@ export function Meter({ value = 0, tone = 'teal', label, danger = false, showVal
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
           <defs>
             <filter id={id} x="-4%" y="-50%" width="108%" height="200%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.035 0.3" numOctaves="2" seed={seed} result="n" />
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G" />
+              <feTurbulence type="fractalNoise" baseFrequency="0.018 0.09" numOctaves="2" seed={seed} result="n" />
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G" />
             </filter>
           </defs>
           <rect

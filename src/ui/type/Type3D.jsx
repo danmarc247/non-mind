@@ -19,7 +19,7 @@ const VERTEX = /* glsl */ `
   varying vec3 vLocal;
   varying vec3 vViewNormal;
 
-  float hash(float n) { return fract(sin(n * 127.1 + 311.7) * 43758.5453123); }
+  float hash(float n, float k) { return fract(sin(dot(vec2(n + 1.0, k), vec2(12.9898, 78.233))) * 43758.5453); }
 
   mat3 rotateAxis(vec3 axis, float angle) {
     float s = sin(angle), c = cos(angle), t = 1.0 - c;
@@ -31,9 +31,9 @@ const VERTEX = /* glsl */ `
   }
 
   void main() {
-    float s1 = hash(glyphIndex + 1.0);
-    float s2 = hash(glyphIndex * 1.7 + 4.2);
-    float s3 = hash(glyphIndex * 2.3 + 9.1);
+    float s1 = hash(glyphIndex, 1.7);
+    float s2 = hash(glyphIndex, 5.3);
+    float s3 = hash(glyphIndex, 9.9);
     float chaos = clamp(uChaos, 0.0, 1.0);
     float burst = chaos * chaos * (3.0 - 2.0 * chaos);
 
@@ -48,8 +48,11 @@ const VERTEX = /* glsl */ `
     mat3 spin = rotateAxis(axis, angle);
 
     vec3 local = spin * (position - glyphCenter);
-    vec3 direction = normalize(vec3(s1 * 2.0 - 1.0, s2 * 2.0 - 1.0, (s3 * 2.0 - 1.0) * 0.8) + vec3(0.0, 0.0001, 0.0));
-    vec3 scatter = direction * (0.7 + 2.1 * s3) * uSize * 1.9 * burst;
+    // Golden-angle fan: neighbours leave in well-separated directions, mostly in-plane
+    // so the cloud stays in frame instead of flying at the camera.
+    float heading = glyphIndex * 2.39996323 + s1 * 0.9;
+    vec3 direction = normalize(vec3(cos(heading), sin(heading) * 0.8, (s2 * 2.0 - 1.0) * 0.45));
+    vec3 scatter = direction * (0.55 + 1.05 * s3) * uSize * 1.15 * burst;
     scatter += vec3(
       sin(uTime * 0.35 + s1 * 20.0),
       cos(uTime * 0.31 + s2 * 20.0),
@@ -302,7 +305,8 @@ export function Type3D({
     <group {...groupProps}>
       {built && (
         // Glyphs are displaced in the vertex shader, so the static bounds are meaningless.
-        <mesh geometry={built.geometry} material={material} position={built.position} frustumCulled={false} />
+        // dispose={null}: this component owns the geometry/material lifecycles, not R3F.
+        <mesh geometry={built.geometry} material={material} position={built.position} frustumCulled={false} dispose={null} />
       )}
     </group>
   );

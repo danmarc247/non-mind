@@ -87,20 +87,22 @@ void main() {
         circleSize,
         circleEdge
     );
+    // port fix: smoothstep(a, a, x) is undefined; keep the lens edge strictly positive
+    float lensEdge = max(sdfCircle, 0.01);
     
     float sdf;
     if (VAR == 0) {
         sdf = sdRoundRect(st, vec2(size), roundness);
-        sdf = stroke(sdf, 0.0, borderSize, sdfCircle) * 4.0;
+        sdf = stroke(sdf, 0.0, borderSize, lensEdge) * 4.0;
     } else if (VAR == 1) {
         sdf = sdCircle(st, vec2(0.5));
-        sdf = fill(sdf, 0.6, sdfCircle) * 1.2;
+        sdf = fill(sdf, 0.6, lensEdge) * 1.2;
     } else if (VAR == 2) {
         sdf = sdCircle(st, vec2(0.5));
-        sdf = stroke(sdf, 0.58, 0.02, sdfCircle) * 4.0;
+        sdf = stroke(sdf, 0.58, 0.02, lensEdge) * 4.0;
     } else if (VAR == 3) {
         sdf = sdPoly(st - vec2(0.5, 0.45), 0.3, 3);
-        sdf = fill(sdf, 0.05, sdfCircle) * 1.4;
+        sdf = fill(sdf, 0.05, lensEdge) * 1.4;
     }
     
     vec3 gradient = mix(
@@ -156,7 +158,13 @@ export function ShaderLensBlur({
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
     camera.position.z = 1;
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: false });
+    } catch (err) {
+      console.warn('ShaderLensBlur: WebGL unavailable', err);
+      return undefined;
+    }
     renderer.setClearColor(0x000000, 0);
 
     const geometry = new THREE.PlaneGeometry(2, 2);
@@ -206,6 +214,7 @@ export function ShaderLensBlur({
       material.uniforms.u_pixelRatio.value = pixelRatio;
     };
     updateSize();
+    material.uniforms.u_mouse.value.set(container.clientWidth * 0.5, container.clientHeight * 0.5);
     const ro = new ResizeObserver(updateSize);
     ro.observe(container);
 
@@ -246,8 +255,9 @@ export function ShaderLensBlur({
       container.removeEventListener('touchend', up);
       geometry.dispose();
       material.dispose();
+      // no forceContextLoss(): StrictMode re-mounts onto the same <canvas>, and a lost
+      // context cannot be re-acquired from it. The context is freed with the canvas.
       renderer.dispose();
-      renderer.forceContextLoss();
       materialRef.current = null;
     };
   }, [variation]);
