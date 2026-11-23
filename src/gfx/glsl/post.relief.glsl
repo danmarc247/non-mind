@@ -113,7 +113,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   col *= tone * (1.0 + dabTone * 0.08 * dabK);
 
   float groove = mix(lic * 0.5, dabZ >= 0.0 ? (dabG - 0.5) * 2.0 : lic, farK);
-  float h = dabH * 0.22 * farK + groove * 0.12 * uBristle + lum * 0.3;
+  float h = dabH * 0.22 * farK + groove * 0.12 * uBristle * mix(0.35, 1.0, farK) + lum * mix(0.1, 0.3, farK);
   vec3 n = normalize(vec3(-dFdx(h) * 4.0 * relK, -dFdy(h) * 4.0 * relK, 1.0));
   vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
   float diff = dot(n, L) / L.z;
@@ -142,7 +142,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float edgeD = smoothstep(0.03, 0.12, dz);
   float edgeC = smoothstep(0.1, 0.25, gm);
   float wob = 0.5 + 0.5 * pp_vnoise(px * 0.06 + dir * 3.0);
-  float ink = clamp(max(edgeD, edgeC * 0.45) * wob * uInk * mix(0.45, 1.0, farK), 0.0, 1.0);
+  float ink = clamp(max(edgeD, edgeC * 0.45 * farK) * wob * uInk * mix(0.45, 1.0, farK), 0.0, 1.0);
   col = mix(col, uInkColor * (0.6 + 0.4 * col), ink * 0.8);
 
   outputColor = vec4(max(col, 0.0), inputColor.a);

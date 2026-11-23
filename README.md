@@ -107,9 +107,9 @@ Interest on attention is `floor(attention / 10)`, capped at 5 (10 with Thrift Of
 | 14 | sustain | seasons | Choose a stance |
 | 15 | penetrate | mirror | Survive 3 seasons |
 | 16 | embrace | wildcard aspect | Own a mirror |
-| 17 | overwhelm | non-mind (double mu) | Overwhelm reaches 1 |
+| 17 | overwhelm | non-mind at full strength | Overwhelm reaches 1 |
 
-Non-mind itself is available from stage 1; stage 17 only doubles the mu you get while overwhelmed.
+Non-mind itself is available from stage 1; being fully overwhelmed (which unlocks stage 17) doubles the mu you get.
 
 ### The 10 families
 
@@ -208,20 +208,13 @@ A genome is a tree, maximum **6 leaves**. Beyond that the lightest leaves are pr
 ```
 leaf            Reappraisal                       one gene
 
-integrate       (Reappraisal + Rumination)        blend: a hybrid, one body
+integrate       blend( Reappraisal, Rumination )      one body, two parents
+subtract        carve( Suppression, Avoidance )       "Hollowed" Suppression
+deeper          blend( blend(A, B), C )               trees nest up to 6 leaves
 
-subtract        (Suppression - Avoidance)         carve: Hollowed Suppression
-
-        integrate            integrate
- Reappraisal ----+                   +---- Rumination
-                 v                   v
-              blend(  Reappraisal , Rumination  )
-                 |
-                 +--- integrate with Containment --->  blend( blend(R, R'), C )
-
-split (node)    blend(A, B)        ->  A  and  B
-split (whole)   Attunement link 4  ->  Attunement+ (idealized) and Attunement- (devalued), both link 3
-fuse            Attunement L2 + Attunement L2  ->  Attunement L3, gains trait `trust`... of link 3 (`glad`)
+split (node)    blend(A, B)                  ->  A  and  B  (same link)
+split (whole)   Attunement, link 4           ->  Attunement+ and Attunement-, both link 3
+fuse            Attunement L2 + Attunement L2  ->  Attunement L3, gains trait `glad`
 ```
 
 Names are generated from the tree: heaviest gene is the noun, others become adjectives (`Ruminative Hollowed Suppression`).
@@ -323,9 +316,9 @@ Systems only, remixed, never copied.
 | Shader Park (`shader-park-core`) | https://shaderpark.com | Compiles each genome's JS sculpture program to a GLSL raymarcher |
 | lygia | https://lygia.xyz | GLSL noise (`snoise`, `psrdnoise`, `random`) in sea and sky shaders |
 | postprocessing + @react-three/postprocessing | https://github.com/pmndrs/postprocessing | `EffectComposer`, custom painter effects, mipmap bloom |
-| OGL | https://github.com/oframe/ogl | Powers ported background shaders |
-| PixiJS 8 | https://pixijs.com | 2D canvas effects |
-| GSAP | https://gsap.com | Timeline animation |
+| OGL | https://github.com/oframe/ogl | Installed for WebGL helpers; the ported backgrounds currently use raw WebGL2 (one uses Three) |
+| PixiJS 8 | https://pixijs.com | Installed for 2D effects; not yet used in the shipped scene |
+| GSAP | https://gsap.com | Installed for timeline animation; not yet used in the shipped scene |
 | Motion | https://motion.dev | HUD springs and presence |
 | Tailwind CSS 4 | https://tailwindcss.com | Utility styling, `@theme` palette tokens |
 | Pretext | https://github.com/chenglou/pretext | Text measuring and line layout for flowing type |
@@ -335,7 +328,7 @@ Systems only, remixed, never copied.
 | React Bits | https://reactbits.dev | 14 ported WebGL backgrounds |
 | Aceternity UI | https://ui.aceternity.com | Glow, encrypted text, spotlight cards and more (ported) |
 | Cult UI | https://www.cult-ui.com | Texture cards and buttons, lens blur (ported) |
-| Zustand, lucide-react, clsx, tailwind-merge, cva, simplex-noise, harfbuzzjs, woff-lib | npm | State, icons, class utilities, noise, font tooling |
+| Zustand (installed), lucide-react, clsx, tailwind-merge, cva, simplex-noise, harfbuzzjs, woff-lib | npm | Icons, class utilities, noise, font tooling |
 | Vite 8 | https://vite.dev | Dev server and build, `vite-plugin-glsl`, `vite-plugin-singlefile` |
 | Vitest 5 | https://vitest.dev | Engine tests in node |
 | Web Audio API | https://developer.mozilla.org/docs/Web/API/Web_Audio_API | All music and SFX, no samples and no libraries |
@@ -353,7 +346,7 @@ flowchart LR
     battle --> gamejs
     content[content/*] -.-> gamejs
   end
-  gamejs --> store[store.js\nzustand-style store\nsave every 10 s]
+  gamejs --> store[store.js\nreactive store\nsave every 10 s]
   store --> scene[Scene.jsx + sculpt.js]
   store --> hud[HUD in src/ui/hud]
   store -- events --> audio[audio/engine.js]
@@ -395,7 +388,7 @@ The post stages: anisotropic generalized Kuwahara (4 sectors, structure tensor);
 ### Audio graph
 
 ```
-music voices -> HRTF panners -> airDry/floeDry + reverb sends -> musicSum
+music voices -> HRTF panners -> ambient and arpeggio buses + reverb sends -> musicSum
 drone / breath / Shepard glide -> musicDry -> musicSum
 ping-pong delay (relational) -> musicSum
 musicSum -> [clean | tanh drive] -> tilt shelves -> collapse lowpass -> duck -> musicGain
@@ -418,7 +411,7 @@ master -> mute -> compressor -> makeup -> soft clip -> analyser -> out
 ```
 src/
   game/        data.js genome.js battle.js game.js store.js index.js   (the engine; no DOM)
-    content/   koans.js mutations.js stressors.js names.js             (authored text pools)
+    content/   mutations, stressor affixes, names, cryptic line pools  (authored text)
   gfx/         Scene.jsx sculpt.js mood.js PainterSky.jsx PainterPost.jsx
     glsl/      sea.* sky.* post.*
     palettes/  stages.js (18 stage palettes) families.js (family + link grade + aspect tones)

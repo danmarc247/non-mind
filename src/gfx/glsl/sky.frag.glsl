@@ -14,7 +14,14 @@ uniform float uComplexity;
 uniform float uOverwhelm;
 uniform float uFlash;
 uniform vec3  uAudio;        // low, mid, high
-uniform vec3  uPal[8];       // stroke palette, rotated by depth (index 0..2 dominate)
+uniform vec3  uPal[8];       // stage hue slots (rotated by depth) + 3 on-token blends; 0..2 dominate
+uniform float uSat;          // stage saturation (0.22 .. 1.3)
+uniform float uContrast;     // stage contrast around the ground (0.8 .. 1.28)
+// Stage motifs, 0..1 each, ramped in JS so every stage adds something visible:
+uniform vec4  uMotifA;       // wash, scratch, flecks, giant strokes
+uniform vec4  uMotifB;       // ring cells, knife smear, impasto, small strokes
+uniform vec4  uMotifC;       // swirl, ink accents, clustered discs, drips
+uniform vec4  uMotifD;       // tear, chord, collapse (stage 17), stroke density
 uniform vec3  uPaper;
 uniform vec3  uInk;
 uniform vec3  uMagenta;
@@ -99,7 +106,7 @@ void strokeLayer(
     float br2 = vnoise1(across * 95.0 + k.z * 31.0);
     float bristle = br * 0.6 + br2 * 0.4;
     // dry brush: paint breaks up into streaks toward the tail
-    float dry = smoothstep(-0.1, 1.0, u) * 0.85;
+    float dry = smoothstep(-0.1, 1.0, u) * (0.45 + 0.4 * uMotifB.z);
     m *= smoothstep(dry - 0.08, dry + 0.08, bristle + 0.12);
     // overwhelm tears strokes into fragments
     if (tear > 0.0) {
@@ -111,9 +118,9 @@ void strokeLayer(
     // colour: regional palette, knife-smeared with a second colour / white
     vec3 cA = palBiased(k.z, region + seed * 0.13);
     vec3 cB = (k.w > 0.55) ? uPaper : pal(k.z * 0.75 + region + 0.37);
-    if (h.w > 0.93 && scale > 1.5) cA = mix(uInk, uUltra, 0.25);
+    if (h.w > 1.0 - 0.09 * uMotifC.y && scale > 0.9) cA = mix(uInk, uPal[1], 0.2);
     float smear = smoothstep(0.35, 0.85, br2 * 0.7 + 0.3 * vnoise1(along * 6.0 + k.x * 5.0))
-                * mix(0.25, 0.8, k.y);
+                * mix(0.25, 0.8, k.y) * (0.15 + 0.85 * uMotifB.y);
     vec3 sc = mix(cA, cB, smear * (0.4 + 0.6 * smoothstep(-0.2, 1.0, u)));
 
     float pr = k.x + seed * 0.0;
@@ -139,14 +146,16 @@ void main() {
   // ------------------------------------------------- flow field + domain warp
   vec3 g;
   float n0 = psrdnoise(d * 1.35 + vec3(0.0, t * 0.015, 0.0), vec3(0.0),
-                       t * (0.12 + O * 0.35) + uAudio.y * 0.3, g);
+                       t * (0.1 + 0.12 * uMotifC.x + O * 0.35) + uAudio.y * 0.3, g);
   // strokes follow the iso-lines of n0 -> swirls around its extrema
   vec3 T = cross(d, g);
   float tl = length(T);
   T = tl > 1e-4 ? T / tl : normalize(cross(d, vec3(0.31, 0.83, 0.47)));
   vec3 B = cross(d, T);
 
-  vec3 p = d * 3.0 + g * (0.06 + 0.1 * O);      // warped painting space
+  vec3 p = d * 3.0 + g * (0.04 + 0.08 * uMotifC.x + 0.1 * O);   // warped painting space
+  float K = 1.0 - uMotifD.z;                     // everything but splashes fades at the collapse
+  float sat = clamp(uSat, 0.0, 1.0) * (0.85 + 0.15 * C);
 
   // ------------------------------------------------- big colour masses
   float m1n = snoise(p * 0.55 + vec3(t * 0.02, 0.0, -t * 0.015));
@@ -160,19 +169,19 @@ void main() {
   vec3 washB = pal(region + 0.42);
   vec3 wash = mix(washA, washB, smoothstep(-0.12, 0.12, m2n + (drag - 0.5) * 0.6));
   wash = mix(wash, uPaper, smoothstep(0.55, 0.9, drag) * 0.5);
-  float ce = 0.75 - 0.85 * C;
-  float cover = smoothstep(ce - 0.04, ce + 0.04, mass + 0.25 * drag);
-  vec3 col = mix(uPaper, wash, cover * (0.12 + 0.55 * C));
+  float ce = 0.8 - 0.6 * uMotifD.w - 0.3 * C;
+  float cover = smoothstep(ce - 0.04, ce + 0.04, mass + 0.25 * drag) * uMotifA.x * K;
+  vec3 col = mix(uPaper, mix(uPaper, wash, sat), cover * (0.25 + 0.45 * uMotifD.w));
   float height = cover * 0.1 * drag;
 
   // ------------------------------------------------- brush strokes: 3 layers, big -> small
-  float tear = O > 0.35 ? (O - 0.35) * 0.9 : 0.0;
-  float sat = 0.3 + 0.7 * smoothstep(0.0, 0.8, C);
-  float opa = 0.55 + 0.45 * smoothstep(0.0, 0.6, C);
+  float tear = max(O > 0.35 ? (O - 0.35) * 0.9 : 0.0, uMotifD.x * 0.22);
+  float D = uMotifD.w;
+  float opa = 0.6 + 0.4 * smoothstep(0.0, 0.5, D);
   float dens[3];
-  dens[0] = mix(0.0, 0.92, smoothstep(0.1, 0.8, C));
-  dens[1] = mix(0.12, 0.8, smoothstep(0.0, 0.7, C));
-  dens[2] = mix(0.0, 0.55, smoothstep(0.3, 1.0, C));
+  dens[0] = 0.92 * D * uMotifA.w * K;
+  dens[1] = mix(0.07, 0.8, D) * mix(1.0, 0.25, uMotifD.z);
+  dens[2] = 0.6 * D * uMotifB.w * K;
   float scl[3];
   scl[0] = 0.55; scl[1] = 1.05; scl[2] = 2.1;
   float topM = 0.0;
@@ -189,17 +198,18 @@ void main() {
     topM = max(topM, s1);
   }
   float s1 = topM;
-  height *= 0.6 + 0.4 * C;
+  height *= 0.45 + 0.55 * uMotifB.z;
   height += uAudio.x * 0.15 * topM;
 
   // ------------------------------------------------- overwhelm: splashes + drips
-  if (O > 0.01) {
+  float Os = max(O, uMotifD.z * 0.8);
+  if (Os > 0.01 || uMotifC.w > 0.01) {
     float sp = snoise(p * 1.1 + vec3(3.7, t * 0.06, -1.3)) + 0.35 * m2n;
     float br = vnoise1(dot(p, B) * 60.0) * 0.18;           // dragged texture
-    float thr = 1.15 - O * 0.95;
+    float thr = 1.15 - Os * 0.95 + step(Os, 0.01) * 9.0;
     float splash = smoothstep(thr, thr + 0.06, sp + br);
     vec3 sc = mix(uMagenta, uUltra, smoothstep(-0.25, 0.25, m1n + br));
-    sc = mix(sc, vec3(0.42, 0.04, 0.16), smoothstep(thr + 0.35, thr + 0.6, sp) * 0.8); // dark cores
+    sc = mix(sc, mix(uMagenta, uInk, 0.6), smoothstep(thr + 0.35, thr + 0.6, sp) * 0.8); // dark cores
     col = mix(col, sc, splash);
     height = max(height, splash * (0.4 + br * 2.0));
 
@@ -208,18 +218,19 @@ void main() {
     vec2 dq = hd * 90.0;
     vec2 cell = floor(dq);
     vec4 dh = random4(vec3(cell, 5.0));
-    if (dh.x < O * 0.55) {
+    float dripAmt = max(Os, uMotifC.w * 0.35 * K);
+    if (dh.x < dripAmt * 0.55) {
       vec2 cp = cell + 0.25 + dh.yz * 0.5;
       float dx = length(dq - cp);
       float ph = fract(t * (0.04 + 0.05 * dh.w) + dh.y);
       float y0 = mix(-0.15, 0.55, dh.z);
-      float len = mix(0.1, 0.45, dh.w) * smoothstep(0.0, 0.7, ph) * O;
+      float len = mix(0.1, 0.45, dh.w) * smoothstep(0.0, 0.7, ph) * max(dripAmt, 0.3);
       float fy = (y0 - d.y) / max(len, 1e-3);              // 0 at top, 1 at tip
       float w = mix(0.22, 0.08, clamp(fy, 0.0, 1.0));
       float run = step(0.0, fy) * step(fy, 1.0) * smoothstep(w + 0.05, w - 0.05, dx);
       float bulb = smoothstep(0.32, 0.22, length(vec2(dx, (d.y - (y0 - len)) * 90.0)));
       float drip = max(run, bulb) * (1.0 - smoothstep(0.8, 1.0, ph));
-      vec3 dc = dh.y > 0.5 ? uMagenta : uUltra;
+      vec3 dc = Os > 0.3 ? (dh.y > 0.5 ? uMagenta : uUltra) : pal(dh.y);
       col = mix(col, dc, drip);
       height = max(height, drip * 0.6);
     }
@@ -227,13 +238,13 @@ void main() {
 
   // ------------------------------------------------- thin white scratch curves
   float sn = snoise(p * 0.8 + vec3(5.2, -t * 0.04, 1.7));
-  float kk = sn * (1.2 + 1.6 * C) + 0.5;
+  float kk = sn * (1.0 + 1.2 * uMotifA.y + 0.8 * C) + 0.5;
   float lw = abs(fract(kk + 0.5) - 0.5) / max(fwidth(kk), 1e-4);
   float scratch = 1.0 - smoothstep(0.4, 1.4, lw);
   // fragment the contours into separate flicked curves
-  scratch *= smoothstep(0.15, 0.35, n0 * 0.5 + 0.5 - 0.3 * mass) * smoothstep(0.05, 0.5, C);
+  scratch *= smoothstep(0.15, 0.35, n0 * 0.5 + 0.5 - 0.3 * mass) * uMotifA.y * K;
   scratch *= smoothstep(0.3, 0.45, vnoise1(dot(p, T) * 3.0 + sn * 9.0 + mass * 5.0));
-  col = mix(col, mix(uPaper, vec3(1.0), 0.6), scratch * 0.9);
+  col = mix(col, uPaper * 1.03, scratch * 0.9);
   height -= scratch * 0.1;
 
   // ------------------------------------------------- drifting white-outlined rings (ref b)
@@ -261,7 +272,7 @@ void main() {
     vec3 rq = p * 1.7 + vec3(0.0, t * 0.01, 0.0);
     vec3 rc = floor(rq);
     vec4 rh = random4(rc + 41.7);
-    float rdens = smoothstep(0.2, 1.0, C) * 0.45;
+    float rdens = (0.22 * uMotifB.x + 0.33 * uMotifC.z) * (0.7 + 0.3 * C) * K;
     if (rh.x < rdens) {
       vec3 rel = rq - (rc + 0.5 + (rh.yzw - 0.5) * 0.2);
       float off = abs(dot(rel, d));
@@ -278,9 +289,10 @@ void main() {
       float fill = smoothstep(rr - th * 0.5 + aa, rr - th * 0.5 - aa, dist) * smoothstep(0.45, 0.3, off);
       vec3 fcol = pal(rh.z + region * 0.5);
       if (rh.w > 0.75) fcol = uInk;
-      col = mix(col, mix(uPaper, fcol, sat), fill * step(0.3, rh.w) * 0.95);
-      float inner = smoothstep(R * 0.45 + aa, R * 0.45 - aa, dist) * step(0.55, rh.y);
-      col = mix(col, pal(rh.w + 0.5), inner * 0.9);
+      float fillOn = step(0.3 + 0.5 * (1.0 - uMotifC.z), rh.w);   // discs get filled from stage 12
+      col = mix(col, mix(uPaper, fcol, sat), fill * fillOn * 0.95);
+      float inner = smoothstep(R * 0.45 + aa, R * 0.45 - aa, dist) * step(0.55, rh.y) * uMotifC.z;
+      col = mix(col, mix(uPaper, pal(rh.w + 0.5), sat), inner * 0.9);
       vec3 rim = rh.z > 0.85 ? pal(0.01) : uPaper * 1.03;
       col = mix(col, rim, band);
       height = max(height, band * (0.25 + 0.15 * strk));
@@ -292,12 +304,12 @@ void main() {
     vec3 fq = p * 22.0;
     vec3 fc = floor(fq);
     vec4 fh = random4(fc + 3.3);
-    float fdens = 0.05 + 0.25 * C + 0.35 * O;
+    float fdens = (0.08 + 0.2 * C + 0.15 * uMotifD.y) * uMotifA.z * K + 0.35 * Os;
     float fr = 0.08 + 0.2 * fh.z * fh.z;
     float fd = length(fq - fc - 0.3 - fh.xyw * 0.4);
     float aa = px * 3.0 * 22.0;
     float fleck = step(fh.x * 0.999 + 0.001, fdens) * smoothstep(fr + aa, fr - aa, fd);
-    vec3 fcol = fh.w > 0.6 ? vec3(1.0) : (O > 0.3 && fh.y > 0.5 ? mix(uMagenta, uUltra, fh.w) : pal(fh.y + region));
+    vec3 fcol = fh.w > 0.6 ? uPaper * 1.03 : (Os > 0.3 && fh.y > 0.5 ? mix(uMagenta, uUltra, fh.w) : pal(fh.y + region));
     col = mix(col, fcol, fleck);
     height = max(height, fleck * 0.7);
   }
@@ -319,6 +331,12 @@ void main() {
   col *= mix(1.0, diff, 0.55);
   col += spec * 0.18 * smoothstep(0.05, 0.3, height);
   col += weave * 0.012 * wfade * (1.0 - s1);
+
+  // ------------------------------------------------- stage grading: saturation push + contrast around the ground
+  float lum = dot(col, vec3(0.299, 0.587, 0.114));
+  col = mix(vec3(lum), col, max(uSat, 1.0) * (1.0 + 0.08 * uMotifD.y));
+  col = uPaper + (col - uPaper) * uContrast;
+  col = clamp(col, 0.0, 1.0);
 
   // ------------------------------------------------- audio shimmer + flash
   col *= 1.0 + uAudio.x * 0.08;

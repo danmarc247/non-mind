@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { InkButton, Panel, Tooltip, toneHex } from '../bits';
 import {
   ASPECTS, ABILITIES, FAMILY, HABITS, LINKS, TRAITS, VERBS, COSTS,
-  aspectsOf, aspectTiers, abilityOf, echoAbilityOf, leafCount, nameOf, tierOf, unitStats, unlocked, unitCap, ringsOpen,
+  aspectsOf, aspectTiers, displayName, MUTATION, abilityOf, echoAbilityOf, leafCount, nameOf, tierOf, unitStats, unlocked, unitCap, ringsOpen,
 } from '../../game/index.js';
 import { act, game, select, setPending, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
@@ -153,7 +153,7 @@ function Body({ G, u }) {
     <>
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h2 className="font-head text-[24px] leading-[1.05] text-ink"><Scr k={40}>{nameOf(u.g)}</Scr></h2>
+          <h2 className="font-head text-[24px] leading-[1.05] text-ink"><Scr k={40}>{displayName(u)}</Scr></h2>
           <div className="mt-0.5 font-body text-[12px] italic text-ink-2">{where} · tier {tierOf(u.g)} · {leafCount(u.g)} part{leafCount(u.g) > 1 ? 's' : ''}{u.ghosts ? ` · ${u.ghosts} ghost${u.ghosts > 1 ? 's' : ''}` : ''}</div>
         </div>
       </div>
@@ -207,6 +207,20 @@ function Body({ G, u }) {
           ))}
         </div>
       </Section>
+
+      {(u.muts || []).length > 0 && (
+        <Section label="marks">
+          <div className="flex flex-col gap-1">
+            {u.muts.map((id) => MUTATION[id]).filter(Boolean).map((m) => (
+              <p key={m.id} className="font-body text-[12px] leading-snug">
+                <b className="font-head text-[13px] tracking-wide">{m.name}</b>
+                <span className="ml-1 font-stat text-[11px] text-ink-2">{'r' + m.rarity}</span>{' '}
+                <span className="italic">{m.text}</span>
+              </p>
+            ))}
+          </div>
+        </Section>
+      )}
 
       <Section label="genome">
         <div className="max-w-full overflow-x-auto nm-scroll pb-1"><Gene g={u.g} /></div>
