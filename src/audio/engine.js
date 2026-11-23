@@ -349,6 +349,7 @@ export function createAudioEngine(ctx, opts = {}) {
   return {
     start, stop, setMaster, setMusic, setSfx, setMuted, setListener, setMood, sfx, reset, getLevels,
     analyser, dispose, at,
+    _E: E, // internals, for tests/diagnostics only
     get started() { return started; },
     get ctx() { return ctx; },
     /** Debug snapshot (smoothed mood, scale name, live oscillator count). */

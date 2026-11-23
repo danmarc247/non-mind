@@ -90,6 +90,20 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
     check(res.dur <= maxDur, `sfx ${label}: dur ${res.dur}s > ${maxDur}s`);
   }
 
+  console.log('\n== soak: 300 s offline, mood sweeps + resets + 4 sfx/s ==');
+  const soak = await page.evaluate(() => window.__audioTest.soak(300));
+  console.log(JSON.stringify(soak));
+  const lives = soak.samples.map((x) => x[1]);
+  check(soak.nan === 0 && soak.peak < 1, 'soak: NaN or peak >= 1');
+  check(soak.maxOsc <= 48, `soak: oscillator budget exceeded (${soak.maxOsc})`);
+  check(Math.max(...lives.slice(2)) < Math.max(...lives.slice(0, 3)) * 1.6 + 40, `soak: live nodes growing ${lives.join(',')}`);
+  check(soak.liveAfterDispose < 20, `soak: ${soak.liveAfterDispose} nodes still connected after dispose()`);
+
+  console.log('\n== realtime smoke test (AudioContext via getAudio) ==');
+  const rt = await page.evaluate(() => window.__audioTest.realtime(6000));
+  console.log(JSON.stringify(rt));
+  check(rt.state === 'running' && rt.rms > 0.005, 'realtime: engine silent or not running');
+
   await browser.close();
   console.log('\nWAVs:', Object.values(results).filter((r) => r.wavFile).map((r) => r.wavFile).join('\n      '));
   if (failures.length) {

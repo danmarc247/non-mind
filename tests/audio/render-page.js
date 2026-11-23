@@ -68,7 +68,7 @@ export function analyze(buf, from = 0, to = Infinity) {
     for (let k = 1; k < mag.length; k++) { num += k * (SR / 2048) * mag[k]; den += mag[k]; }
   });
   // onsets: band energy flux. Energy of 4 bands per 512-sample hop (FFT 1024),
-  // in dB; flux = sum over bands of the rise versus the max of the previous 3
+  // in dB; flux = sum over bands of the rise versus the max of the previous 8
   // frames (ignores slow swells/vibrato); peak-picked over an adaptive
   // threshold with a 70 ms refractory period.
   const BANDS = [[80, 400], [400, 1500], [1500, 4000], [4000, 12000]].map(([lo, hi]) => [Math.round(lo / (SR / 1024)), Math.round(hi / (SR / 1024))]);
@@ -76,22 +76,29 @@ export function analyze(buf, from = 0, to = Infinity) {
   spectra(mono, 1024, 512, (mag) => {
     hist.push(BANDS.map(([lo, hi]) => { let x = 0; for (let k = lo; k < hi; k++) x += mag[k] * mag[k]; return 10 * Math.log10(x + 1e-9); }));
   });
-  // floor each band 35 dB below its loudest frame so near-silent bands do not flicker
-  const floors = BANDS.map((_, j) => Math.max(...hist.map((h) => h[j])) - 35);
+  // floor each band 30 dB below its loudest frame so near-silent bands do not flicker
+  const floors = BANDS.map((_, j) => Math.max(...hist.map((h) => h[j])) - 30);
   for (const h of hist) for (let j = 0; j < h.length; j++) h[j] = Math.max(h[j], floors[j]);
   const flux = hist.map((e, i) => {
-    if (i < 3) return 0;
+    if (i < 8) return 0;
     let f = 0;
-    for (let j = 0; j < e.length; j++) f += Math.max(0, e[j] - Math.max(hist[i - 1][j], hist[i - 2][j], hist[i - 3][j]));
+    const top = Math.max(...e);
+    // only bands within 18 dB of the frame's loudest band count (masking)
+    for (let j = 0; j < e.length; j++) if (e[j] > top - 18) {
+      let ref = -1e9;
+      for (let q = 1; q <= 8; q++) ref = Math.max(ref, hist[i - q][j]); // ~90 ms: ignores vibrato/tremolo
+      f += Math.max(0, e[j] - ref);
+    }
     return f;
   });
   let onsets = 0, lastOn = -1e9;
+  const onsetTimes = [];
   for (let i = 1; i < flux.length - 1; i++) {
     const lo = Math.max(0, i - 20), hi = Math.min(flux.length, i + 20);
     const loc = flux.slice(lo, hi).sort((x, y) => x - y);
     const med = loc[loc.length >> 1];
     const th = med + 2.5;
-    if (flux[i] > th && flux[i] >= flux[i - 1] && flux[i] >= flux[i + 1] && i - lastOn > 6) { onsets++; lastOn = i; }
+    if (flux[i] > th && flux[i] >= flux[i - 1] && flux[i] >= flux[i + 1] && i - lastOn > 6) { onsets++; lastOn = i; if (onsetTimes.length < 400) onsetTimes.push(+(i * 512 / SR + from).toFixed(2)); }
   }
   // audible duration: span where 10 ms RMS exceeds -30 dB relative to its max
   const w10 = SR / 100, env = [];
@@ -108,7 +115,7 @@ export function analyze(buf, from = 0, to = Infinity) {
   for (let i = n - tailN; i < n; i++) tailE += mono[i] * mono[i];
   const r3 = (x) => Math.round(x * 1000) / 1000;
   return {
-    peak: r3(peak), rms: r3(rms), rmsDb: Math.round(20 * Math.log10(rms + 1e-12) * 10) / 10,
+    onsetTimes, peak: r3(peak), rms: r3(rms), rmsDb: Math.round(20 * Math.log10(rms + 1e-12) * 10) / 10,
     dc: Number(((dc / n) || 0).toExponential(2)), silentPct: Math.round((silent / Math.max(1, wins)) * 1000) / 10,
     centroid: Math.round(num / Math.max(den, 1e-12)), nan, onsets,
     onsetsPerMin: Math.round((onsets / (n / SR)) * 60),
@@ -144,6 +151,7 @@ async function renderMusic(cfg) {
   const dur = cfg.dur ?? 40;
   const ctx = new OfflineAudioContext(2, SR * dur, SR);
   const eng = createAudioEngine(ctx, { seed: cfg.seed ?? 7, offline: true });
+  eng._E && (eng._E.stats.log = []);
   eng.setMood(cfg.mood || {});
   eng.start();
   let maxOsc = 0;
@@ -157,7 +165,7 @@ async function renderMusic(cfg) {
   }
   const t0 = performance.now();
   const buf = await ctx.startRendering();
-  const res = { ...analyze(buf), notes: eng.debug().notes, maxOsc, renderMs: Math.round(performance.now() - t0) };
+  const res = { ...analyze(buf), notes: eng.debug().notes, noteLog: eng._E ? eng._E.stats.log : undefined, maxOsc, renderMs: Math.round(performance.now() - t0) };
   if (cfg.segments) res.segments = cfg.segments.map(([a, b]) => ({ from: a, to: b, ...analyze(buf, a, b) }));
   if (cfg.wav) res.wav = toWavB64(buf, cfg.wav[0], cfg.wav[1]);
   eng.dispose();
@@ -175,4 +183,74 @@ async function renderSfx(name, opts = {}) {
   return analyze(buf);
 }
 
-window.__audioTest = { renderMusic, renderSfx, SFX_NAMES, ASPECTS, ready: true };
+/**
+ * Leak / budget soak: long offline render with mood sweeps, resets and SFX
+ * spam. Tracks every node created through the context factories and removes
+ * it when disconnect() is called; reports live-node counts over time.
+ */
+async function soak(dur = 300) {
+  const ctx = new OfflineAudioContext(2, SR * dur, SR);
+  const live = new Set();
+  const proto = Object.getPrototypeOf(Object.getPrototypeOf(ctx)); // BaseAudioContext.prototype
+  const restore = [];
+  for (const k of Object.getOwnPropertyNames(proto)) {
+    if (!/^create(?!Buffer$|PeriodicWave$)/.test(k) || typeof proto[k] !== 'function') continue;
+    const orig = proto[k];
+    restore.push([k, orig]);
+    ctx[k] = function (...a) { const n = orig.apply(this, a); live.add(n); return n; };
+  }
+  const origDisc = AudioNode.prototype.disconnect;
+  AudioNode.prototype.disconnect = function (...a) { if (a.length === 0) live.delete(this); return origDisc.apply(this, a); };
+  const eng = createAudioEngine(ctx, { seed: 11, offline: true });
+  eng.start();
+  const samples = [];
+  let maxOsc = 0;
+  eng.at(dur - 12, () => eng.stop()); // stop scheduling so every note ends inside the render
+  for (let t = 1; t < dur - 12; t += 1) {
+    eng.at(t, () => {
+      const ph = (t % 90) / 90; // complexity ramps up over 90 s, then reset
+      eng.setMood({ complexity: Math.min(1, ph * 1.3), overwhelm: Math.max(0, ph * 3 - 2), tension: ph, stance: ['toward', 'away', 'against', null][Math.floor(t / 23) % 4], aspects: { mythic: ph, cortical: 1 - ph, somatic: ph > 0.5 ? 1 : 0 }, depth: Math.floor(t / 90) });
+      if (t % 90 === 89) eng.reset();
+      for (let k = 0; k < 4; k++) eng.sfx(SFX_NAMES[(t * 4 + k) % (SFX_NAMES.length - 1)], { position: [Math.sin(t) * 5, 0, Math.cos(t) * 5], aspect: ASPECTS[t % 8] });
+      maxOsc = Math.max(maxOsc, eng.debug().osc);
+      if (t % 30 === 0) samples.push([t, live.size]);
+    });
+  }
+  const buf = await ctx.startRendering();
+  await new Promise((r) => setTimeout(r, 300));
+  const after = live.size;
+  eng.dispose();
+  await new Promise((r) => setTimeout(r, 500));
+  AudioNode.prototype.disconnect = origDisc;
+  const a = analyze(buf);
+  const kinds = {};
+  for (const n of live) kinds[n.constructor.name] = (kinds[n.constructor.name] || 0) + 1;
+  return { samples, liveAtEnd: after, liveAfterDispose: live.size, leftover: kinds, maxOsc, peak: a.peak, nan: a.nan, rmsDb: a.rmsDb };
+}
+
+/** Realtime smoke test through the getAudio() singleton. */
+async function realtime(ms = 6000) {
+  const { getAudio } = await import('/src/audio/engine.js');
+  const a = getAudio();
+  const ok = await a.unlock();
+  a.setMood({ complexity: 0.6 });
+  const lv = [];
+  const t0 = performance.now();
+  await new Promise((res) => {
+    const f = () => {
+      const k = (performance.now() - t0) / 1000;
+      a.setListener({ position: [Math.sin(k) * 2, 0, 0], forward: [Math.sin(k * 0.3), 0, -Math.cos(k * 0.3)], up: [0, 1, 0] });
+      lv.push(a.getLevels());
+      if (performance.now() - t0 < ms) setTimeout(f, 16); else res();
+    };
+    f();
+    setTimeout(() => a.sfx('attend', { position: [2, 0, -1] }), 500);
+    setTimeout(() => a.sfx('hit', { position: [-2, 0, -1], aspect: 'shadow' }), 900);
+  });
+  const mean = (k) => lv.reduce((s, x) => s + x[k], 0) / lv.length;
+  const res = { unlocked: ok, state: a.ctx.state, frames: lv.length, low: mean('low'), mid: mean('mid'), high: mean('high'), rms: mean('rms'), debug: a.debug() };
+  a.dispose();
+  return res;
+}
+
+window.__audioTest = { renderMusic, renderSfx, soak, realtime, SFX_NAMES, ASPECTS, ready: true };

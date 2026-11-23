@@ -49,6 +49,7 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float dabTone = 0.0;
   float dabV = 0.0;
   vec2 dabC = px;
+  float dabG = 0.5;
   float dabU = 0.0;
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
@@ -69,7 +70,9 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
         dabZ = hz;
         float av = abs(v) / (wid * taper);
         // knife pushes paint to the sides and piles it up at the end
-        dabH = smoothstep(1.0, 0.55, ee) * (0.7 + 0.3 * smoothstep(0.45, 0.95, av)) + 0.3 * smoothstep(0.5, 1.0, u / len) * smoothstep(1.0, 0.7, ee);
+        dabH = smoothstep(1.0, 0.3, ee) * (0.8 + 0.2 * smoothstep(0.5, 0.95, av)) + 0.2 * smoothstep(0.55, 1.0, u / len) * smoothstep(1.0, 0.6, ee);
+        // bristle grooves in the dab's own frame (straight, parallel to the stroke)
+        dabG = pp_vnoise(vec2(u / 14.0, v / 1.7 + hz * 91.0)) * 0.7 + pp_vnoise(vec2(u / 6.0, v / 0.8 + hz * 37.0)) * 0.3;
         dabTone = pp_hash12(cell + 7.7) - 0.5;
         dabV = v / wid;
         dabC = c;
@@ -104,7 +107,8 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, const in float depth,
   float tone = mix(1.0, clamp((lq + 0.02) / (lum + 0.02), 0.75, 1.3), 0.55 * uDab * step(0.0, dabZ));
   col *= tone * (1.0 + dabTone * 0.08 * uDab);
 
-  float h = dabH * 0.4 + lic * 0.12 * uBristle * (0.4 + 0.6 * step(0.0, dabZ)) + lum * 0.35;
+  float groove = dabZ >= 0.0 ? (dabG - 0.5) * 2.0 : lic;
+  float h = dabH * 0.22 + groove * 0.12 * uBristle + lum * 0.3;
   vec3 n = normalize(vec3(-dFdx(h) * 4.0 * uRelief, -dFdy(h) * 4.0 * uRelief, 1.0));
   vec3 L = normalize(vec3(-0.55, 0.65, 0.75));
   float diff = dot(n, L) / L.z;

@@ -97,6 +97,7 @@ export function createMusic(E) {
     const f = degHz(sc, deg, L.oct);
     const lim = MUSIC_LIMIT;
     E.stats.notes++;
+    if (E.stats.log && E.stats.log.length < 4000) E.stats.log.push([+t.toFixed(2), L.inst]);
     if (L.inst === 'piano') {
       piano(kit, L.pan.input, t, f, {
         vel: ev.vel, dur: ev.dur, bright: sc.bright * (1 + 0.3 * S.against), inharm: sc.inharm,
@@ -106,7 +107,7 @@ export function createMusic(E) {
       const vowel = VOWELS[S.toward > 0.5 ? 'o' : sc.vowel];
       voice(kit, L.pan.input, t, f, {
         vel: ev.vel * 0.9, dur: ev.dur, attack: 1.5 + 0.8 * S.away, vowel,
-        spread: 6 + sc.detuneExtra + 6 * S.o, limit: lim,
+        spread: 3.5 + sc.detuneExtra + 6 * S.o, limit: lim,
       });
       // mythic: a choir companion a fifth above
       if (A.mythic > 0.05 && rng() < A.mythic * 0.8) {
@@ -350,7 +351,7 @@ export function createMusic(E) {
     E.nodes.satClean.gain.linearRampToValueAtTime(1 - sat, T);
     E.nodes.satDrive.gain.linearRampToValueAtTime(sat, T);
     // arpeggio voice filters open with overwhelm / against / cortical
-    const cut = 1400 + 5200 * o + 2200 * S.against + 900 * A.cortical + 300 * sc.bright;
+    const cut = 2400 + 5200 * o + 2200 * S.against + 900 * A.cortical + 300 * sc.bright;
     for (const v of fVoices) v.filt.frequency.linearRampToValueAtTime(cut * (1 + 0.15 * v.oct), T);
 
     // orbits: every Airports loop circles the listener on its own period

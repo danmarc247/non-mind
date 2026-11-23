@@ -341,7 +341,7 @@ export function createSfx(E) {
   /** ~6 s reset gesture: a falling whoosh, then a single pure tone. */
   function resetGesture(t) {
     const out = kit.gain(1);
-    const rev = kit.gain(0.5);
+    const rev = kit.gain(0.3);
     out.connect(bus.sfxDry);
     out.connect(rev).connect(bus.sfxRev);
     const f = degHz(E.scale, 0, 1);
@@ -352,9 +352,9 @@ export function createSfx(E) {
     const s = kit.osc('sine', f, t);
     const g = kit.gain(0);
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.012, t + 0.6);
-    g.gain.linearRampToValueAtTime(0.075, t + 1.8);
-    g.gain.setValueAtTime(0.075, t + 2.6);
+    g.gain.linearRampToValueAtTime(0.006, t + 0.6);
+    g.gain.linearRampToValueAtTime(0.034, t + 1.8);
+    g.gain.setValueAtTime(0.034, t + 2.6);
     g.gain.setTargetAtTime(0, t + 2.6, 0.9);
     s.connect(g).connect(out);
     s.start(t); s.stop(end);
@@ -376,7 +376,7 @@ export function createSfx(E) {
       sub.frequency.exponentialRampToValueAtTime(38, t + 1.9);
       const sg = kit.gain(0);
       sg.gain.setValueAtTime(0, t);
-      sg.gain.linearRampToValueAtTime(0.09, t + 1.2);
+      sg.gain.linearRampToValueAtTime(0.06, t + 1.2);
       sg.gain.setTargetAtTime(0, t + 1.5, 0.25);
       sub.connect(sg).connect(out);
       sub.start(t); sub.stop(t + 2.6);

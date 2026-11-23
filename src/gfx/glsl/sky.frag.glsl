@@ -160,7 +160,8 @@ void main() {
   vec3 washB = pal(region + 0.42);
   vec3 wash = mix(washA, washB, smoothstep(-0.12, 0.12, m2n + (drag - 0.5) * 0.6));
   wash = mix(wash, uPaper, smoothstep(0.55, 0.9, drag) * 0.5);
-  float cover = smoothstep(0.6 - 0.9 * C, 0.9 - 0.6 * C, mass + 0.2 * drag);
+  float ce = 0.75 - 0.85 * C;
+  float cover = smoothstep(ce - 0.04, ce + 0.04, mass + 0.25 * drag);
   vec3 col = mix(uPaper, wash, cover * (0.12 + 0.55 * C));
   float height = cover * 0.1 * drag;
 
@@ -242,18 +243,17 @@ void main() {
     vec3 rd = d - r.xyz;
     float dist = length(rd);
     if (dist > r.w * 1.6) continue;
-    float wob = 1.0 + 0.07 * sin(dot(rd, vec3(13.0, 7.0, 11.0)) / r.w + float(i) * 2.1)
-                    + 0.04 * sin(dot(rd, vec3(-5.0, 17.0, 3.0)) * 2.3 / r.w);
+    float wob = 1.0 + 0.06 * sin(dot(rd, vec3(1.3, 0.7, 1.1)) * 2.0 / r.w + float(i) * 2.1)
+                    + 0.04 * sin(dot(rd, vec3(-0.5, 1.7, 0.3)) * 2.0 / r.w);
     float rr = r.w * wob;
     float thick = r.w * 0.13;
     float band = smoothstep(thick + px, thick - px, abs(dist - rr));
     // dry-brush streaks around the circumference
-    float strk = vnoise1(dist / r.w * 40.0 + float(i) * 13.0);
-    band *= smoothstep(0.15, 0.35, strk + 0.3);
+    float strk = vnoise1((dist - rr) / thick * 3.0 + float(i) * 13.0);
     float fill = smoothstep(rr - thick + px, rr - thick - px, dist) * uRingFill[i].a;
     col = mix(col, uRingFill[i].rgb, fill);
     col = mix(col, uPaper * 1.02, band * 0.95);
-    height = max(height, band * (0.5 + 0.3 * strk));
+    height = max(height, band * (0.25 + 0.15 * strk));
   }
 
   // ------------------------------------------------- procedural ring cells (ref b clusters)

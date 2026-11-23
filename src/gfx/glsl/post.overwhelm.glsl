@@ -19,9 +19,9 @@ vec3 pp_ot(vec2 uv) {
 }
 
 vec3 pp_pcol(float h) {
-  if (h < 0.45) return uMagenta;
-  if (h < 0.82) return uUltra;
-  if (h < 0.95) return uViolet;
+  if (h < 0.47) return uMagenta;
+  if (h < 0.86) return uUltra;
+  if (h < 0.97) return uViolet;
   return uCrimson;
 }
 
@@ -69,23 +69,23 @@ vec4 pp_splash(vec2 q, vec2 uv, float o, float asp, float t) {
       float v0 = dot(d0, vec2(-ad.y, ad.x));
       float u0 = dot(d0, ad);
       float drag = 0.65 * pp_vnoise(vec2(u0 * 2.0, v0 * 45.0) + h2 * 40.0) + 0.35 * pp_vnoise(vec2(u0 * 5.0, v0 * 110.0) + h2 * 20.0);
-      float body = smoothstep(0.0, 0.02, f) * smoothstep(0.15, 0.45, drag + f * 1.6);
+      float body = smoothstep(0.0, 0.008, f) * smoothstep(0.3, 0.34, drag + f * 1.6);
       // gravity drips under the splash
       float dx = (cq.x - c.x) / rad;
       float colI = floor(dx * 4.0);
       float dh = pp_hash12(cell * 3.1 + colI);
-      float fx = fract(dx * 4.0) - 0.5 + 0.12 * sin(cq.y * 14.0 + dh * 6.0);
-      float len = (0.3 + 1.6 * dh * dh) * smoothstep(0.15, 1.0, o) * rad * (1.6 + 0.2 * sin(t * 0.25 + dh * 6.0));
+      float fx = fract(dx * 4.0) - 0.5 + 0.03 * sin(cq.y * 9.0 + dh * 6.0);
+      float len = (1.0 + 3.0 * dh * dh) * smoothstep(0.15, 1.0, o) * rad * (1.6 + 0.2 * sin(t * 0.25 + dh * 6.0));
       float dy = c.y - cq.y;
-      float dw = (0.07 + 0.08 * dh) * (1.0 - 0.5 * clamp(dy / max(len, 1e-3), 0.0, 1.0));
+      float dw = (0.24 + 0.16 * dh) * (1.0 - 0.5 * clamp(dy / max(len, 1e-3), 0.0, 1.0));
       float on = step(dh, 0.4) * step(abs(dx), 0.8);
       float drip = on * smoothstep(dw, dw * 0.5, abs(fx)) * step(0.0, dy) * step(dy, len);
-      float bulb = on * smoothstep(1.0, 0.7, length(vec2(fx / 4.0 * rad, dy - len)) / (0.035 * rad * (1.0 + dh)));
+      float bulb = on * smoothstep(1.0, 0.7, length(vec2(fx / 4.0 * rad, dy - len)) / (0.06 * rad * (1.0 + dh)));
       float a = max(body, max(drip, bulb)) * reach;
       if (a <= 0.0) continue;
       vec3 pc = pp_pcol(pp_hash12(cell + 5.5));
       // pigment pools darker at the rim / in drag furrows, thins to tint inside
-      float rim = 1.0 - smoothstep(0.0, 0.18, f);
+      float rim = (1.0 - smoothstep(0.0, 0.18, f)) * step(-0.02, f);
       pc = mix(pc, pc * pc * 0.5, rim * 0.5 + 0.25 * smoothstep(0.6, 0.9, drag));
       pc = mix(pc, mix(pc, uPaper, 0.5), smoothstep(0.4, 0.95, f) * smoothstep(0.45, 0.7, drag) * 0.7);
       acc += pc * a;
@@ -188,12 +188,12 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   }
 
   // posterisation (in display space, dithered by paint noise)
-  float pz = smoothstep(0.2, 0.75, o);
+  float pz = smoothstep(0.3, 0.85, o);
   if (pz > 0.0) {
-    float lv = mix(14.0, 3.5, pz);
+    float lv = mix(12.0, 4.0, pz);
     vec3 dcol = sqrt(max(col, 0.0));
-    float dth = pp_vnoise(q * 60.0) - 0.5;
-    vec3 post = (floor(dcol * lv + 0.5 + dth * 0.6)) / lv;
+    float dth = pp_vnoise(q * vec2(14.0, 50.0) + dir * 4.0) - 0.5;
+    vec3 post = (floor(dcol * lv + 0.5 + dth * 0.35)) / lv;
     col = mix(col, post * post, pz);
   }
 

@@ -157,7 +157,7 @@ export function piano(kit, dest, t, freq, o = {}) {
 export function voice(kit, dest, t, freq, o = {}) {
   const vel = o.vel ?? 0.6, dur = o.dur ?? 6, attack = o.attack ?? 1.5;
   const formants = o.vowel || [800, 1150, 2900];
-  const spread = o.spread ?? 7;
+  const spread = o.spread ?? 4;
   const end = t + dur + 0.4;
   if (!kit.budget.request(t, end, 4, o.limit)) return false;
 
@@ -177,7 +177,7 @@ export function voice(kit, dest, t, freq, o = {}) {
   const lg = kit.gain(0);
   lg.gain.setValueAtTime(0, t);
   lg.gain.linearRampToValueAtTime(0, t + attack * 0.7);
-  lg.gain.linearRampToValueAtTime(o.vibrato ?? 13, t + attack + 1.6);
+  lg.gain.linearRampToValueAtTime(o.vibrato ?? 9, t + attack + 1.6);
   lfo.connect(lg);
 
   const nodes = [mix, pre, out, lfo, lg];
@@ -191,7 +191,7 @@ export function voice(kit, dest, t, freq, o = {}) {
     nodes.push(s);
     srcs.push(s);
   }
-  const fg = [1.0, 0.55, 0.22], fq = [6, 9, 12];
+  const fg = [1.0, 0.55, 0.22], fq = [4.5, 6, 7];
   formants.forEach((f, i) => {
     const bp = kit.filter('bandpass', f, fq[i]);
     const g = kit.gain(fg[i] * 2.2);
@@ -217,7 +217,7 @@ export function horn(kit, dest, t, freq, o = {}) {
   lp.frequency.exponentialRampToValueAtTime(cutoff, t + att);
   lp.frequency.exponentialRampToValueAtTime(180, t + dur);
   const out = kit.gain(0);
-  const peak = 0.16 * vel;
+  const peak = 0.13 * vel;
   out.gain.setValueAtTime(0, t);
   out.gain.linearRampToValueAtTime(peak, t + att);
   out.gain.linearRampToValueAtTime(peak * 0.6, t + dur * 0.75);
@@ -244,7 +244,7 @@ export function pluck(kit, dest, t, freq, o = {}) {
   const end = t + decay * 6 + 0.02;
   if (!kit.budget.request(t, end, n, o.limit)) return false;
   const out = kit.gain(0);
-  const peak = 0.2 * vel;
+  const peak = 0.26 * vel;
   out.gain.setValueAtTime(0, t);
   out.gain.linearRampToValueAtTime(peak, t + (o.attack ?? 0.004));
   out.gain.setTargetAtTime(0, t + (o.attack ?? 0.004), decay);
