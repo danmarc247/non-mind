@@ -21,7 +21,7 @@ export const TOOLS = [
 ];
 
 export default function Tools({ size = 56, layout = 'grid', hotkeys = true, className }) {
-  const text = size >= 56 ? 'text-[13px]' : 'text-[11px]';
+  const text = size >= 56 ? 'text-[13px]' : 'text-[12px]';
   // the app announces the sound state; the ring shows it
   const [muted, setMuted] = useState(false);
   useEffect(() => {
@@ -31,11 +31,11 @@ export default function Tools({ size = 56, layout = 'grid', hotkeys = true, clas
   }, []);
   const view = (t) => (t.id === 'sound' && muted ? { ...t, label: 'quiet', tone: 'paper-2' } : t.id === 'locale' ? { ...t, label: getLocale() === 'de' ? 'deutsch' : 'english' } : t);
   return (
-    <div className={cn(layout === 'grid' ? 'grid grid-cols-2 gap-1.5' : layout === 'col' ? 'flex flex-col gap-1.5' : 'flex gap-1.5', className)}>
+    <div className={cn(layout === 'grid' ? 'grid grid-cols-2 gap-2.5' : layout === 'col' ? 'flex flex-col gap-2.5' : 'flex gap-2.5', className)}>
       {TOOLS.map(view).map((t, i) => (
         <span key={t.id} data-tut={t.id} className="inline-flex">
           <RingButton tone={t.tone} size={size} hotkey={hotkeys ? t.key : undefined} hotkeyPos="corner" onClick={fire(t.event)} label={t.id === 'sound' ? (muted ? 'sound is off' : 'sound is on') : t.label} aria-pressed={t.id === 'sound' ? muted : undefined}>
-            <span className={cn('font-head uppercase', t.label.length > 6 ? 'text-[11.5px] tracking-tight' : cn(text, 'tracking-wide'))}><Scr k={60 + i}>{t.label}</Scr></span>
+            <span className={cn('font-head uppercase', t.label.length > 6 ? 'text-[12px] tracking-tight' : cn(text, 'tracking-wide'))}><Scr k={60 + i}>{t.label}</Scr></span>
           </RingButton>
         </span>
       ))}

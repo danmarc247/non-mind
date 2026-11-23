@@ -36,6 +36,7 @@ export function Shop({ G, compact, mobile }) {
   const need = XP_TO_LEVEL[G.level - 1];
   const seatedN = G.units.filter((u) => u.seat).length;
   const cap = unitCap(G);
+  const heldRow = compact && G.units.some((u) => u.seat);
   return (
     <Panel bodyClassName="px-3 pb-3 pt-2.5">
       <Head label="arrivals" tone="yolk" k={20}>
@@ -54,8 +55,8 @@ export function Shop({ G, compact, mobile }) {
           </Tooltip>
         </div>
       </Head>
-      <div className={mobile ? 'flex flex-col gap-2' : 'flex items-start gap-2.5'}>
-        <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-1.5 pt-4 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
+      <div className={mobile ? 'flex flex-col gap-2' : cn('flex items-start gap-2.5 pt-4 pb-2', compact ? (heldRow ? 'min-h-[178px]' : 'min-h-[144px]') : 'min-h-[188px]')}>
+        <div className={mobile ? 'nm-scroll flex gap-2 overflow-x-auto overscroll-contain px-2.5 pt-4 pb-2 [touch-action:pan-x]' : 'flex gap-2'}>
           {G.shop.map((id, i) => {
             const f = id && FAMILY[id];
             const cost = f ? TIER_COST[f.tier - 1] : 0;
@@ -85,7 +86,7 @@ export function Shop({ G, compact, mobile }) {
                       key={`empty-${i}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[122px] w-[96px]' : 'h-[164px] w-[108px]')}
+                      className={cn('rounded-[16px] border-[3px] border-dashed border-ink/25', compact ? 'h-[136px] w-[96px]' : 'h-[180px] w-[108px]')}
                     />
                   )}
                 </AnimatePresence>
@@ -193,7 +194,7 @@ export function AttendButton({ G, compact, size: sizeIn, touch }) {
 
 /* ------------------------------------------------------------ bench + seated */
 
-export function Seated({ G }) {
+export function Seated({ G, compact }) {
   const seated = G.units.filter((u) => u.seat).sort((a, b) => a.seat.ring - b.seat.ring || a.seat.dir - b.seat.dir);
   if (!seated.length) return null;
   return (
@@ -235,10 +236,11 @@ export function Bench({ G, compact }) {
     <Panel bodyClassName="px-3 pb-3 pt-2.5" className="min-w-0 flex-1">
       <Head label="waiting" tone="teal" k={21}>
         <span className={cn('shrink-0 font-stat text-base leading-none nm-tab', bench.length >= BENCH ? 'text-magenta' : 'text-ink')}>{bench.length}/{BENCH}</span>
-        <Seated G={G} />
-        {!G.units.some((u) => u.seat) && <span className="flex-1" />}
+        {!compact && <Seated G={G} />}
+        {(compact || !G.units.some((u) => u.seat)) && <span className="flex-1" />}
       </Head>
-      <div className={cn('nm-scroll flex gap-2 overflow-x-auto px-1.5 pt-4 pb-2', compact ? 'min-h-[128px]' : 'min-h-[172px]')}>
+      {compact && <div className="flex"><Seated G={G} compact /></div>}
+      <div className={cn('nm-scroll flex items-start gap-2 overflow-x-auto px-2.5 pt-4 pb-2', compact ? 'min-h-[144px]' : 'min-h-[188px]')}>
         <AnimatePresence initial={false} mode="popLayout">
           {bench.map((u) => (
             <Appear key={u.id} from="up" layout className="shrink-0" data-tut={`unit-${u.id}`}>

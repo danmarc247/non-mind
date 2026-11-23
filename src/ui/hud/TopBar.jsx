@@ -12,8 +12,8 @@ export const STAGE_NAME = (i) => STAGES[i].id;
 export function StageTracker({ G, compact }) {
   const next = STAGES[G.stage + 1];
   return (
-    <div className={cn('rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[210px]' : 'w-[290px]')}>
-      <div className={cn('flex items-center', compact ? 'gap-[2px]' : 'gap-[3px]')} aria-label={`stage ${G.stage + 1} of 18`}>
+    <div className={cn('h-full rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[210px]' : 'w-[290px]')}>
+      <div className={'flex items-center justify-between'} aria-label={`stage ${G.stage + 1} of 18`}>
         {STAGES.map((s, i) => (
           <Tooltip key={i} side="bottom" content={i <= G.stage ? <span><b className="font-head">{s.id}</b>: {s.hint}</span> : 'Not yet.'}>
             <motion.span
@@ -78,7 +78,7 @@ export function Resources({ G, compact, mobile }) {
 export function Gauges({ G, compact }) {
   const ratio = G.complexity / Math.max(1, G.capacity);
   return (
-    <div className={cn('flex flex-col gap-2 rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[170px]' : 'w-[214px]')}>
+    <div className={cn('flex h-full flex-col justify-between gap-2 rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[170px]' : 'w-[214px]')}>
       <Tooltip side="bottom" content="Complexity against capacity. Every part, link, habit and mood adds to it. Past capacity it begins to be too much, and too much is a door.">
         <Meter
           className="w-full"
@@ -102,7 +102,7 @@ export function WaveBanner({ G, compact }) {
   const arc = G.battle?.arc || WAVE_ARC[(G.wave - 1) % 10];
   const beat = G.phase === 'fight' ? G.battle?.beat ?? 0 : G.phase === 'prep' ? 0 : BEATS_PER_WAVE;
   return (
-    <div className={cn('rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[200px]' : 'w-[250px]')}>
+    <div className={cn('h-full rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[200px]' : 'w-[250px]')}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-stat text-lg leading-none text-ink nm-tab">wave {G.cycle + 1}.{G.wave}</span>
         <span className={cn('rounded-[6px] border-2 border-ink px-1.5 py-[1px] font-head text-[11px] leading-none tracking-wider uppercase',
@@ -110,8 +110,8 @@ export function WaveBanner({ G, compact }) {
           <Scr k={5}>{PHASE[G.phase] || G.phase}</Scr>
         </span>
       </div>
-      <Tooltip side="bottom" content={arc.text}>
-        <div className="mt-1 w-full">
+      <Tooltip side="bottom" content={arc.text} wrapperClassName="flex w-full min-w-0">
+        <div className="mt-1 w-full min-w-0">
           <div className="truncate font-head text-[15px] leading-tight text-ink" title={arc.name}><Scr k={6}>{arc.name}</Scr></div>
           <div className="truncate font-body text-[12px] italic leading-tight text-ink-2">{arc.text}</div>
         </div>
@@ -135,17 +135,17 @@ export default function TopBar({ compact }) {
   const G = useGame();
   const fighting = unlocked(G, 'shop');
   return (
-    <div className="pointer-events-none flex items-start gap-3">
-      <Shake seed={11} className="pointer-events-auto" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
-      <Shake seed={12} className="pointer-events-auto"><Resources G={G} compact={compact} /></Shake>
+    <div className="pointer-events-none flex items-stretch gap-3">
+      <Shake seed={11} className="pointer-events-auto h-full" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
+      <Shake seed={12} className="pointer-events-auto self-start"><Resources G={G} compact={compact} /></Shake>
       {/* the top centre stays clear: the mediator's Manual / Save controls live there */}
       <div className="flex-1" />
       <AnimatePresence initial={false}>
         {fighting && (
-          <Appear key="g" from="down" className="pointer-events-auto" data-tut="complexity"><Shake seed={13}><Gauges G={G} compact={compact} /></Shake></Appear>
+          <Appear key="g" from="down" className="pointer-events-auto" data-tut="complexity"><Shake seed={13} className="h-full"><Gauges G={G} compact={compact} /></Shake></Appear>
         )}
         {fighting && (
-          <Appear key="w" from="down" delay={0.05} className="pointer-events-auto" data-tut="wave"><Shake seed={14}><WaveBanner G={G} compact={compact} /></Shake></Appear>
+          <Appear key="w" from="down" delay={0.05} className="pointer-events-auto" data-tut="wave"><Shake seed={14} className="h-full"><WaveBanner G={G} compact={compact} /></Shake></Appear>
         )}
       </AnimatePresence>
     </div>

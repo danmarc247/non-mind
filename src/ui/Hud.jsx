@@ -136,7 +136,7 @@ export default function Hud() {
   const bandTop = topH + 24;
   const bandBottom = botH + 24;
   const bandH = Math.max(160, h - bandTop - bandBottom);
-  const logH = compact ? 132 : 212;
+  const logH = compact ? 96 : 150;
   const sideL = 12 + (compact ? 300 : 340) + 24;
 
   return (
@@ -166,7 +166,7 @@ export default function Hud() {
 
             <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom, '--rings-h': `${ringsH + 12}px` }}>
           <div ref={ringsRef} className="pointer-events-auto flex items-start gap-2.5">
-          <Shake seed={45}><Ask size={compact ? 50 : 56} /></Shake>
+          {!(compact && selU) && <Shake seed={45}><Ask size={compact ? 50 : 56} /></Shake>}
           <AnimatePresence initial={false}>{!(compact && selU) && (
           <motion.div key="rings" className="pointer-events-auto flex items-start gap-2.5" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8, transition: { duration: 0.12 } }} transition={POP}>
             <Shake seed={41}><Tools size={compact ? 50 : 56} layout="grid" /></Shake>

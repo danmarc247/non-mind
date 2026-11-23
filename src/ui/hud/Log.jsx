@@ -122,7 +122,7 @@ export function Log({ compact, mobile }) {
         <span className="h-2 w-2 rotate-45 border-[1.5px] border-ink bg-violet" />
         <span className="font-head text-[13px] leading-none tracking-wider text-ink-2 uppercase">{LOG_HEAD}</span>
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex min-h-0 flex-col gap-1 overflow-hidden">
         {items.map((l, i) => {
           const age = items.length - 1 - i;
           return (
@@ -134,7 +134,7 @@ export function Log({ compact, mobile }) {
               animate={{ opacity: Math.max(0.62, 1 - age * 0.19) }}
               transition={{ opacity: { duration: 0.3 }, layout: { type: 'spring', stiffness: 170, damping: 21, mass: 0.9 } }}
               className={cn(
-                'w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
+                'line-clamp-2 w-fit max-w-full rounded-[8px] bg-paper/90 py-[3px] pr-2 pl-2.5 font-body italic leading-snug text-ink border-l-[5px]',
                 age === 0 && 'shadow-[1px_1px_0_0_var(--color-ink)] ring-1 ring-ink/30',
               )}
               style={{ fontSize: fs, borderLeftColor: `var(--color-${KIND_COLOR[l.kind] || 'ink-2'})` }}

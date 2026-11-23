@@ -29,8 +29,8 @@ export default function Reset({ compact, small }) {
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Residue remains, and makes the next time wider.'}>
           <RingButton tone={full ? 'magenta' : 'violet'} size={small ? 60 : compact ? 88 : 100} onClick={() => setConfirm((c) => !c)} label="non-mind">
-            <span className={small ? 'font-title text-[9px] leading-none' : compact ? 'font-title text-[11px] leading-none' : 'font-title text-[13px] leading-none'}>NON-MIND</span>
-            <span className={small ? 'mt-0.5 font-stat text-[11px] nm-tab' : 'mt-1 font-stat text-[13px] nm-tab'}>+{fmt(gain, { int: true })} residue</span>
+            <span className="font-title text-[12px] leading-none [text-shadow:none]">NON-MIND</span>
+            <span className={small ? 'mt-0.5 font-stat text-[12px] nm-tab [text-shadow:none]' : 'mt-1 font-stat text-[12px] nm-tab [text-shadow:none]'}>+{fmt(gain, { int: true })} residue</span>
           </RingButton>
         </Tooltip>
       </motion.div>
@@ -42,7 +42,7 @@ export default function Reset({ compact, small }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.12 } }}
             transition={POP}
-            className="absolute top-full right-0 z-30 mt-3 w-[260px] rounded-[14px] border-[3px] border-ink bg-paper p-3 shadow-[3px_4px_0_0_var(--color-ink)]"
+            className="absolute top-full right-0 z-30 mt-3 w-[260px] rounded-[16px] border-[3px] border-ink bg-paper p-3 shadow-[3px_4px_0_0_var(--color-ink)]"
           >
             <p className="font-body text-[14px] leading-snug text-ink">
               Everything here becomes simple. You keep <b className="font-stat">{fmt(gain, { int: true })} residue</b>{G.endings ? ' and every ending' : ''}.

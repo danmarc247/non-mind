@@ -198,7 +198,7 @@ function Moods({ G }) {
             const def = MOODS[m.kind];
             return (
               <motion.div key={m.id} layout initial={{ opacity: 0, scale: 0.85, rotate: -3 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} exit={{ opacity: 0, scale: 0.8 }} transition={POP}>
-                <Tooltip content={def.text}>
+                <Tooltip content={def.text} className="flex w-full">
                   <div className="flex w-full flex-col items-center gap-1 rounded-[12px] border-2 border-ink bg-paper px-2 py-2 shadow-[2px_2px_0_0_var(--color-ink)]" style={{ opacity: 0.45 + 0.55 * (m.t / def.life) }}>
                     <Ring frac={m.t / def.life} tone={MOOD_TONE[m.kind] || 'violet'} size={40} stroke={4}>
                       <span className="font-stat text-[10px] text-ink nm-tab">{Math.ceil(m.t)}</span>
@@ -306,7 +306,7 @@ export function Bonds({ G }) {
   const tiers = G.battle?.tiers || aspectTiers(G);
   const rows = ASPECT_IDS.map((a) => ({ a, n: tiers[a + '_n'] || 0, t: tiers[a] || 0 })).filter((r) => r.n > 0).sort((x, y) => y.t - x.t || y.n - x.n);
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       {!rows.length && <p className="font-body text-[13px] italic text-ink-2">Nothing held shares anything yet. Two of one aspect, seated, begin to agree.</p>}
       {G.battle?.arc?.mod?.noAspects && <p className="font-body text-[12px] italic text-blood">This wave, bonds are silent.</p>}
       <AnimatePresence initial={false}>
@@ -315,7 +315,7 @@ export function Bonds({ G }) {
           const v = A.v[Math.max(0, t - 1)];
           return (
             <motion.div key={a} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={POP}>
-              <div className={cn('rounded-[10px] border-2 px-2 py-1.5', t ? 'border-ink bg-paper shadow-[2px_2px_0_0_var(--color-ink)]' : 'border-ink/30 bg-paper/70')}>
+              <div className={cn('rounded-[12px] border-2 px-2.5 py-2', t ? 'border-ink/80 bg-paper shadow-[2px_2px_0_0_var(--color-ink)]' : 'border-ink/30 bg-paper/70')}>
                 <div className="flex items-center gap-1.5">
                   <Dot tone={A.tone} className="h-3 w-3" />
                   <span className="font-head text-[15px] leading-none">{A.name}</span>
@@ -376,7 +376,7 @@ export default function LeftPanel({ compact }) {
   return (
     <Appear from="left" className={cn('pointer-events-auto', compact ? 'w-[280px]' : 'w-[316px]')}>
       <Panel bodyClassName="px-3 pt-3 pb-3">
-        <div className="mb-2 flex flex-wrap gap-x-2 gap-y-1 border-b-2 border-ink/15 pb-1.5">
+        <div className="mb-2 flex flex-wrap gap-x-1 gap-y-1 border-b-2 border-ink/15 pb-1.5">
           <AnimatePresence initial={false}>
             {tabs.map((t) => {
               const b = t.badge?.(G) || 0;
@@ -393,7 +393,7 @@ export default function LeftPanel({ compact }) {
                   transition={fresh === t.id ? { duration: 0.5, repeat: 3 } : POP}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    'relative px-1.5 pt-[3px] pb-[5px] font-head text-[16px] leading-none tracking-wide uppercase transition-colors',
+                    'relative px-1 pt-[3px] pb-[5px] font-head text-[15px] leading-none tracking-wide uppercase transition-colors',
                     t.id === cur.id ? 'text-ink' : 'text-ink-2/75 hover:text-ink',
                   )}
                 >
@@ -411,13 +411,13 @@ export default function LeftPanel({ compact }) {
                     />
                   </svg>
                   <span className="relative"><Scr k={t.id.length}>{t.label}</Scr></span>
-                  {b > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-[17px] min-w-[17px] place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-head text-[11px] leading-none text-ink">{b}</span>}
+                  {b > 0 && <span className="absolute -top-1.5 -right-3 grid h-[17px] min-w-[17px] place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-head text-[11px] leading-none text-ink">{b}</span>}
                 </motion.button>
               );
             })}
           </AnimatePresence>
         </div>
-        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pb-1" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 128px)' }}>
+        <div className="nm-scroll -mr-1.5 overflow-y-auto pr-1.5 pt-1 pb-2" style={{ maxHeight: 'calc(var(--band-h) - var(--log-h) - 134px)' }}>
           <motion.div key={cur.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18, ease: 'easeOut' }}>
             <Body G={G} />
           </motion.div>

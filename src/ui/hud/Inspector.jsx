@@ -44,7 +44,7 @@ function Gene({ g, depth = 0 }) {
     );
   }
   return (
-    <span className={cn('inline-flex flex-wrap items-center gap-[3px] rounded-[8px] border-2 px-[3px] py-[2px]', depth % 2 ? 'border-ink/40 bg-paper' : 'border-ink/60 bg-paper-2')}>
+    <span className={cn('inline-flex flex-nowrap items-center gap-[3px] rounded-[8px] border-2 px-[3px] py-[2px]', depth % 2 ? 'border-ink/40 bg-paper' : 'border-ink/60 bg-paper-2')}>
       <span className="font-head text-[13px] leading-none text-ink-2">[</span>
       <Gene g={g.a} depth={depth + 1} />
       <span className={cn('font-head text-[14px] leading-none', g.op === 'carve' ? 'text-blood' : 'text-teal')}>{OP[g.op] || '?'}</span>
@@ -180,7 +180,7 @@ export function Body({ G, u }) {
       )}
 
       {/* actions come first; everything descriptive lives in tabs below them */}
-      <div className="mt-3 flex gap-1 border-b-[3px] border-ink/15 pb-1">
+      <div className="mt-3 flex gap-1 border-b-2 border-ink/15 pb-1">
         {[['nature', 'nature'], ['measures', 'measures'], ['lineage', 'lineage']].map(([id, label]) => (
           <button key={id} type="button" onClick={() => setTab(id)}
             className={cn('rounded-full border-2 px-2.5 py-[2px] font-head text-[13px] tracking-wide transition-transform duration-150 hover:-translate-y-0.5', tab === id ? 'border-ink bg-ink text-paper' : 'border-ink/40 bg-paper text-ink')}>
@@ -292,7 +292,7 @@ export default function Inspector({ compact }) {
               </button>
             }
           >
-            <div style={{ maxHeight: 'calc(var(--band-h) - var(--rings-h, 0px) - 66px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2">
+            <div style={{ maxHeight: 'calc(var(--band-h) - var(--rings-h, 0px) - 84px)' }} className="nm-scroll -mr-2 overflow-y-auto pr-2 pt-1 pb-2">
               <motion.div key={u.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
                 <Body G={G} u={u} />
               </motion.div>

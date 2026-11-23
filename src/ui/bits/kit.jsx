@@ -159,7 +159,7 @@ export function InkButton({
   const d = useMemo(() => chipPath(sd), [sd]);
   const tilt = useMemo(() => (rand(sd ^ 0x9e37)() - 0.5) * 2.4, [sd]);
   const face = disabled ? 'paper-2' : tone;
-  const text = disabled ? 'text-ink/45' : LIGHT.has(face) ? 'text-ink' : 'text-paper';
+  const text = disabled ? 'text-ink/60' : LIGHT.has(face) ? 'text-ink' : 'text-paper';
   const hatchId = `nm-hatch-${sd}`;
   return (
     <span className={cn('relative inline-flex', full && 'flex w-full', className)} style={{ rotate: `${tilt}deg` }}>
@@ -227,7 +227,7 @@ export function RingButton({ tone = 'magenta', size = 96, children, onClick, hot
         transition={SOFT}
         {...rest}
       >
-        <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-[5px] rounded-full bg-ink transition-transform duration-150 group-active:translate-x-[1px] group-active:translate-y-[1px]" />
+        <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-[4px] rounded-full bg-ink transition-transform duration-150 group-active:translate-x-[1px] group-active:translate-y-[1px]" />
         <span aria-hidden="true" className="absolute inset-0 rounded-full border-[3px] border-ink transition-transform duration-150 group-active:translate-x-[2px] group-active:translate-y-[3px]" style={{ background: toneVar(tone) }}>
           <span className="absolute inset-[9%] rounded-full border-[2.5px] border-paper/90" />
           <span className="absolute inset-[22%] rounded-full border-2 border-paper/45" />
@@ -461,7 +461,7 @@ export function UnitCard({
           </span>
         </div>
 
-        <div className="mt-2 truncate px-0.5 font-head text-lg leading-none text-ink" title={name}>
+        <div className="mt-2 line-clamp-2 min-h-[2.1em] px-0.5 font-head text-lg leading-[1.05] break-words text-ink" title={name}>
           {name}
         </div>
 
@@ -532,7 +532,7 @@ const ARROW_EDGE = {
  * Hover/focus tooltip in a portal. It measures itself, flips to the other side when there is no
  * room (top-bar chips open downward), and clamps into the viewport. pointer-events: none.
  */
-export function Tooltip({ content, children, side = 'top', open: forcedOpen, className }) {
+export function Tooltip({ content, children, side = 'top', open: forcedOpen, className, wrapperClassName }) {
   const ref = useRef(null);
   const tipRef = useRef(null);
   const [hover, setHover] = useState(false);
@@ -575,7 +575,7 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
   return (
     <span
       ref={ref}
-      className="relative inline-flex"
+      className={cn('relative inline-flex', wrapperClassName)}
       onPointerDown={(e) => { touchRef.current = e.pointerType !== 'mouse'; }}
       onClick={() => { if (touchRef.current) setHover((h) => !h); }}
       onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHover(true); }}
@@ -601,7 +601,7 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
                   exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.1 } }}
                   transition={{ duration: 0.14, ease: 'easeOut' }}
                   className={cn(
-                    'relative w-max max-w-[320px] rounded-[12px] border-[3px] border-ink bg-paper px-3 py-2 font-body text-sm leading-snug text-ink shadow-[3px_4px_0_0_var(--color-ink)]',
+                    'relative w-max max-w-[320px] rounded-[10px] border-[3px] border-ink bg-paper px-3 py-2 font-body text-sm leading-snug text-ink shadow-[3px_4px_0_0_var(--color-ink)]',
                     className,
                   )}
                 >
