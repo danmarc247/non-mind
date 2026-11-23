@@ -60,7 +60,7 @@ function Resources({ G, compact }) {
     <div className={cn('flex flex-wrap content-start gap-2', compact ? 'max-w-[350px]' : 'max-w-[400px]')}>
       <AnimatePresence initial={false}>
         {chips.filter((c) => c.show).map((c) => (
-          <Appear key={c.k} from="down" className="relative">
+          <Appear key={c.k} from="down" className="relative" data-tut={`chip-${c.k}`}>
             <StatChip
               label={<Scr k={c.k.length}>{c.k}</Scr>}
               value={<span className="nm-tab">{c.value}{c.sub && <span className="ml-1.5 text-[12px] text-ink-2">{c.sub}</span>}</span>}
@@ -104,7 +104,7 @@ function WaveBanner({ G, compact }) {
   return (
     <div className={cn('rounded-[16px] border-[3px] border-ink bg-paper/95 px-3 py-2 shadow-[3px_4px_0_0_var(--color-ink)]', compact ? 'w-[214px]' : 'w-[250px]')}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-stat text-lg leading-none text-ink nm-tab">wave {G.cycle}.{G.wave}</span>
+        <span className="font-stat text-lg leading-none text-ink nm-tab">wave {G.cycle + 1}.{G.wave}</span>
         <span className={cn('rounded-[6px] border-2 border-ink px-1.5 py-[1px] font-head text-[11px] leading-none tracking-wider uppercase',
           G.phase === 'fight' ? 'bg-magenta text-paper' : G.phase === 'won' ? 'bg-leaf text-ink' : G.phase === 'lost' ? 'bg-blood text-paper' : 'bg-paper-2 text-ink')}>
           <Scr k={5}>{PHASE[G.phase] || G.phase}</Scr>
@@ -136,15 +136,15 @@ export default function TopBar({ compact }) {
   const fighting = unlocked(G, 'shop');
   return (
     <div className="pointer-events-none flex items-start gap-3">
-      <Shake seed={11} className="pointer-events-auto"><StageTracker G={G} compact={compact} /></Shake>
+      <Shake seed={11} className="pointer-events-auto" data-tut="stage"><StageTracker G={G} compact={compact} /></Shake>
       <Shake seed={12} className="pointer-events-auto"><Resources G={G} compact={compact} /></Shake>
       <div className="flex-1" />
       <AnimatePresence initial={false}>
         {fighting && (
-          <Appear key="g" from="down" className="pointer-events-auto"><Shake seed={13}><Gauges G={G} compact={compact} /></Shake></Appear>
+          <Appear key="g" from="down" className="pointer-events-auto" data-tut="complexity"><Shake seed={13}><Gauges G={G} compact={compact} /></Shake></Appear>
         )}
         {fighting && (
-          <Appear key="w" from="down" delay={0.05} className="pointer-events-auto"><Shake seed={14}><WaveBanner G={G} compact={compact} /></Shake></Appear>
+          <Appear key="w" from="down" delay={0.05} className="pointer-events-auto" data-tut="wave"><Shake seed={14}><WaveBanner G={G} compact={compact} /></Shake></Appear>
         )}
       </AnimatePresence>
     </div>

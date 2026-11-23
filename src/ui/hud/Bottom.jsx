@@ -2,14 +2,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useAnimationControls } from 'motion/react';
 import { InkButton, Panel, Tooltip, UnitCard } from '../bits';
+import { RingButton } from '../bits/kit.jsx';
 import { toneVar } from '../bits';
 import {
   FAMILY, ASPECTS, TIER_COST, COSTS, XP_TO_LEVEL, BENCH, unlocked, unitCap, clickValue, leaf, nameOf,
 } from '../../game/index.js';
-import { act, choose, game, useGame } from '../../game/store.js';
+import { act, choose, game, onEvent, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { fmt } from './fmt.js';
-import { attend, onHud } from './bus.js';
+import { attend } from './bus.js';
 import { Appear, Key, Label, Scr, Shake, UnitGlyph, aspectChips, unitTier, unitTone, POP } from './shared.jsx';
 
 const cardCls = (compact) =>
@@ -92,11 +93,11 @@ function Shop({ G, compact }) {
             );
           })}
         </div>
-        <div className="flex w-[104px] flex-col gap-2.5 pt-1">
-          <InkButton size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} className="[&_button]:w-full">
+        <div className="flex w-[104px] flex-col gap-3 pt-1" data-tut="lookgrow">
+          <InkButton size="sm" tone="sky" hotkey="r" disabled={G.attention < COSTS.reroll} onClick={() => act('reroll')} full>
             look <span className="font-stat normal-case">{COSTS.reroll}</span>
           </InkButton>
-          <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} className="[&_button]:w-full">
+          <InkButton size="sm" tone="ultra" hotkey="x" disabled={G.attention < COSTS.xp || G.level >= 10} onClick={() => act('buyXp')} full>
             grow <span className="font-stat normal-case">{COSTS.xp}</span>
           </InkButton>
           {!compact && (
@@ -116,9 +117,10 @@ function AttendButton({ G, compact }) {
   const controls = useAnimationControls();
   const [floats, setFloats] = useState([]);
   const n = useRef(0);
+  // every attend (button, Space, the core in 3D, attendants excluded) pops the button and floats the gain
   useEffect(
     () =>
-      onHud((e) => {
+      onEvent((e) => {
         if (e.type !== 'attend') return;
         controls.start({ scale: [1, 0.86, 1.07, 1], transition: { duration: 0.26, times: [0, 0.25, 0.65, 1], ease: 'easeOut' } });
         const id = n.current++;
@@ -127,9 +129,10 @@ function AttendButton({ G, compact }) {
       }),
     [controls],
   );
-  const size = compact ? 108 : 128;
+  const size = compact ? 112 : 132;
+  const invite = G.stats.clicks === 0;
   return (
-    <div className="relative flex flex-col items-center" style={{ width: size + 24 }}>
+    <div className="relative flex flex-col items-center" style={{ width: size + 24 }} data-tut="attend">
       <div className="pointer-events-none absolute bottom-full left-1/2 h-0 w-0">
         <AnimatePresence>
           {floats.map((f) => (
@@ -146,23 +149,42 @@ function AttendButton({ G, compact }) {
           ))}
         </AnimatePresence>
       </div>
-      <motion.button
-        type="button"
-        animate={controls}
-        whileHover={{ scale: 1.04, rotate: -2 }}
-        onClick={() => attend()}
-        className="relative grid place-items-center rounded-full border-[4px] border-ink bg-magenta text-paper shadow-[4px_6px_0_0_var(--color-ink)] outline-none focus-visible:ring-4 focus-visible:ring-yolk active:shadow-[1px_2px_0_0_var(--color-ink)]"
-        style={{ width: size, height: size }}
-        aria-label="Attend"
-      >
-        <span className="absolute inset-[7px] rounded-full border-2 border-paper/50" />
-        <span className="absolute left-[22%] top-[14%] h-[18%] w-[30%] -rotate-[24deg] rounded-full bg-paper/35" />
-        <span className="relative flex flex-col items-center leading-none">
+      <AnimatePresence>
+        {invite && (
+          <motion.div key="invite" className="pointer-events-none absolute inset-x-0 top-0 grid place-items-center" style={{ height: size }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}>
+            {[0, 0.45].map((delay) => (
+              <motion.span key={delay} className="absolute rounded-full border-[3px] border-magenta" style={{ width: size, height: size }}
+                animate={{ scale: [1, 1.45], opacity: [0.9, 0] }} transition={{ duration: 0.9, delay, repeat: Infinity, ease: 'easeOut' }} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div animate={controls}>
+        <RingButton tone="magenta" size={size} onClick={() => attend()} label="Attend">
           <span className={cn('font-head tracking-wider', compact ? 'text-[24px]' : 'text-[28px]')}><Scr k={30}>ATTEND</Scr></span>
           <span className="mt-1 font-stat text-[13px] text-paper/90 nm-tab">+{fmt(clickValue(G))}</span>
-        </span>
-      </motion.button>
-      <Key k="space" className="mt-2" />
+        </RingButton>
+      </motion.div>
+      <span className="mt-2 flex items-center gap-1.5">
+        <Key k="space" />
+      </span>
+      <AnimatePresence>
+        {invite && (
+          <motion.div key="hint" className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 flex w-[230px] -translate-x-1/2 flex-col items-center"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={POP}>
+            <span className="rounded-[10px] border-[3px] border-ink bg-yolk px-3 py-1.5 text-center font-head text-[18px] leading-tight tracking-wide text-ink uppercase shadow-[2px_3px_0_0_var(--color-ink)]">
+              click, or press <span className="rounded-[6px] border-2 border-ink bg-paper px-1.5">space</span>
+            </span>
+            <motion.span animate={{ y: [0, 5, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}>
+              <svg viewBox="0 0 40 40" className="h-9 w-9" aria-hidden="true">
+                <path d="M20 4 C 17 14, 23 22, 20 32" fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round" />
+                <path d="M11 24 L20 34 L29 23" fill="none" stroke="var(--color-ink)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -249,7 +271,7 @@ export default function Bottom({ compact }) {
       {!shop && <div className="flex-1" />}
       <AnimatePresence initial={false}>
         {shop && (
-          <Appear key="shop" from="up" className="pointer-events-auto shrink-0">
+          <Appear key="shop" from="up" className="pointer-events-auto shrink-0" data-tut="shop">
             <Shake seed={21}><Shop G={G} compact={compact} /></Shake>
           </Appear>
         )}
@@ -258,7 +280,7 @@ export default function Bottom({ compact }) {
       {!shop && <div className="flex-1" />}
       <AnimatePresence initial={false}>
         {shop && (
-          <Appear key="bench" from="up" delay={0.05} className="pointer-events-auto flex min-w-0 flex-1">
+          <Appear key="bench" from="up" delay={0.05} className="pointer-events-auto flex min-w-0 flex-1" data-tut="bench">
             <Shake seed={23} className="flex min-w-0 flex-1"><Bench G={G} compact={compact} /></Shake>
           </Appear>
         )}

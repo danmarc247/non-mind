@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/cn';
 import { toneVar, toneHex } from '../bits';
+import { HotKey } from '../bits/kit.jsx';
 import { ASPECTS, FAMILY, aspectsOf, leaves, nameOf, tierOf } from '../../game/index.js';
 import { FAMILY_PALETTES } from '../../gfx/palettes/families.js';
 
@@ -59,11 +60,12 @@ export function Scr({ children, k = 0 }) {
 }
 
 /** Region wrapper: jitters and tilts in proportion to overwhelm. */
-export function Shake({ children, className, seed = 1, style }) {
+export function Shake({ children, className, seed = 1, style, ...rest }) {
   const { d } = useDegrade();
   const tilt = (hash(seed, 3) - 0.5) * 3.2 * d;
   return (
     <div
+      {...rest}
       className={cn(className, d > 0.03 && 'nm-shake')}
       style={{
         ...style,
@@ -95,18 +97,9 @@ export const HUD_CSS = `
 
 /* ------------------------------------------------------------ badges */
 
+// Hotkey badges come from the kit so every one is legible (Londrina, uppercase).
 export function Key({ k, className }) {
-  return (
-    <kbd
-      aria-hidden="true"
-      className={cn(
-        'pointer-events-none inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[5px] border-2 border-ink bg-paper px-1 font-stat text-[12px] leading-none text-ink shadow-[1px_1px_0_0_var(--color-ink)]',
-        className,
-      )}
-    >
-      {String(k).toLowerCase()}
-    </kbd>
-  );
+  return <HotKey k={k} className={className} />;
 }
 
 export function Dot({ tone, className }) {

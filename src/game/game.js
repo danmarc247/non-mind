@@ -31,7 +31,7 @@ export function createGame(seed = 1, meta = {}) {
     level: 1, xp: 0, composure: 100, composureMax: 100,
     units: [], nextUid: 1, shop: [], habits: {}, upgrades: {}, attendants: 0, attendT: 0, mirrors: 0,
     stance: null, moods: [], verbs: {}, seasonT: 60, labelT: 0,
-    wave: 1, cycle: 0, phase: 'prep', phaseT: 0, streak: 0, clicksThisWave: 0, auto: true,
+    habituation: 0, wave: 1, cycle: 0, phase: 'prep', phaseT: 0, streak: 0, clicksThisWave: 0, auto: true,
     stats: { clicks: 0, kills: 0, links: 0, integrations: 0, splits: 0, subtractions: 0, repurposes: 0, verbsDone: 0, exchanges: 0, echoes: 0, seasons: 0, peak: 0, earned: 0 },
     stage: 0, complexity: 0, capacity: 40, overwhelm: 0, habitsOwned: 0, prod: 0, battle: null,
     events: [], log: [],
@@ -316,7 +316,7 @@ export function step(G, dt) {
 function endWave(G, won) {
   G.phase = won ? 'won' : 'lost'; G.phaseT = 0;
   if (won) {
-    G.streak = Math.max(1, G.streak + 1);
+    G.streak = Math.max(1, G.streak + 1); G.habituation = 0;
     const cap = G.upgrades.thrift ? 10 : 5;
     const interest = Math.min(cap, Math.floor(G.attention / 10));
     const pay = 4 + interest + Math.min(3, Math.floor(G.streak / 3));
@@ -327,7 +327,7 @@ function endWave(G, won) {
     G.wave++; if (G.wave > WAVES_PER_CYCLE) { G.wave = 1; G.cycle++; say(G, 'The ten have spoken. The ten begin.', 'stage'); }
     rollShop(G, true);
   } else {
-    G.streak = 0; G.composure = G.composureMax; G.attention += 2; addXp(G, 1);
+    G.streak = 0; G.composure = G.composureMax; G.habituation = Math.min(12, (G.habituation || 0) + 1); G.attention += 2; addXp(G, 1);
     addMood(G, 'dread'); G.events.push({ type: 'waveLose' }); rollShop(G, true);
   }
 }

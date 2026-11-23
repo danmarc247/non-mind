@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { InkButton } from './bits';
+import { RingButton } from './bits/kit.jsx';
 import { unlocked } from '../game/index.js';
 import { act, game, select, setPending, useGame } from '../game/store.js';
 import { cn } from '../lib/cn';
@@ -12,6 +13,7 @@ import LeftPanel from './hud/LeftPanel.jsx';
 import Reset from './hud/Reset.jsx';
 import Codex from './hud/Codex.jsx';
 import Title from './hud/Title.jsx';
+import Tutorial from './hud/Tutorial.jsx';
 import { Log, StageFlash } from './hud/Log.jsx';
 import { attend } from './hud/bus.js';
 import { DegradeCtx, HUD_CSS, Key, POP, Scr, Shake } from './hud/shared.jsx';
@@ -144,7 +146,11 @@ export default function Hud() {
             <div className="absolute right-3 flex flex-col items-end gap-3" style={{ top: bandTop, bottom: bandBottom }}>
               <div className="pointer-events-auto flex items-start gap-3">
                 <Shake seed={41}>
-                  <InkButton size="sm" tone="paper" hotkey="c" onClick={() => setCodex(true)}><Scr k={60}>codex</Scr></InkButton>
+                  <span data-tut="codex" className="inline-flex">
+                    <RingButton tone="paper" size={64} hotkey="c" hotkeyPos="corner" onClick={() => setCodex(true)} label="codex">
+                      <span className="font-head text-[15px] tracking-wider uppercase"><Scr k={60}>codex</Scr></span>
+                    </RingButton>
+                  </span>
                 </Shake>
                 <AnimatePresence>
                   {G.stage >= 1 && (
@@ -159,6 +165,7 @@ export default function Hud() {
 
             <div className="absolute left-1/2 -translate-x-1/2" style={{ top: bandTop }}><PendingBanner /></div>
             <StageFlash />
+            <Tutorial />
 
             {/* overwhelm: the edges flush and close in */}
             {d > 0.02 && (

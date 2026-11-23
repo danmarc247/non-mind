@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { InkButton, Tooltip } from '../bits';
+import { RingButton } from '../bits/kit.jsx';
 import { muGain } from '../../game/index.js';
 import { act, useGame } from '../../game/store.js';
 import { fmt } from './fmt.js';
@@ -13,7 +14,7 @@ export default function Reset() {
   const gain = muGain(G);
   const full = G.overwhelm >= 1;
   return (
-    <div className="pointer-events-auto relative flex flex-col items-end">
+    <div className="pointer-events-auto relative flex flex-col items-end" data-tut="reset">
       <motion.div
         animate={full ? { scale: [1, 1.07, 1], rotate: [0, -1.5, 0] } : { scale: 1, rotate: 0 }}
         transition={full ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' } : POP}
@@ -21,18 +22,16 @@ export default function Reset() {
       >
         {full && (
           <motion.span
-            className="pointer-events-none absolute -inset-2 rounded-[18px] border-[3px] border-magenta"
+            className="pointer-events-none absolute -inset-2 rounded-full border-[3px] border-magenta"
             animate={{ opacity: [0.9, 0], scale: [1, 1.25] }}
             transition={{ duration: 0.9, repeat: Infinity, ease: 'easeOut' }}
           />
         )}
         <Tooltip side="left" content={full ? 'It is too much. Letting go now keeps twice as much.' : 'Let all of this go. Mu remains, and makes the next time wider.'}>
-          <InkButton tone={full ? 'magenta' : 'violet'} size="md" onClick={() => setConfirm((c) => !c)}>
-            <span className="flex flex-col items-center leading-none">
-              <span className="font-title text-[20px] tracking-normal normal-case">NON-MIND</span>
-              <span className="mt-0.5 font-stat text-[13px] normal-case nm-tab">+{fmt(gain, { int: true })} mu</span>
-            </span>
-          </InkButton>
+          <RingButton tone={full ? 'magenta' : 'violet'} size={92} onClick={() => setConfirm((c) => !c)} label="non-mind">
+            <span className="font-title text-[15px] leading-none tracking-normal">NON-MIND</span>
+            <span className="mt-1 font-stat text-[13px] nm-tab">+{fmt(gain, { int: true })} mu</span>
+          </RingButton>
         </Tooltip>
       </motion.div>
       <AnimatePresence>

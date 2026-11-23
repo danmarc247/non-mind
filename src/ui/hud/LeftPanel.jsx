@@ -10,6 +10,8 @@ import { act, game, useGame } from '../../game/store.js';
 import { cn } from '../../lib/cn';
 import { fmt, fmtLong, fmtTime } from './fmt.js';
 import { Appear, Dot, Label, Scr, POP } from './shared.jsx';
+import { onHud } from './bus.js';
+import { toneVar } from '../bits';
 
 /* ------------------------------------------------------------ rows */
 
@@ -57,8 +59,8 @@ function Habits({ G }) {
                 <div className="mt-1.5 flex items-center gap-2">
                   <Cost v={cost} ok={ok} />
                   <span className="flex-1" />
-                  <InkButton size="sm" tone="yolk" disabled={!ok} onClick={() => act('buyHabit', h.id, 1)} className="[&_.min-h-8]:min-h-6 [&_.text-base]:text-[13px]">+1</InkButton>
-                  <InkButton size="sm" tone="tangerine" disabled={max < 2} onClick={() => act('buyHabit', h.id, max)} className="[&_.min-h-8]:min-h-6 [&_.text-base]:text-[13px]">
+                  <InkButton size="sm" tone="yolk" disabled={!ok} onClick={() => act('buyHabit', h.id, 1)}>+1</InkButton>
+                  <InkButton size="sm" tone="tangerine" disabled={max < 2} onClick={() => act('buyHabit', h.id, max)}>
                     max<span className="ml-1 font-stat text-[11px] normal-case">{max > 1 ? max : ''}</span>
                   </InkButton>
                 </div>
@@ -89,7 +91,7 @@ function Upgrades({ G }) {
                     <span className="block font-head text-[16px] leading-none text-ink">{u.name}</span>
                     <span className="mt-1 block font-body text-[12px] leading-snug text-ink-2">{u.text}</span>
                   </span>
-                  <InkButton size="sm" tone="violet" disabled={!ok} onClick={() => act('buyUpgrade', u.id)} className="mt-0.5 [&_.min-h-8]:min-h-7">
+                  <InkButton size="sm" tone="violet" disabled={!ok} onClick={() => act('buyUpgrade', u.id)} className="mt-0.5">
                     <span className="font-stat text-[13px] normal-case">{fmt(u.cost)}</span>
                   </InkButton>
                 </div>
@@ -117,7 +119,7 @@ function Insight({ G }) {
                 <span className="block font-head text-[16px] leading-none text-ink">{s.name}</span>
                 <span className="mt-1 block font-body text-[12px] leading-snug text-ink-2">{s.text}</span>
               </span>
-              <InkButton size="sm" tone="ultra" disabled={!ok} onClick={() => act('cast', s.id)} className="mt-0.5 [&_.min-h-8]:min-h-7">
+              <InkButton size="sm" tone="ultra" disabled={!ok} onClick={() => act('cast', s.id)} className="mt-0.5">
                 <span className="font-stat text-[13px] normal-case">{s.cost}</span>
               </InkButton>
             </div>
@@ -173,7 +175,7 @@ function Verbs({ G }) {
                 <span className="mt-0.5 block font-body text-[11.5px] leading-snug text-ink-2">{run ? <>with <b className="font-head text-ink">{u ? nameOf(u.g) : 'something'}</b></> : v.text}</span>
               </span>
               {!run && (
-                <InkButton size="sm" tone="magenta" disabled={!fits} onClick={() => act('startVerb', v.id, sel.id)} className="[&_.min-h-8]:min-h-7 [&_.text-base]:text-[13px]">give</InkButton>
+                <InkButton size="sm" tone="magenta" disabled={!fits} onClick={() => act('startVerb', v.id, sel.id)}>give</InkButton>
               )}
             </div>
           </Row>
@@ -232,7 +234,7 @@ function Exchange({ G }) {
           <Row key={from + to}>
             <div className="flex items-center gap-2">
               <span className="flex-1 font-stat text-[13px] leading-none text-ink nm-tab">{fmt(a)} {from} <span className="text-magenta">&gt;</span> {fmt(b)} {to}</span>
-              <InkButton size="sm" tone="sky" disabled={!ok} onClick={() => act('exchange', from, to)} className="[&_.min-h-8]:min-h-7 [&_.text-base]:text-[13px]">trade</InkButton>
+              <InkButton size="sm" tone="sky" disabled={!ok} onClick={() => act('exchange', from, to)}>trade</InkButton>
             </div>
           </Row>
         );
@@ -252,7 +254,7 @@ function Stance({ G }) {
               <span className="block font-head text-[17px] leading-none">{s.name}</span>
               <span className="mt-1 block font-body text-[12px] leading-snug text-ink-2">{s.text}</span>
             </span>
-            <InkButton size="sm" tone="magenta" pressed={G.stance === s.id} onClick={() => act('chooseStance', s.id)} className="[&_.min-h-8]:min-h-7 [&_.text-base]:text-[13px]">
+            <InkButton size="sm" tone="magenta" pressed={G.stance === s.id} onClick={() => act('chooseStance', s.id)}>
               {G.stance === s.id ? 'here' : 'stand'}
             </InkButton>
           </div>
@@ -336,6 +338,8 @@ export function Bonds({ G }) {
 
 /* ------------------------------------------------------------ tabs */
 
+const TAB_STROKES = ['M4 12 C 30 6, 62 15, 96 9', 'M3 10 C 28 15, 70 5, 97 12', 'M5 13 C 40 8, 60 13, 95 8'];
+
 const TABS = [
   { id: 'bonds', label: 'bonds', tone: 'rose', show: (G) => unlocked(G, 'shop'), C: Bonds },
   { id: 'habits', label: 'habits', tone: 'yolk', show: (G) => unlocked(G, 'habits'), C: Habits },
@@ -365,12 +369,14 @@ export default function LeftPanel({ compact }) {
     if (added) { setFresh(added); const t = setTimeout(() => setFresh(null), 2400); return () => clearTimeout(t); }
     return undefined;
   }, [ids, seen]);
+  // the tutorial (or anything else) may ask for a tab
+  useEffect(() => onHud((e) => { if (e.type === 'tab') setTab(e.id); }), []);
   if (!cur) return null;
   const Body = cur.C;
   return (
     <Appear from="left" className={cn('pointer-events-auto', compact ? 'w-[280px]' : 'w-[316px]')}>
       <Panel bodyClassName="px-3 pt-3 pb-3">
-        <div className="mb-2 flex flex-wrap gap-1">
+        <div className="mb-2 flex flex-wrap gap-x-2 gap-y-1 border-b-2 border-ink/15 pb-1.5">
           <AnimatePresence initial={false}>
             {tabs.map((t) => {
               const b = t.badge?.(G) || 0;
@@ -379,17 +385,33 @@ export default function LeftPanel({ compact }) {
                   key={t.id}
                   type="button"
                   layout
+                  data-tut={`tab-${t.id}`}
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: fresh === t.id ? [1, 1.18, 1] : 1 }}
+                  whileHover={{ rotate: [0, -3, 2, 0], transition: { duration: 0.24 } }}
+                  whileTap={{ scaleX: 1.08, scaleY: 0.88, transition: { duration: 0.1 } }}
                   transition={fresh === t.id ? { duration: 0.5, repeat: 3 } : POP}
                   onClick={() => setTab(t.id)}
                   className={cn(
-                    'relative rounded-[8px] border-2 border-ink px-2 py-[3px] font-head text-[13px] leading-none tracking-wide uppercase shadow-[1px_2px_0_0_var(--color-ink)] transition-colors',
-                    t.id === cur.id ? 'bg-ink text-paper' : 'bg-paper text-ink hover:bg-paper-2',
+                    'relative px-1.5 pt-[3px] pb-[5px] font-head text-[16px] leading-none tracking-wide uppercase transition-colors',
+                    t.id === cur.id ? 'text-ink' : 'text-ink-2/75 hover:text-ink',
                   )}
                 >
-                  <Scr k={t.id.length}>{t.label}</Scr>
-                  {b > 0 && <span className="absolute -top-2 -right-2 grid h-4 min-w-4 place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-stat text-[9px] leading-none text-ink">{b}</span>}
+                  <svg aria-hidden="true" viewBox="0 0 100 20" preserveAspectRatio="none" className="pointer-events-none absolute inset-x-0 bottom-0 h-[11px] w-full overflow-visible">
+                    <motion.path
+                      d={TAB_STROKES[t.id.length % TAB_STROKES.length]}
+                      fill="none"
+                      stroke={toneVar(t.tone === 'ink-2' ? 'violet' : t.tone)}
+                      strokeWidth="9"
+                      strokeLinecap="round"
+                      vectorEffect="non-scaling-stroke"
+                      initial={false}
+                      animate={{ pathLength: t.id === cur.id ? 1 : 0, opacity: t.id === cur.id ? 0.85 : 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                    />
+                  </svg>
+                  <span className="relative"><Scr k={t.id.length}>{t.label}</Scr></span>
+                  {b > 0 && <span className="absolute -top-1.5 -right-1.5 grid h-[17px] min-w-[17px] place-items-center rounded-full border-2 border-ink bg-yolk px-0.5 font-head text-[11px] leading-none text-ink">{b}</span>}
                 </motion.button>
               );
             })}

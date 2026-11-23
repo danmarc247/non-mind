@@ -6,7 +6,6 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '../../lib/cn';
 import { TextureCard, TextureSeparator } from './TextureCard';
-import { TextureButton } from './TextureButton';
 import { GlowingEffect } from './GlowingEffect';
 import { EncryptedText } from './EncryptedText';
 import { CardSpotlight } from './CardSpotlight';
@@ -79,12 +78,68 @@ export function Panel({ title, tone = 'magenta', children, className, glow = fal
 
 /* -------------------------------------------------------------- InkButton */
 
-const INK_BUTTON_SIZE = { sm: 'sm', md: 'default', lg: 'lg' };
-const INK_BUTTON_INNER = {
-  sm: 'min-h-8 px-3 py-1 text-base',
-  md: 'min-h-11 px-5 py-1.5 text-xl',
-  lg: 'min-h-14 px-7 py-2 text-3xl',
+// Paint chips: every button is a hand-cut scrap of painted paper. The outline is a jittered
+// polygon seeded by the label, so the same button keeps its shape and no two look alike.
+function textOf(v) {
+  if (v == null || typeof v === 'boolean') return '';
+  if (typeof v === 'string' || typeof v === 'number') return String(v);
+  if (Array.isArray(v)) return v.map(textOf).join('');
+  return textOf(v.props?.children);
+}
+function seedOf(v) {
+  const s = textOf(v) || 'x';
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+function rand(seed) {
+  let a = seed || 1;
+  return () => { a = (a + 0x6d2b79f5) >>> 0; let t = Math.imul(a ^ (a >>> 15), a | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+/** Torn paper-chip outline in a 100x100 box (stretched to the button with non-scaling strokes). */
+export function chipPath(seed, { jag = 1 } = {}) {
+  const r = rand(seed);
+  const j = (n) => (r() - 0.5) * 2 * n * jag;
+  const pts = [];
+  const m = 4; // margin for the stroke
+  const c = () => 3 + r() * 7; // cut corner
+  const tl = c(), tr = c(), br = c(), bl = c();
+  pts.push([m + tl * 0.5 + j(1), m + j(2)]);
+  for (let i = 1; i < 6; i++) pts.push([m + (i / 6) * (100 - 2 * m) + j(3), m + j(4)]);
+  pts.push([100 - m - tr * 0.5 + j(1), m + j(2)], [100 - m + j(1.5), m + tr + j(2)]);
+  for (let i = 1; i < 3; i++) pts.push([100 - m + j(1.6), m + (i / 3) * (100 - 2 * m) + j(4)]);
+  pts.push([100 - m + j(1.5), 100 - m - br + j(2)], [100 - m - br * 0.5 + j(1), 100 - m + j(2)]);
+  for (let i = 5; i > 0; i--) pts.push([m + (i / 6) * (100 - 2 * m) + j(3), 100 - m + j(4)]);
+  pts.push([m + bl * 0.5 + j(1), 100 - m + j(2)], [m + j(1.5), 100 - m - bl + j(2)]);
+  for (let i = 2; i > 0; i--) pts.push([m + j(1.6), m + (i / 3) * (100 - 2 * m) + j(4)]);
+  pts.push([m + j(1.5), m + tl + j(2)]);
+  return 'M' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L') + ' Z';
+}
+
+const LIGHT = new Set(['paper', 'paper-2', 'yolk', 'tangerine', 'teal', 'leaf', 'rose', 'sky']);
+const INK_BUTTON_SIZES = {
+  sm: 'min-h-[34px] px-3.5 py-1 text-[15px]',
+  md: 'min-h-[44px] px-5 py-1.5 text-[19px]',
+  lg: 'min-h-[58px] px-8 py-2 text-[28px]',
 };
+const SOFT = { type: 'spring', stiffness: 700, damping: 24, mass: 0.6 };
+
+/** Legible hotkey badge (Londrina, uppercase, ink on paper). */
+export function HotKey({ k, className, dim }) {
+  const label = String(k).length > 1 ? String(k).toUpperCase() : String(k).toUpperCase();
+  return (
+    <kbd
+      aria-hidden="true"
+      className={cn(
+        'pointer-events-none inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[7px] border-2 border-ink bg-paper px-1.5 font-head text-[14px] leading-none tracking-wide text-ink shadow-[1px_2px_0_0_var(--color-ink)]',
+        dim && 'border-ink/40 text-ink/50 shadow-none',
+        className,
+      )}
+    >
+      {label}
+    </kbd>
+  );
+}
 
 export function InkButton({
   tone = 'yolk',
@@ -95,47 +150,94 @@ export function InkButton({
   children,
   hotkey,
   className,
+  full = false,
+  seed,
   type = 'button',
   ...rest
 }) {
+  const sd = seed ?? seedOf(children);
+  const d = useMemo(() => chipPath(sd), [sd]);
+  const tilt = useMemo(() => (rand(sd ^ 0x9e37)() - 0.5) * 2.4, [sd]);
+  const face = disabled ? 'paper-2' : tone;
+  const text = disabled ? 'text-ink/45' : LIGHT.has(face) ? 'text-ink' : 'text-paper';
+  const hatchId = `nm-hatch-${sd}`;
   return (
-    <span className={cn('relative inline-flex', className)}>
-      <TextureButton
+    <span className={cn('relative inline-flex', full && 'flex w-full', className)} style={{ rotate: `${tilt}deg` }}>
+      <motion.button
         type={type}
-        variant="paint"
-        size={INK_BUTTON_SIZE[size] ?? 'default'}
-        tone={disabled ? 'paper-2' : tone}
         disabled={disabled}
         aria-pressed={pressed || undefined}
         onClick={disabled ? undefined : onClick}
         className={cn(
-          'select-none',
-          pressed && 'translate-x-[2px] translate-y-[3px] shadow-[1px_1px_0_0_var(--color-ink)] hover:translate-y-[3px] hover:shadow-[1px_1px_0_0_var(--color-ink)]',
-          disabled &&
-            'cursor-not-allowed border-ink/40 shadow-[2px_2px_0_0_rgba(27,16,48,0.25)] hover:translate-y-0 hover:shadow-[2px_2px_0_0_rgba(27,16,48,0.25)] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0_0_rgba(27,16,48,0.25)]',
+          'group relative inline-flex select-none items-center justify-center font-head leading-none tracking-wider uppercase outline-none',
+          INK_BUTTON_SIZES[size] ?? INK_BUTTON_SIZES.md,
+          full && 'w-full',
+          disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         )}
-        innerClassName={cn(
-          INK_BUTTON_INNER[size] ?? INK_BUTTON_INNER.md,
-          'uppercase tracking-wider',
-          pressed && 'after:h-0 brightness-95',
-          disabled &&
-            'text-ink/40 before:hidden after:hidden bg-[repeating-linear-gradient(-45deg,rgba(27,16,48,0.07)_0_6px,transparent_6px_12px)]',
-        )}
+        whileHover={disabled ? undefined : { rotate: [0, -2.2, 1.6, 0], transition: { duration: 0.26, ease: 'easeOut' } }}
+        whileTap={disabled ? undefined : { scaleX: 1.06, scaleY: 0.86, transition: { duration: 0.12 } }}
+        transition={SOFT}
         {...rest}
       >
-        {children}
-      </TextureButton>
-      {hotkey && (
-        <kbd
-          aria-hidden="true"
-          className={cn(
-            'pointer-events-none absolute -top-2.5 -right-2.5 z-10 flex h-5 min-w-5 items-center justify-center rounded-[6px] border-2 border-ink bg-paper px-1 font-stat text-[13px] leading-none text-ink shadow-[1px_2px_0_0_var(--color-ink)]',
-            disabled && 'border-ink/40 text-ink/40 shadow-none',
+        {/* ink cut-out shadow */}
+        <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"
+          className={cn('pointer-events-none absolute inset-0 h-full w-full transition-transform duration-150 ease-out',
+            pressed ? 'translate-x-[1px] translate-y-[1px]' : disabled ? 'translate-x-[2px] translate-y-[2px]' : 'translate-x-[3px] translate-y-[4px] group-active:translate-x-[1px] group-active:translate-y-[1px]')}>
+          <path d={d} fill={disabled ? 'color-mix(in srgb, var(--color-ink) 22%, transparent)' : INK} />
+        </svg>
+        {/* paint face */}
+        <svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"
+          className={cn('pointer-events-none absolute inset-0 h-full w-full transition-transform duration-150 ease-out',
+            pressed ? 'translate-x-[2px] translate-y-[3px]' : !disabled && 'group-active:translate-x-[2px] group-active:translate-y-[3px]')}>
+          {disabled && (
+            <defs>
+              <pattern id={hatchId} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+                <rect width="3" height="6" fill="var(--color-ink)" opacity="0.08" />
+              </pattern>
+            </defs>
           )}
-        >
-          {String(hotkey).toLowerCase()}
-        </kbd>
-      )}
+          <path d={d} fill={toneVar(face)} stroke={disabled ? 'color-mix(in srgb, var(--color-ink) 40%, transparent)' : INK} strokeWidth="2.6" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+          {disabled && <path d={d} fill={`url(#${hatchId})`} />}
+          {!disabled && <path d="M14 22 C 34 16, 60 18, 84 21" fill="none" stroke="var(--color-paper)" strokeOpacity={LIGHT.has(face) ? 0.55 : 0.35} strokeWidth="3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
+        </svg>
+        <span className={cn('relative inline-flex items-center gap-1 transition-transform duration-150 ease-out', text,
+          pressed ? 'translate-x-[2px] translate-y-[3px]' : !disabled && 'group-active:translate-x-[2px] group-active:translate-y-[3px]')}>
+          {children}
+        </span>
+      </motion.button>
+      {hotkey && <HotKey k={hotkey} dim={disabled} className="absolute -top-2.5 -right-2.5 z-10" />}
+    </span>
+  );
+}
+
+/** Ring control (ref b: flat colour disc, white rings, ink outline). */
+export function RingButton({ tone = 'magenta', size = 96, children, onClick, hotkey, hotkeyPos = 'bottom', className, disabled, label, ...rest }) {
+  const inkText = LIGHT.has(tone);
+  return (
+    <span className={cn('relative inline-flex flex-col items-center', className)}>
+      <motion.button
+        type="button"
+        aria-label={label}
+        disabled={disabled}
+        onClick={disabled ? undefined : onClick}
+        className={cn('group relative grid place-items-center rounded-full outline-none focus-visible:ring-4 focus-visible:ring-yolk', disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer')}
+        style={{ width: size, height: size }}
+        whileHover={disabled ? undefined : { rotate: [0, -4, 3, 0], scale: 1.04, transition: { duration: 0.26, ease: 'easeOut' } }}
+        whileTap={disabled ? undefined : { scaleX: 1.08, scaleY: 0.88, transition: { duration: 0.12 } }}
+        transition={SOFT}
+        {...rest}
+      >
+        <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-[5px] rounded-full bg-ink transition-transform duration-150 group-active:translate-x-[1px] group-active:translate-y-[1px]" />
+        <span aria-hidden="true" className="absolute inset-0 rounded-full border-[3px] border-ink transition-transform duration-150 group-active:translate-x-[2px] group-active:translate-y-[3px]" style={{ background: toneVar(tone) }}>
+          <span className="absolute inset-[9%] rounded-full border-[2.5px] border-paper/90" />
+          <span className="absolute inset-[22%] rounded-full border-2 border-paper/45" />
+          <span className="absolute top-[12%] left-[20%] h-[16%] w-[30%] -rotate-[24deg] rounded-full bg-paper/30" />
+        </span>
+        <span className={cn('relative flex flex-col items-center leading-none transition-transform duration-150 group-active:translate-x-[2px] group-active:translate-y-[3px]', inkText ? 'text-ink' : 'text-paper')}>
+          {children}
+        </span>
+      </motion.button>
+      {hotkey && <HotKey k={hotkey} className={hotkeyPos === 'bottom' ? 'mt-2' : 'absolute -top-1 -right-1 z-10'} />}
     </span>
   );
 }
@@ -394,44 +496,62 @@ export function UnitCard({
 /* ---------------------------------------------------------------- Tooltip */
 
 const GAP = 10;
+const EDGE = 8; // keep this far from the viewport edge
 
-function place(rect, side) {
-  switch (side) {
-    case 'bottom':
-      return { left: rect.left + rect.width / 2, top: rect.bottom + GAP, transform: 'translate(-50%, 0)' };
-    case 'left':
-      return { left: rect.left - GAP, top: rect.top + rect.height / 2, transform: 'translate(-100%, -50%)' };
-    case 'right':
-      return { left: rect.right + GAP, top: rect.top + rect.height / 2, transform: 'translate(0, -50%)' };
-    default:
-      return { left: rect.left + rect.width / 2, top: rect.top - GAP, transform: 'translate(-50%, -100%)' };
+const ENTER = { top: { y: 4 }, bottom: { y: -4 }, left: { x: 4 }, right: { x: -4 } };
+const FLIP = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };
+
+// Place a measured tip next to `rect`: prefer `side`, flip when it would leave the viewport, clamp the rest.
+function placeTip(rect, side, tw, th) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const room = { top: rect.top, bottom: vh - rect.bottom, left: rect.left, right: vw - rect.right };
+  const need = side === 'top' || side === 'bottom' ? th + GAP + EDGE : tw + GAP + EDGE;
+  let s = side;
+  if (room[s] < need && room[FLIP[s]] > room[s]) s = FLIP[s];
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  if (s === 'top' || s === 'bottom') {
+    const cx = rect.left + rect.width / 2;
+    const left = clamp(cx - tw / 2, EDGE, vw - tw - EDGE);
+    const top = s === 'top' ? Math.max(EDGE, rect.top - GAP - th) : Math.min(vh - th - EDGE, rect.bottom + GAP);
+    return { side: s, left, top, arrow: clamp(cx - left, 14, tw - 14) };
   }
+  const cy = rect.top + rect.height / 2;
+  const top = clamp(cy - th / 2, EDGE, vh - th - EDGE);
+  const left = s === 'left' ? Math.max(EDGE, rect.left - GAP - tw) : Math.min(vw - tw - EDGE, rect.right + GAP);
+  return { side: s, left, top, arrow: clamp(cy - top, 14, th - 14) };
 }
 
-const ARROW = {
-  top: 'left-1/2 -bottom-[7px] -translate-x-1/2 border-r-[3px] border-b-[3px]',
-  bottom: 'left-1/2 -top-[7px] -translate-x-1/2 border-l-[3px] border-t-[3px]',
-  left: 'top-1/2 -right-[7px] -translate-y-1/2 border-r-[3px] border-t-[3px]',
-  right: 'top-1/2 -left-[7px] -translate-y-1/2 border-l-[3px] border-b-[3px]',
+const ARROW_EDGE = {
+  top: '-bottom-[7px] -translate-x-1/2 border-r-[3px] border-b-[3px]',
+  bottom: '-top-[7px] -translate-x-1/2 border-l-[3px] border-t-[3px]',
+  left: '-right-[7px] -translate-y-1/2 border-r-[3px] border-t-[3px]',
+  right: '-left-[7px] -translate-y-1/2 border-l-[3px] border-b-[3px]',
 };
-const ENTER = { top: { y: 4 }, bottom: { y: -4 }, left: { x: 4 }, right: { x: -4 } };
 
+/**
+ * Hover/focus tooltip in a portal. It measures itself, flips to the other side when there is no
+ * room (top-bar chips open downward), and clamps into the viewport. pointer-events: none.
+ */
 export function Tooltip({ content, children, side = 'top', open: forcedOpen, className }) {
   const ref = useRef(null);
+  const tipRef = useRef(null);
   const [hover, setHover] = useState(false);
-  const [rect, setRect] = useState(null);
+  const [pos, setPos] = useState(null);
   const open = (forcedOpen ?? hover) && content != null && content !== false;
+  const want = ENTER[side] ? side : 'top';
 
   const measure = useCallback(() => {
-    if (ref.current) setRect(ref.current.getBoundingClientRect());
-  }, []);
+    const el = ref.current, tip = tipRef.current;
+    if (!el || !tip) return;
+    const r = el.getBoundingClientRect();
+    const p = placeTip(r, want, tip.offsetWidth, tip.offsetHeight);
+    setPos((o) => (o && o.side === p.side && Math.abs(o.left - p.left) < 0.5 && Math.abs(o.top - p.top) < 0.5 && Math.abs(o.arrow - p.arrow) < 0.5 ? o : p));
+  }, [want]);
 
-  useLayoutEffect(() => {
-    if (open) measure();
-  }, [open, measure]);
-
+  // re-measure after every render while open (content may change size); setPos bails out when unchanged
+  useLayoutEffect(() => { if (open) measure(); });
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open) { setPos(null); return undefined; }
     window.addEventListener('scroll', measure, true);
     window.addEventListener('resize', measure);
     return () => {
@@ -440,7 +560,8 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
     };
   }, [open, measure]);
 
-  const s = ARROW[side] ? side : 'top';
+  const s = pos?.side || want;
+  const horiz = s === 'top' || s === 'bottom';
 
   return (
     <span
@@ -455,24 +576,29 @@ export function Tooltip({ content, children, side = 'top', open: forcedOpen, cla
       {typeof document !== 'undefined' &&
         createPortal(
           <AnimatePresence>
-            {open && rect && (
+            {open && (
               <div
                 key="tip"
+                ref={tipRef}
                 className="pointer-events-none fixed z-[1000]"
-                style={place(rect, s)}
+                style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, visibility: pos ? 'visible' : 'hidden' }}
               >
                 <motion.div
                   role="tooltip"
                   initial={{ opacity: 0, scale: 0.96, ...ENTER[s] }}
                   animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.12, ease: 'easeOut' }}
+                  exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.1 } }}
+                  transition={{ duration: 0.14, ease: 'easeOut' }}
                   className={cn(
                     'relative w-max max-w-[320px] rounded-[12px] border-[3px] border-ink bg-paper px-3 py-2 font-body text-sm leading-snug text-ink shadow-[3px_4px_0_0_var(--color-ink)]',
                     className,
                   )}
                 >
-                  <span aria-hidden="true" className={cn('absolute h-3 w-3 rotate-45 border-ink bg-paper', ARROW[s])} />
+                  <span
+                    aria-hidden="true"
+                    className={cn('absolute h-3 w-3 rotate-45 border-ink bg-paper', ARROW_EDGE[s])}
+                    style={horiz ? { left: pos?.arrow ?? '50%' } : { top: pos?.arrow ?? '50%' }}
+                  />
                   <div className="relative">{content}</div>
                 </motion.div>
               </div>
