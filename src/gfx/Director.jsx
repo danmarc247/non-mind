@@ -58,7 +58,7 @@ export default function Director() {
     const off = camera.position.clone().sub(controls.target).multiplyScalar(c.zoom / prevZoom);
     // the player's own distance is what stays within limits; the director's lean is applied on top of it,
     // so a moment can never ratchet a zoomed-in player outward or a zoomed-out player inward
-    const own = Math.min(46, Math.max(12, off.length() / c.zoom));
+    const own = Math.min(64, Math.max(12, off.length() / c.zoom));
     off.setLength(own * c.zoom);
     camera.position.copy(controls.target).add(off);
     director.timeScale += (wantScale - director.timeScale) * (1 - Math.exp(-8 * dt));

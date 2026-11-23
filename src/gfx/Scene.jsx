@@ -232,9 +232,14 @@ function Loop({ audioRef }) {
   return null;
 }
 
-export default function Scene({ audioRef, quality = 'med', post = true }) {
+// Phones and small touch screens get a lighter frame: lower pixel ratio, the low post tier, fewer
+// drifting bodies and motes, and a camera pulled back so the whole vessel fits a narrow portrait view.
+const SMALL = typeof window !== 'undefined' && (window.matchMedia?.('(pointer: coarse)').matches || Math.min(window.innerWidth, window.innerHeight) < 620);
+const PORTRAIT = typeof window !== 'undefined' && window.innerHeight > window.innerWidth * 1.15;
+
+export default function Scene({ audioRef, quality = SMALL ? 'low' : 'med', post = true }) {
   return (
-    <Canvas linear legacy flat camera={{ position: [0, 21, 29], fov: 44, near: 0.5, far: 900 }} dpr={[1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
+    <Canvas linear legacy flat camera={{ position: PORTRAIT ? [0, 30, 42] : [0, 21, 29], fov: PORTRAIT ? 52 : 44, near: 0.5, far: 900 }} dpr={SMALL ? [1, 1.25] : [1, 1.5]} gl={{ antialias: false, powerPreference: 'high-performance' }}
       onPointerMissed={() => { if (game.selected || game.pending) { game.selected = null; game.pending = null; notify(); } }}>
       <Loop audioRef={audioRef} />
       <Director />
@@ -248,9 +253,9 @@ export default function Scene({ audioRef, quality = 'med', post = true }) {
       <Bodies />
       <ArcVeil />
       <PaintFx />
-      <Mobiles />
+      <Mobiles count={SMALL ? 8 : 14} />
       <Tethers />
-      <Motes />
+      <Motes max={SMALL ? 180 : 420} />
       <GlassVessel />
       <OrbitControls makeDefault autoRotate autoRotateSpeed={0.3} enablePan={false} minDistance={5} maxDistance={70} minPolarAngle={0.35} maxPolarAngle={1.25} target={[0, -3.2, 0]} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />
       {post && <PainterPost quality={quality} aerial={0.4} focus={0.5} focusFar={260} dab={0.5} />}
