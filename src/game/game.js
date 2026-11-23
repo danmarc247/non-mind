@@ -114,6 +114,14 @@ function fuse(G, u) {
   }
 }
 
+// A new arrival takes the first free seat while there is room; the player can always move it.
+function autoSeat(G, u) {
+  if (!G.units.includes(u) || u.seat || seated(G).length >= unitCap(G)) return;
+  const taken = new Set(seated(G).map((o) => o.seat.ring * 10 + o.seat.dir));
+  const order = [0, 5, 2, 7, 4, 9, 1, 6, 3, 8];
+  for (let r = 0; r < ringsOpen(G); r++) for (const d of order) if (!taken.has(r * 10 + d)) { u.seat = { ring: r, dir: d }; return; }
+}
+
 export const actions = {
   attend(G) {
     G.stats.clicks++; G.clicksThisWave++;
@@ -128,7 +136,8 @@ export const actions = {
     const twinExists = G.units.some((o) => o.link === 1 && key(o.g) === f.id);
     if (bench(G).length >= BENCH && !twinExists) return fail(G, 'The bench is full.');
     G.attention -= cost; G.shop[i] = null;
-    addUnit(G, leaf(f.id));
+    const nu = addUnit(G, leaf(f.id));
+    autoSeat(G, nu);
     G.events.push({ type: 'sfx', name: 'buy' });
     return true;
   },
