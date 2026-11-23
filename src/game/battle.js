@@ -91,7 +91,7 @@ function spawnBeat(G) {
   const pool = ALL_STRESSORS.filter((s) => !s.boss).slice(0, Math.min(16, 1 + Math.floor((gw + 1) / 2)));
   const bosses = ALL_STRESSORS.filter((s) => s.boss);
   // habituation: every loss on a wave makes its stressors a little more bearable, so no wall is permanent
-  const scale = 3.4 * Math.pow(1.09, Math.min(gw - 1, 22)) * Math.pow(1.03, Math.max(0, gw - 23)) * (1 + 2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
+  const scale = 3.4 * Math.pow(1.09, Math.min(gw - 1, 22)) * Math.pow(1.03, Math.max(0, gw - 23)) * (1 + 1.2 * G.overwhelm) * (1 + 0.2 * G.mirrors) * Math.pow(0.88, G.habituation || 0);
   let n = 1 + Math.floor(gw / 4) + (beat % 5 === 4 ? 1 : 0);
   if (mod.countMul) n *= mod.countMul;
   if (mod.jitter) n = Math.max(1, Math.round(n * (0.4 + G.rng() * 1.6)));

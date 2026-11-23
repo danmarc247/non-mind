@@ -90,7 +90,7 @@ function stageTable(first, seeds, label) {
 stageTable(first1, SEEDS, 'extended bot');
 
 // ---------- 2 ----------
-console.log('\n== 2. Three consecutive runs with resets (extended bot; nonMind at overwhelm >= 1 or after 5400 s) ==');
+console.log('\n== 2. Three consecutive runs with resets (extended bot; nonMind on reaching stage 17 or after 5400 s) ==');
 const RUNS = 3, RESET_AT = 5400, S2 = SEEDS.slice(0, 5);
 const perRun = Array.from({ length: RUNS }, () => []);
 
@@ -98,7 +98,7 @@ for (const seed of S2) {
   let G = createGame(seed);
   for (let r = 0; r < RUNS; r++) {
     const tally = { win: 0, lose: 0 }, first = {}; let reason = 'time';
-    for (let t = 0; t < RESET_AT; t += DT) { tick(G, t, extendedBot, tally, first); if (G.overwhelm >= 1) { reason = 'overwhelm'; break; } }
+    for (let t = 0; t < RESET_AT; t += DT) { tick(G, t, extendedBot, tally, first); if (G.stage >= 17) { reason = "overwhelm"; break; } }
     const N = actions.nonMind(G);
     perRun[r].push({ ...snap(G, tally), reason, t: G.t, endings: G.endings, gain: N.mu - G.mu, t10: first[10] ?? NaN, t17: first[17] ?? NaN, t6: first[6] ?? NaN });
     G = N;

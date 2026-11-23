@@ -2,7 +2,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { InkButton } from './bits';
-import { RingButton } from './bits/kit.jsx';
 import { unlocked } from '../game/index.js';
 import { act, game, select, setPending, useGame } from '../game/store.js';
 import { cn } from '../lib/cn';
