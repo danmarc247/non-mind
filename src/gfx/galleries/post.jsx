@@ -14,6 +14,9 @@ mood.overwhelm = parseFloat(params.get('ow') || '0');
 mood.tension = parseFloat(params.get('tension') || '0');
 mood.flash = parseFloat(params.get('flash') || '0');
 mood.complexity = parseFloat(params.get('cx') || '0.3');
+mood.stage = parseFloat(params.get('stage') || '0');
+// default matches the game Canvas (linear legacy flat = display sRGB, no colour management); ?cm=1 for colour-managed
+const CM = params.get('cm') === '1';
 
 const COLS = ['magenta', 'ultra', 'yolk', 'tangerine', 'teal', 'violet', 'blood', 'leaf', 'rose', 'sky', 'magenta', 'yolk'];
 
@@ -25,13 +28,14 @@ function Background() {
         depthWrite: false,
         uniforms: { uTime: { value: 0 } },
         vertexShader: `varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-        fragmentShader: `varying vec3 vP; uniform float uTime;
+        fragmentShader: `#define CM_POW ${CM ? 'pow(col, vec3(2.2))*1.1' : 'col'}
+          varying vec3 vP; uniform float uTime;
           void main(){
             float y = vP.y*0.5+0.5; float x = atan(vP.z, vP.x);
             vec3 a = vec3(1.0,0.82,0.25), b = vec3(1.0,0.45,0.65), c = vec3(0.45,0.75,1.0);
             vec3 col = mix(a, b, smoothstep(0.2,0.6,y + 0.08*sin(x*3.0+uTime*0.2)));
             col = mix(col, c, smoothstep(0.55,0.95,y));
-            gl_FragColor = vec4(pow(col, vec3(2.2))*1.1, 1.0);
+            gl_FragColor = vec4(CM_POW, 1.0);
           }`,
       }),
     [],
@@ -102,7 +106,7 @@ function Clock() {
   return null;
 }
 
-function Slider({ label, k }) {
+function Slider({ label, k, max = 1 }) {
   const [v, setV] = useState(mood[k]);
   return (
     <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -110,8 +114,8 @@ function Slider({ label, k }) {
       <input
         type="range"
         min={0}
-        max={1}
-        step={0.01}
+        max={max}
+        step={max > 1 ? 0.1 : 0.01}
         value={v}
         onChange={(e) => {
           const n = parseFloat(e.target.value);
@@ -129,7 +133,7 @@ function App() {
   const [quality, setQuality] = useState(params.get('q') || 'med');
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#fbf6ec', position: 'relative' }}>
-      <Canvas shadows camera={{ position: [0, 4.2, 7.5], fov: 45 }} dpr={[1, 2]}>
+      <Canvas linear={!CM} legacy={!CM} flat={!CM} shadows camera={{ position: [0, 4.2, 7.5], fov: 45 }} dpr={[1, 2]}>
         <Clock />
         <Background />
         <ambientLight intensity={0.6} />
@@ -160,6 +164,7 @@ function App() {
           <Slider label="tension" k="tension" />
           <Slider label="flash" k="flash" />
           <Slider label="complexity" k="complexity" />
+          <Slider label="stage/17" k="stage" max={17} />
           <button onClick={() => { mood.flash = 1; window.__flashDecay = true; }}>reset flash</button>
         </div>
       )}

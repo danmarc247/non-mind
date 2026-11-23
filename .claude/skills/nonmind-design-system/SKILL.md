@@ -177,6 +177,8 @@ import { Panel, InkButton, StatChip, Meter, Cryptic, UnitCard, Tooltip } from '.
 - Show a control only once its system is unlocked: `unlocked(G, 'split')` etc. Progressive reveal *is* the design. A locked feature is absent, not greyed out.
 - Backgrounds (`src/ui/bits/backgrounds`, React Bits ports) are allowed only re-tinted to tokens, and only behind menus. Never behind the arena.
 
+Preferred UI libraries (owner list): **Motion** (`motion/react`, default for React UI), **GSAP** (timelines, number count-ups, staged reveals), **Aceternity UI** and **Cult UI** ports in `src/ui/bits`, **React Bits** backgrounds, **PixiJS v8** for 2D overlays with heavy particles. Any new UI piece starts from one of these, retinted to tokens. Dependency rules are in the nonmind-stack skill.
+
 ## 6. Contrast
 
 - Text on paper or yolk/sky/rose/teal/tangerine faces is ink. Text on ink/ultra/violet/blood/magenta faces is paper. InkButton switches automatically; copy its rule for custom pieces.

@@ -37,7 +37,6 @@ const RING_SEEDS = Array.from({ length: RING_COUNT }, (_, i) => {
     axis: new THREE.Vector3(Math.sin(i * 3.1), 1.0, Math.cos(i * 5.3)).normalize(),
     radius: 0.07 + 0.06 * ((i * 0.618) % 1),
     speed: 0.006 + 0.004 * ((i * 0.37) % 1),
-    fillKey: STROKE_KEYS[(i * 3) % STROKE_KEYS.length],
     fillA: (i % 3 === 1) ? 0.0 : 0.85,
   };
 });

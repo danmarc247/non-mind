@@ -22,6 +22,8 @@ Owner intent:
 | Post | `PainterPost.jsx`, `glsl/post.*.glsl` | Kuwahara, then Relief, Bloom, Grade, Overwhelm. |
 | Fx | `Scene.jsx` `Fx()` | One instanced circle mesh (N=220) for stroke, splat and ring paint marks. |
 
+Preferred stack (owner list): **Three.js + React Three Fiber + drei** for the scene, **Shader Park** for SDF sculptures, **lygia** for GLSL building blocks, **postprocessing** for the post chain, **OGL** (React Bits backgrounds) and **PixiJS v8** only for 2D or UI-side canvases. Do not add another 3D engine.
+
 ## 2. The mood contract (`src/gfx/mood.js`)
 
 There is one plain mutable object. It is written once per frame by `Loop` in `Scene.jsx` and read by every shader and by audio. It never triggers a React render.

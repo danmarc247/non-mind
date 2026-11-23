@@ -63,6 +63,7 @@ function App() {
           color: '#fff', font: '12px monospace', borderRadius: 6, display: 'grid', gap: 4,
         }}
       >
+        <Slider name="stage" min={0} max={17} step={0.05} />
         <Slider name="complexity" min={0} max={1} step={0.01} />
         <Slider name="overwhelm" min={0} max={1} step={0.01} />
         <Slider name="depth" min={0} max={8} step={1} />
