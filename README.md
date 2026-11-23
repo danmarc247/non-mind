@@ -641,7 +641,7 @@ Credit where it is due.
 | Cult UI components (TextureCard, TextureButton, MinimalCard, NeumorphButton, ShaderLensBlur) | https://www.cult-ui.com | MIT, Copyright (c) 2023 Jordan-Gilliam |
 | React Bits backgrounds | https://reactbits.dev | MIT with Commons Clause, per the upstream repo |
 
-See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports and changes. Game text, names and content are original, except that some lines on the things kept in the book are quoted from the essay *Nature, O Nature* at https://www.thestartandtheend.com/nature-o-nature/.
+See `src/ui/bits/README.md` and `src/ui/bits/backgrounds/README.md` for ports and changes. Game text, names and content are original.
 
 ---
 
