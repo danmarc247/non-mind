@@ -224,7 +224,7 @@ function Loop({ audioRef }) {
       try {
         const cam = state.camera, f = new THREE.Vector3(); cam.getWorldDirection(f);
         a.setListener({ position: cam.position.toArray(), forward: f.toArray(), up: cam.up.toArray() });
-        a.setMood({ complexity: mood.complexity, overwhelm: mood.overwhelm, tension: mood.tension, depth: G.depth, stance: G.stance });
+        a.setMood({ complexity: mood.complexity, overwhelm: mood.overwhelm, tension: mood.tension, depth: G.depth, stance: G.stance, wave: G.wave, cycle: G.cycle, arc: (G.wave - 1) % 10, stage: mood.stage, phase: G.phase });
         const lv = a.getLevels?.(); if (lv) Object.assign(mood.audio, lv);
       } catch { /* audio is optional */ }
     }
